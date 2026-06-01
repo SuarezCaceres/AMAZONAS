@@ -16,6 +16,7 @@
   
 <app-inicio
   *ngIf="page === 'inicio'"
+  [isLoggedIn]="!!currentUser"
   (registerClicked)="showRegister()"
   (catalogClicked)="showCatalog()"
   (requestAccess)="openStandaloneRequest()"

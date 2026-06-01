@@ -223,6 +223,7 @@
   min-height:220px;
   transition:0.3s ease;
   box-shadow:0 3px 10px rgba(0,0,0,0.03);
+  height: 100%;
 }
 
 .servicio-card:hover{
@@ -386,5 +387,120 @@
   .register-btn{
     width:100%;
     max-width:320px;
+ 
   }
+
+  @media (max-width: 480px) {
+
+  .container{
+    width: 92%;
+  }
+
+  /* HERO */
+
+  .hero{
+    padding: 50px 16px;
+  }
+
+  .hero h1{
+    font-size: 2.2rem;
+    line-height: 1.15;
+    letter-spacing: -1px;
+  }
+
+  .hero p{
+    font-size: 1rem;
+  }
+
+  /* HISTORIA */
+
+  .historia{
+    gap: 35px;
+    padding: 50px 0;
+  }
+
+  .historia-texto h2,
+  .titulo-seccion h2,
+  .cta-section h2{
+    font-size: 1.9rem;
+    line-height: 1.2;
+  }
+
+  .historia-texto p,
+  .titulo-seccion p{
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .historia-img img{
+    border-radius: 18px;
+  }
+
+  /* CONTACTO */
+
+  .contacto,
+  .valores,
+  .servicios{
+    padding: 60px 0;
+  }
+
+  .titulo-seccion{
+    margin-bottom: 40px;
+    padding: 0 16px;
+  }
+
+  .card,
+  .servicio-card{
+    padding: 24px;
+    border-radius: 18px;
+  }
+
+  .card h3,
+  .valor h3,
+  .servicio-card h3{
+    font-size: 1.4rem;
+  }
+
+  .card p,
+  .valor p,
+  .servicio-card p{
+    font-size: 0.95rem;
+  }
+
+  /* ICONOS */
+
+  .icon{
+    width: 52px;
+    height: 52px;
+    margin-bottom: 18px;
+    font-size: 1.2rem;
+  }
+
+  .valor .icon{
+    width: 60px;
+    height: 60px;
+  }
+
+  /* CTA */
+
+  .cta-section{
+    padding: 60px 20px;
+  }
+
+  .cta-section p{
+    font-size: 1rem;
+  }
+
+  .catalog-btn,
+  .register-btn{
+    min-width: unset;
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    font-size: 15px;
+  }
+.servicio-card{
+    min-height: auto;
+  }
+}
 }

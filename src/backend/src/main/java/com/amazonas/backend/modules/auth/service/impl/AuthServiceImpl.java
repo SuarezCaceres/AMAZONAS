@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getEmail(), user.getRole().name());
+        return new AuthResponse(token, user.getEmail(), user.getRole().name(), user.getNombre());
     }
 
     @Override
@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
         vendorRepository.save(vendor);
 
         String token = jwtService.generateToken(vendor.getEmail());
-        return new AuthResponse(token, vendor.getEmail(), vendor.getRole().name());
+        return new AuthResponse(token, vendor.getEmail(), vendor.getRole().name(), vendor.getNombre());
     }
 
     @Override
@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String token = jwtService.generateToken(user.getEmail());
-        return new AuthResponse(token, user.getEmail(), user.getRole().name());
+        return new AuthResponse(token, user.getEmail(), user.getRole().name(), user.getNombre());
     }
 
     @Override
@@ -90,7 +90,8 @@ public class AuthServiceImpl implements AuthService {
         return new AuthResponse(
                 token,
                 vendor.getEmail(),
-                vendor.getRole().name()
+                vendor.getRole().name(),
+                vendor.getNombre()
         );
     }
 

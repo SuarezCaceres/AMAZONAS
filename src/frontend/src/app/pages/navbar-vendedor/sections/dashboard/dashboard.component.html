@@ -7,16 +7,12 @@
       <p class="dash-subtitle">Resumen general de tu negocio</p>
     </div>
     <div class="dash-actions">
-      <button class="btn-demo-load" type="button" (click)="loadDemo()">
-        <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
-          <rect x="2" y="3" width="20" height="14" rx="2"/>
-          <line x1="8" y1="21" x2="16" y2="21"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
+      <button class="btn-demo-load" type="button" (click)="loadDashboardData()" [disabled]="loading">
+        <svg viewBox="0 0 24 24" class="btn-icon" [class.spinning]="loading" aria-hidden="true" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
         </svg>
-        Cargar Datos Demo
-      </button>
-      <button class="btn-demo-clear" type="button" (click)="clearDemo()">
-        Limpiar Demo
+        {{ loading ? 'Sincronizando...' : 'Actualizar' }}
       </button>
     </div>
   </div>

@@ -1,9 +1,9 @@
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../config/api.config';
-import { Product, ProductRequest, PageResponse } from '../models/product.model';
+import { Product, ProductRequest, PageResponse, ProductAnalysisItem } from '../models/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class MaquetaService {
@@ -47,5 +47,9 @@ export class MaquetaService {
 
   deleteProduct(id: string): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/admin/products/${id}`);
+  }
+
+  getProductAnalysis(): Observable<ProductAnalysisItem[]> {
+    return this.http.get<ProductAnalysisItem[]>(`${this.API_URL}/admin/analysis/products`);
   }
 }

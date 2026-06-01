@@ -51,7 +51,12 @@ public class PurchaseRequest {
     private Boolean isCustom = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(
+            name = "estado",
+            nullable = false,
+            columnDefinition = "estado_solicitud"
+    )
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     private EstadoSolicitud estado = EstadoSolicitud.PENDIENTE;
 
     @Column(columnDefinition = "TEXT")

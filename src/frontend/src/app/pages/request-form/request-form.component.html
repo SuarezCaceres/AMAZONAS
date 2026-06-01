@@ -1,30 +1,16 @@
-<section class="request-page"
-  [class.standalone-layout]="standaloneRequest">
-  <div
-  class="preview-column"
-  *ngIf="!standaloneRequest">
-
-  <figure class="model-preview">
-
-    <img
-      [src]="model.imageUrl"
-      [alt]="model.title">
-
-    <figcaption>
-      {{ model.category }}
-    </figcaption>
-
-  </figure>
-
-</div>
+<section class="request-page">
+  <div class="preview-column">
+    <figure class="model-preview">
+      <img [src]="model.imageUrl" [alt]="model.title">
+      <figcaption>{{ model.category }}</figcaption>
+    </figure>
+  </div>
 
   <section class="form-column">
     <header class="request-header">
       <h1>
         <span aria-hidden="true">{{ isCustomization ? '&#128393;' : '&#128722;' }}</span>
-        {{ standaloneRequest
-    ? 'Solicitar Maqueta Personalizada'
-    : title }}
+        {{ title }}
       </h1>
       <button type="button" (click)="changedMode.emit(alternateMode)">Cambiar</button>
     </header>
@@ -34,13 +20,7 @@
         <span aria-hidden="true">{{ isCustomization ? '&#128393;' : '&#128722;' }}</span>
         {{ actionTitle }}
       </h2>
-      <p *ngIf="isCustomization">
-
-  {{ standaloneRequest
-    ? 'Describe la maqueta que necesitas y nuestro equipo la diseñará especialmente para ti.'
-    : 'Cuentanos como quieres que sea tu maqueta personalizada' }}
-
-</p>
+      <p *ngIf="isCustomization">Cuentanos como quieres que sea tu maqueta personalizada</p>
 
       <label for="fullName">Nombre Completo *</label>
       <input id="fullName" name="fullName" type="text" required [(ngModel)]="form.fullName">
@@ -118,10 +98,53 @@
 
       <label class="explanation-option">
         <input type="checkbox" name="explanation" [(ngModel)]="form.explanation">
-        <span aria-hidden="true">&#128172;</span>
+        <span class="explanation-icon" aria-hidden="true">&#128250;</span>
         <strong>Solicitar Servicio de Explicacion</strong>
         <small>Demostracion de como se armo el proyecto (para clases, eventos o grupos)</small>
       </label>
+
+      <section class="explanation-details" *ngIf="form.explanation">
+        <fieldset>
+          <legend>Tipo de Explicacion *</legend>
+
+          <label class="explanation-type" *ngFor="let type of explanationTypes">
+            <input
+              type="radio"
+              name="explanationType"
+              [value]="type.value"
+              required
+              [(ngModel)]="form.explanationType"
+            >
+            <span class="type-icon" aria-hidden="true" [innerHTML]="type.icon"></span>
+            {{ type.label }}
+          </label>
+        </fieldset>
+
+        <label for="explanationModel">Modelo de Explicacion *</label>
+        <select
+          id="explanationModel"
+          name="explanationModel"
+          required
+          [(ngModel)]="form.explanationModel"
+          (ngModelChange)="updateExplanationPeopleMinimum()"
+        >
+          <option value="" disabled>Seleccionar modelo...</option>
+          <option *ngFor="let option of explanationModels" [value]="option">{{ option }}</option>
+        </select>
+
+        <div class="people-control" *ngIf="requiresExplanationPeople">
+          <label for="explanationPeople">Cantidad de Personas *</label>
+          <input
+            id="explanationPeople"
+            name="explanationPeople"
+            type="number"
+            required
+            [min]="explanationPeopleMinimum"
+            [(ngModel)]="form.explanationPeople"
+          >
+          <small>Minimo {{ explanationPeopleMinimum }} personas</small>
+        </div>
+      </section>
 
       <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
 

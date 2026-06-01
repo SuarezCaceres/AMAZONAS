@@ -2,23 +2,26 @@ package com.amazonas.backend.modules.materials.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.UUID;
 
 @Entity
 @Table(name = "material_categories")
 public class MaterialCategory {
 
     @Id
-    @Column(length = 50)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false, unique = true, length = 100)
     private String nombre;
 
     public MaterialCategory() {}
 
-    public MaterialCategory(String id, String nombre) {
+    public MaterialCategory(UUID id, String nombre) {
         this.id = id;
         this.nombre = nombre;
     }
@@ -27,11 +30,11 @@ public class MaterialCategory {
     // GETTERS & SETTERS
     // =========================
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

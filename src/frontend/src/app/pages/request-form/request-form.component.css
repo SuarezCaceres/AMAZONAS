@@ -209,8 +209,16 @@
 }
 
 .explanation-option input {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
+  accent-color: #138bd2;
+}
+
+.explanation-icon,
+.type-icon {
+  color: #a61bd9;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .explanation-option strong {
@@ -222,6 +230,78 @@
   grid-column: 3;
   color: #687789;
   font-size: 11px;
+}
+
+.explanation-details {
+  margin-top: 16px;
+  border: 1px solid #f0d8f8;
+  border-radius: 8px;
+  padding: 18px 20px 20px;
+  background: #fff8ff;
+}
+
+.explanation-details fieldset {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.explanation-details legend,
+.explanation-details > label {
+  display: block;
+  margin: 0 0 12px;
+  color: #48566a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.explanation-type {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 !important;
+  color: #415066 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.explanation-type input {
+  width: 18px;
+  height: 18px;
+  accent-color: #138bd2;
+}
+
+.explanation-details > label {
+  margin-top: 18px;
+}
+
+.explanation-details select {
+  height: 50px;
+  border-color: #d7dee8;
+  font-size: 16px;
+}
+
+.people-control {
+  margin-top: 18px;
+}
+
+.people-control label {
+  margin: 0 0 10px !important;
+  font-size: 13px !important;
+}
+
+.people-control input {
+  height: 50px;
+  background: #fff8ff;
+  font-size: 16px;
+}
+
+.people-control small {
+  display: block;
+  margin-top: 8px;
+  color: #687789;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .success-message {
@@ -278,53 +358,4 @@
     align-items: flex-start;
     flex-direction: column;
   }
-}
-/* ===== FORMULARIO SOLO (BUSCADOR) ===== */
-
-.standalone-layout {
-  display: flex !important;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 40px 20px 70px;
-}
-.standalone-layout .preview-column{
-  display:none;
-}
-
-.standalone-layout .form-column {
-  width: 100%;
-  max-width: 850px;
-}
-
-.standalone-layout .request-header{
-  justify-content:center;
-  text-align:center;
-}
-
-.standalone-layout .request-card{
-  width:100%;
-}.standalone-layout{
-  display:grid !important;
-  grid-template-columns:1fr !important;
-  justify-content:center;
-  padding:40px 20px 70px;
-}
-
-.standalone-layout .preview-column{
-  display:none;
-}
-
-.standalone-layout .form-column{
-  width:100%;
-  max-width:850px;
-  margin:0 auto;
-}
-
-.standalone-layout .request-header{
-  justify-content:center;
-  text-align:center;
-}
-
-.standalone-layout .request-card{
-  width:100%;
 }

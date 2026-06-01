@@ -47,7 +47,8 @@ public class MaterialServiceImpl implements MaterialService {
             throw new RuntimeException("Ya existe un material con el nombre: " + request.getNombre());
         }
 
-        MaterialCategory category = materialCategoryRepository.findById(request.getCategoriaId())
+        MaterialCategory category = materialCategoryRepository
+                .findById(UUID.fromString(request.getCategoriaId()))
                 .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.getCategoriaId()));
 
         Material material = new Material();
@@ -70,7 +71,8 @@ public class MaterialServiceImpl implements MaterialService {
                     }
                 });
 
-        MaterialCategory category = materialCategoryRepository.findById(request.getCategoriaId())
+        MaterialCategory category = materialCategoryRepository
+                .findById(UUID.fromString(request.getCategoriaId()))
                 .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.getCategoriaId()));
 
         updateMaterialFields(material, request, category);
@@ -110,7 +112,7 @@ public class MaterialServiceImpl implements MaterialService {
         response.setProveedor(material.getProveedor());
         response.setActivo(material.getActivo());
         if (material.getCategoria() != null) {
-            response.setCategoriaId(material.getCategoria().getId());
+            response.setCategoriaId(material.getCategoria().getId().toString());
             response.setCategoriaNombre(material.getCategoria().getNombre());
         }
         return response;

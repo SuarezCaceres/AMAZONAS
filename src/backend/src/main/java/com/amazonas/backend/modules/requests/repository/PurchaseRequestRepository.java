@@ -31,6 +31,13 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
     
     long countByEstado(EstadoSolicitud estado);
 
+    @Query("SELECT pr.producto.id, pr.producto.titulo, pr.producto.categoria.nombre, " +
+           "pr.producto.imageUrl, COUNT(pr) FROM PurchaseRequest pr " +
+           "WHERE pr.producto IS NOT NULL " +
+           "GROUP BY pr.producto.id, pr.producto.titulo, pr.producto.categoria.nombre, pr.producto.imageUrl " +
+           "ORDER BY COUNT(pr) DESC")
+    List<Object[]> countRequestsByProduct();
+
     // Métodos adicionales usados por PurchaseRequestServiceImpl
     List<PurchaseRequest> findByUsuarioOrderByCreatedAtDesc(User usuario);
 

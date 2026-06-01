@@ -56,7 +56,10 @@
 
           <button class="link-button forgot-link" type="button" (click)="sendRecovery()">&iquest;Olvidaste tu contrase&ntilde;a?</button>
 
-          <button class="primary-button" type="submit">Ingresar</button>
+          <button class="primary-button" type="submit" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Ingresar</span>
+            <span *ngIf="isLoading" class="spinner"></span>
+          </button>
         </form>
 
         <p class="switch-copy">&iquest;No tienes cuenta? <button type="button" class="link-button" (click)="switchToRegister()">Reg&iacute;strate aqu&iacute;</button></p>
@@ -121,8 +124,12 @@
           </div>
 
           <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
+          <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
 
-          <button class="primary-button" type="submit">Crear Cuenta</button>
+          <button class="primary-button" type="submit" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Crear Cuenta</span>
+            <span *ngIf="isLoading" class="spinner"></span>
+          </button>
         </form>
 
         <p class="switch-copy">&iquest;Ya tienes cuenta? <button type="button" class="link-button" (click)="switchToLogin()">Inicia sesi&oacute;n</button></p>
@@ -130,4 +137,5 @@
     </section>
   </div>
 </main>
+
 

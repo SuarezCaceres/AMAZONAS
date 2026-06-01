@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { AuthResponse } from '../../models/auth.model';
 
 type AuthView = 'login' | 'register';
 
@@ -8,6 +10,7 @@ interface UserAccount {
   name: string;
   email: string;
   password: string;
+  role?: string;
 }
 
 @Component({
@@ -19,6 +22,8 @@ interface UserAccount {
 })
 export class Auth implements OnChanges {
 
+  private readonly authService = inject(AuthService);
+
   @Input() accessNotice = '';
   @Input() initialView: AuthView = 'login';
 
@@ -29,8 +34,9 @@ export class Auth implements OnChanges {
   recoverySent = false;
   successMessage = '';
   errorMessage = '';
+  isLoading = false;
 
-  login: UserAccount = {
+  login = {
     name: '',
     email: '',
     password: ''
@@ -64,6 +70,7 @@ export class Auth implements OnChanges {
     this.clearMessages();
   }
 
+
   closeModal(): void {
     this.clearMessages();
 
@@ -76,15 +83,34 @@ export class Auth implements OnChanges {
   submitLogin(): void {
     this.clearMessages();
 
-    const account = this.findAccount(this.login.email);
-
-    if (!account || account.password !== this.login.password) {
-      this.errorMessage = 'Correo o contraseña incorrectos.';
+    if (!this.login.email.trim() || !this.login.password.trim()) {
+      this.errorMessage = 'Completa todos los campos.';
       return;
     }
 
-    this.successMessage = `Bienvenido, ${account.name}. Ya puedes continuar con tu maqueta.`;
-    this.authenticated.emit(account);
+    this.isLoading = true;
+
+    const request = {
+      email: this.login.email.trim(),
+      password: this.login.password
+    };
+
+    this.authService.loginAuto(request).subscribe({
+      next: (response: AuthResponse) => {
+        this.isLoading = false;
+        this.successMessage = `Bienvenido, ${response.nombre || response.email}.`;
+        this.authenticated.emit({
+          name: response.nombre || response.email,
+          email: response.email,
+          password: '',
+          role: response.role
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err?.error?.message || err?.error || 'Correo o contraseña incorrectos.';
+      }
+    });
   }
 
   submitRegister(): void {
@@ -100,27 +126,30 @@ export class Auth implements OnChanges {
       return;
     }
 
-    const accounts = this.getAccounts();
-    const email = this.register.email.trim().toLowerCase();
+    this.isLoading = true;
 
-    if (accounts.some(a => a.email === email)) {
-      this.errorMessage = 'Este correo ya está registrado.';
-      return;
-    }
-
-    accounts.push({
-      name: this.register.name.trim(),
-      email,
+    const request = {
+      nombre: this.register.name.trim(),
+      email: this.register.email.trim().toLowerCase(),
       password: this.register.password
+    };
+
+    this.authService.register(request).subscribe({
+      next: (response: AuthResponse) => {
+        this.isLoading = false;
+        this.successMessage = `Cuenta creada. Bienvenido, ${response.nombre || response.email}.`;
+        this.authenticated.emit({
+          name: response.nombre || response.email,
+          email: response.email,
+          password: '',
+          role: response.role
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err?.error?.message || err?.error || 'Error al crear la cuenta. Intenta de nuevo.';
+      }
     });
-
-    localStorage.setItem('maquetasAccounts', JSON.stringify(accounts));
-
-    this.login.email = email;
-    this.login.password = '';
-    this.view = 'login';
-
-    this.successMessage = 'Cuenta creada. Ahora inicia sesión.';
   }
 
   sendRecovery(): void {
@@ -139,16 +168,5 @@ export class Auth implements OnChanges {
     this.recoverySent = false;
     this.successMessage = '';
     this.errorMessage = '';
-  }
-
-  private findAccount(email: string): UserAccount | undefined {
-    return this.getAccounts().find(
-      a => a.email === email.trim().toLowerCase()
-    );
-  }
-
-  private getAccounts(): UserAccount[] {
-    const saved = localStorage.getItem('maquetasAccounts');
-    return saved ? JSON.parse(saved) : [];
   }
 }

@@ -10,17 +10,15 @@
     </p>
 
     <!-- BUSCADOR -->
-    <app-buscador-inteligente
-    (modelSelected)="modelSelected.emit($event)"
-  (requestAccess)="requestAccess.emit($event)">
-</app-buscador-inteligente>
+    <app-buscador-inteligente (modelSelected)="modelSelected.emit($event)" (requestAccess)="requestAccess.emit($event)">
+    </app-buscador-inteligente>
 
     <!-- TAGS -->
     <div class="popular-searches">
       <span class="material-icons">
         trending_up
       </span>
-      <span>    Búsquedas populares:</span>
+      <span> Búsquedas populares:</span>
 
       <div class="tags">
 
@@ -85,7 +83,7 @@
           Solicita una maqueta única diseñada para tus necesidades
         </p>
 
-       <button class="catalog-link" type="button" (click)="requestAccess.emit('personalizar')">
+        <button class="catalog-link" type="button" (click)="requestAccess.emit('personalizar')">
           Solicitar ahora →
         </button>
 
@@ -103,11 +101,14 @@
           Regístrate para hacer seguimiento de tus solicitudes
         </p>
 
-        <button class="btn-primary" type="button" (click)="registerClicked.emit()">
+        <button
+  class="btn-primary"
+  type="button"
+  (click)="isLoggedIn ? mostrarAvisoCuenta() : registerClicked.emit()">
 
-          Registrarse gratis
+  Registrarse gratis
 
-        </button>
+</button>
 
       </div>
 
@@ -292,11 +293,14 @@
 
     </button>
 
-    <button class="register-btn" type="button" (click)="registerClicked.emit()">
+    <button
+  class="register-btn"
+  type="button"
+  (click)="isLoggedIn ? mostrarAvisoCuenta() : registerClicked.emit()">
 
-      Crear Cuenta Gratis
+  Crear Cuenta Gratis
 
-    </button>
+</button>
 
   </div>
 

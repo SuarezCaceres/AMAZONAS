@@ -3,6 +3,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { DashboardComponent } from './sections/dashboard/dashboard.component';
 import { MaquetaComponent } from './sections/maqueta/maqueta.component';
 import { GestionStockComponent } from './sections/gestion-stock/gestion-stock.component';
+import { MaterialesComponent } from './sections/materiales/materiales.component';
 
 export type VendedorTab =
   | 'dashboard'
@@ -22,7 +23,7 @@ export interface NavItem {
 @Component({
   selector: 'app-navbar-vendedor',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, MaquetaComponent, GestionStockComponent],
+  imports: [CommonModule, DashboardComponent, MaquetaComponent, GestionStockComponent, MaterialesComponent],
   templateUrl: './navbar-vendedor.component.html',
   styleUrl: './navbar-vendedor.component.css',
 })

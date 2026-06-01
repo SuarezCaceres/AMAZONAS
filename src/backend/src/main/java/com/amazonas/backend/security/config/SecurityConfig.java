@@ -35,7 +35,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasAnyAuthority("VENDEDOR", "ADMIN")
+                        .requestMatchers("/api/admin/files/upload").permitAll()
+                        .requestMatchers("/api/admin/purchase-requests/**").permitAll()
                         .requestMatchers("/api/purchase-requests/**").authenticated()
                         .requestMatchers("/api/budgets/**").authenticated()
                         .anyRequest().authenticated())

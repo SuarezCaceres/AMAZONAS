@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Auth } from './pages/auth/auth';
 import { CatalogDetailComponent } from './pages/catalog-detail/catalog-detail.component';
 import { CatalogComponent } from './pages/catalog/catalog.component';
@@ -12,6 +13,7 @@ import { Nosotros } from './pages/nosotros/nosotros';
 import { MyRequestsComponent } from './pages/my-requests/my-requests.component';
 import { RequestFormComponent, RequestMode, SavedRequest, SessionUser } from './pages/request-form/request-form.component';
 import { BuscadorInteligente } from './pages/shared/components/buscador-inteligente/buscador-inteligente';
+import { AuthService } from './services/auth.service';
 
 type PageView = 'inicio' | 'nosotros' |'catalog' | 'detail' | 'auth' | 'request' | 'requests'|'vendedor';
 type AuthView = 'login' | 'register';
@@ -36,18 +38,46 @@ type AuthView = 'login' | 'register';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   
-  page: PageView = 'vendedor';
+  private readonly authService = inject(AuthService);
+  private userSub?: Subscription;
+
+  page: PageView = 'inicio';
   previousPage: PageView = 'inicio';
 
   selectedModel: ModelItem = MODELS[0];
 
   accessNotice = '';
   authView: AuthView = 'login';
-   currentUser: SessionUser | null = this.getSavedUser();
-   requestMode: RequestMode = 'personalizar';
+  currentUser: SessionUser | null = null;
+  requestMode: RequestMode = 'personalizar';
   isStandaloneRequest = false;
+
+  ngOnInit(): void {
+    this.userSub = this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.currentUser = {
+          name: user.nombre || user.email,
+          email: user.email
+        };
+      } else {
+        this.currentUser = null;
+      }
+    });
+
+    // Si ya hay sesión activa, redirigir según el rol
+    if (this.authService.isLoggedIn()) {
+      const role = this.authService.getUserRole();
+      if (role === 'ADMIN') {
+        this.page = 'vendedor';
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.userSub?.unsubscribe();
+  }
 
   showCatalog(): void {
     this.page = 'catalog';
@@ -146,16 +176,23 @@ openStandaloneRequest(): void {
     this.accessNotice = '';
   }
 
-    completeLogin(user: SessionUser): void {
+  completeLogin(user: SessionUser & { role?: string }): void {
     this.currentUser = {
       name: user.name,
       email: user.email
     };
 
-    localStorage.setItem('maquetasCurrentUser', JSON.stringify(this.currentUser));
     this.accessNotice = '';
-    this.showCatalog();
+
+    // Redirigir según el rol
+    const role = user.role || this.authService.getUserRole();
+    if (role === 'ADMIN') {
+      this.page = 'vendedor';
+    } else {
+      this.showCatalog();
+    }
   }
+
   openRequest(mode: RequestMode): void {
     this.requestMode = mode;
     this.page = 'request';
@@ -181,14 +218,9 @@ openStandaloneRequest(): void {
   }
 
   logout(): void {
+    this.authService.logout();
     this.currentUser = null;
-    localStorage.removeItem('maquetasCurrentUser');
     this.showCatalog();
-  }
-
-  private getSavedUser(): SessionUser | null {
-    const saved = localStorage.getItem('maquetasCurrentUser');
-    return saved ? JSON.parse(saved) : null;
   }
   
   showVendedor(): void {

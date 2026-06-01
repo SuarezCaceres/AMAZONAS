@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public ProductResponse getProductById(UUID id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         ProductResponse response = mapToResponseDetail(product);
@@ -280,6 +280,8 @@ public class ProductServiceImpl implements ProductService {
                         detail.setCantidadSugerida(pm.getCantidadSugerida());
                         detail.setEsOpcional(pm.getEsOpcional());
                         detail.setNotas(pm.getNotas());
+                        detail.setProveedor(m.getProveedor());
+                        detail.setStockActual(m.getStockActual());
                         if (m.getCategoria() != null) {
                             detail.setCategoriaMaterial(m.getCategoria().getNombre());
                         }

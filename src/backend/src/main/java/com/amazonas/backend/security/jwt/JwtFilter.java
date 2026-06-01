@@ -42,31 +42,37 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         jwtToken = authHeader.substring(7);
-        userEmail = jwtService.extractUsername(jwtToken);
+        try {
+            userEmail = jwtService.extractUsername(jwtToken);
+            
+            boolean isAnonymousOrNull = SecurityContextHolder.getContext().getAuthentication() == null || 
+                                        SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken;
 
-       
-        boolean isAnonymousOrNull = SecurityContextHolder.getContext().getAuthentication() == null || 
-                                    SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken;
+            if (userEmail != null && isAnonymousOrNull) {
 
-        if (userEmail != null && isAnonymousOrNull) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+                if (jwtService.isTokenValid(jwtToken, userDetails.getUsername())) {
+                    
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
 
-            if (jwtService.isTokenValid(jwtToken, userDetails.getUsername())) {
-                
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            // Si el token ha expirado, está malformado o tiene firma inválida,
+            // no lanzamos excepción para permitir que los endpoints públicos (permitAll)
+            // sigan funcionando normalmente.
+            // Spring Security rechazará las solicitudes a rutas protegidas por sí solo.
         }
 
         filterChain.doFilter(request, response);

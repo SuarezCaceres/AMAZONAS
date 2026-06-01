@@ -34,6 +34,8 @@ public class ProductResponse {
         private Boolean esOpcional;
         private String notas;
         private String categoriaMaterial;
+        private String proveedor;
+        private Integer stockActual;
 
         public ProductMaterialDetail() {}
 
@@ -99,6 +101,22 @@ public class ProductResponse {
 
         public void setCategoriaMaterial(String categoriaMaterial) {
             this.categoriaMaterial = categoriaMaterial;
+        }
+
+        public String getProveedor() {
+            return proveedor;
+        }
+
+        public void setProveedor(String proveedor) {
+            this.proveedor = proveedor;
+        }
+
+        public Integer getStockActual() {
+            return stockActual;
+        }
+
+        public void setStockActual(Integer stockActual) {
+            this.stockActual = stockActual;
         }
     }
 

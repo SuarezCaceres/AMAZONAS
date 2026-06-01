@@ -1,6 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+﻿import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Output, OnInit, inject } from '@angular/core';
 import { VendedorTab } from '../../navbar-vendedor.component';
+import { MaquetaService } from '../../../../services/maqueta.service';
+import { MaterialService } from '../../../../services/material.service';
+import { PurchaseRequestService } from '../../../../services/purchase-request.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export interface QuickAction {
   id: string;
@@ -28,10 +33,17 @@ export interface StatCard {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
 
   @Output() tabSelected = new EventEmitter<VendedorTab>();
   @Output() goToSite = new EventEmitter<void>();
+
+  private readonly maquetaService = inject(MaquetaService);
+  private readonly materialService = inject(MaterialService);
+  private readonly purchaseRequestService = inject(PurchaseRequestService);
+
+  loading = true;
+  error = false;
 
   statCards: StatCard[] = [
     {
@@ -46,7 +58,7 @@ export class DashboardComponent {
     {
       id: 'productos',
       label: 'Total Productos',
-      value: 12,
+      value: 0,
       description: 'Maquetas en catálogo',
       icon: 'box',
       iconColor: '#3b82f6',
@@ -59,7 +71,7 @@ export class DashboardComponent {
       description: 'Productos con menos de 5 unidades',
       icon: 'alert-circle',
       iconColor: '#f59e0b',
-      descColor: '#00a982',
+      descColor: '#f59e0b',
     },
     {
       id: 'materiales',
@@ -68,7 +80,7 @@ export class DashboardComponent {
       description: 'Materiales para presupuestos',
       icon: 'package',
       iconColor: '#8b5cf6',
-      descColor: '#00a982',
+      descColor: '#8b5cf6',
     },
     {
       id: 'presupuestos',
@@ -77,13 +89,13 @@ export class DashboardComponent {
       description: 'Cotizaciones creadas',
       icon: 'calculator',
       iconColor: '#3b82f6',
-      descColor: '#00a982',
+      descColor: '#3b82f6',
     },
     {
       id: 'ventas',
-      label: 'Ventas del Mes',
-      value: 24,
-      description: '+12% vs mes anterior',
+      label: 'Ventas Realizadas',
+      value: 0,
+      description: 'Solicitudes completadas',
       icon: 'trending-up',
       iconColor: '#f97316',
       descColor: '#f97316',
@@ -141,7 +153,68 @@ export class DashboardComponent {
     },
   ];
 
-  isDemoLoaded = false;
+  ngOnInit(): void {
+    this.loadDashboardData();
+  }
+
+  loadDashboardData(): void {
+    this.loading = true;
+    this.error = false;
+
+    forkJoin({
+      productsPage: this.maquetaService.getProducts(undefined, undefined, 0, 999).pipe(
+        catchError(() => of({ content: [], totalElements: 0 }))
+      ),
+      materials: this.materialService.getAllMaterials().pipe(
+        catchError(() => of([]))
+      ),
+      requests: this.purchaseRequestService.listarTodas().pipe(
+        catchError(() => of([]))
+      )
+    }).subscribe({
+      next: ({ productsPage, materials, requests }) => {
+        const products = productsPage.content || [];
+        
+        // 1. Solicitudes Pendientes
+        const pendientes = requests.filter(r => r.estado === 'PENDIENTE').length;
+        
+        // 2. Total Productos
+        const totalProducts = productsPage.totalElements || products.length;
+        
+        // 3. Stock Bajo (< 5 unidades)
+        const stockBajo = products.filter(p => p.stock < 5).length;
+        
+        // 4. Materiales Registrados
+        const totalMaterials = materials.length;
+        
+        // 5. Presupuestos Guardados (Solicitudes que tienen presupuesto asociado)
+        const presupuestos = requests.filter(r => r.tienePresupuesto).length;
+        
+        // 6. Ventas Realizadas (Solicitudes completadas)
+        const completados = requests.filter(r => r.estado === 'COMPLETADO').length;
+
+        // Actualizar los valores en statCards
+        this.statCards = this.statCards.map(card => {
+          let val = 0;
+          switch (card.id) {
+            case 'solicitudes': val = pendientes; break;
+            case 'productos': val = totalProducts; break;
+            case 'stock': val = stockBajo; break;
+            case 'materiales': val = totalMaterials; break;
+            case 'presupuestos': val = presupuestos; break;
+            case 'ventas': val = completados; break;
+          }
+          return { ...card, value: val };
+        });
+
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.error = true;
+      }
+    });
+  }
 
   handleQuickAction(action: QuickAction): void {
     if (action.tab) {
@@ -149,21 +222,5 @@ export class DashboardComponent {
     } else {
       this.goToSite.emit();
     }
-  }
-
-  loadDemo(): void {
-    this.isDemoLoaded = true;
-    this.statCards = this.statCards.map((card, i) => ({
-      ...card,
-      value: [3, 12, 2, 5, 4, 24][i],
-    }));
-  }
-
-  clearDemo(): void {
-    this.isDemoLoaded = false;
-    this.statCards = this.statCards.map((card, i) => ({
-      ...card,
-      value: [0, 0, 0, 0, 0, 0][i],
-    }));
   }
 }
