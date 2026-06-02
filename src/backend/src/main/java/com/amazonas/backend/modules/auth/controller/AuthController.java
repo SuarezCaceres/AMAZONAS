@@ -12,8 +12,6 @@ import com.amazonas.backend.modules.auth.dto.AuthResponse;
 import com.amazonas.backend.modules.auth.dto.LoginRequest;
 import com.amazonas.backend.modules.auth.dto.LoginVendorRequest;
 import com.amazonas.backend.modules.auth.dto.RegisterRequest;
-import com.amazonas.backend.modules.auth.dto.ForgotPasswordRequest;
-import com.amazonas.backend.modules.auth.dto.ResetPasswordRequest;
 import com.amazonas.backend.modules.auth.service.AuthService;
 import com.amazonas.backend.modules.vendors.model.Vendor;
 
@@ -49,17 +47,5 @@ public class AuthController {
     @GetMapping("/vendor/me")
     public ResponseEntity<Vendor> getVendorMe(@RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(authService.getRemoteVendor(token));
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-        authService.forgotPassword(request);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request);
-        return ResponseEntity.ok().build();
     }
 }

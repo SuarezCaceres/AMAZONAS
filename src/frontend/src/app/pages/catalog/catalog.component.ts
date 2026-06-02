@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CATEGORIES, Category, ModelItem } from '../data/model';
 import { MaquetaService } from '../../services/maqueta.service';
@@ -32,14 +32,12 @@ export function mapProductToModelItem(product: Product): ModelItem {
     imageUrl: product.imageUrl || 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(product.titulo),
     description: product.descripcion || '',
     materials: product.materiales || [],
-    features: (product.caracteristicas && product.caracteristicas.length > 0)
-      ? product.caracteristicas
-      : [
-        'Elaborado con materiales sostenibles',
-        product.materialesReciclables ? 'Contiene materiales reciclables' : 'Diseno educativo y didactico',
-        'Durabilidad garantizada',
-        'Hecho a mano con atencion al detalle'
-      ],
+    features: [
+      'Elaborado con materiales sostenibles',
+      product.materialesReciclables ? 'Contiene materiales reciclables' : 'Diseno educativo y didactico',
+      'Durabilidad garantizada',
+      'Stock disponible: ' + product.stock
+    ],
     rawProduct: product
   };
 }
@@ -56,32 +54,15 @@ export class CatalogComponent implements OnInit {
 
   private readonly maquetaService = inject(MaquetaService);
 
-  private _preselectedCategory = '';
-
-  @Input() set preselectedCategory(value: string) {
-    this._preselectedCategory = value || '';
-    if (this._preselectedCategory) {
-      const found = Object.keys(categoryMap).find(
-        (key) => categoryMap[key as Category].toLowerCase() === this._preselectedCategory.toLowerCase()
-      ) as Category;
-      this.selectedCategory = found || 'Todos';
-    } else {
-      this.selectedCategory = 'Todos';
-    }
-    this.loadProducts();
-  }
-
-  get preselectedCategory(): string {
-    return this._preselectedCategory;
-  }
-
   searchTerm = '';
   selectedCategory: Category = 'Todos';
   categories = CATEGORIES;
   models: ModelItem[] = [];
   isLoading = false;
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadProducts();
+  }
 
   loadProducts(): void {
     this.isLoading = true;

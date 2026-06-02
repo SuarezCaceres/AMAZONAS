@@ -53,12 +53,6 @@ public class Vendor implements UserDetails {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Column(name = "failed_login_attempts", nullable = false)
-    private Integer failedLoginAttempts = 0;
-
-    @Column(name = "lock_until")
-    private LocalDateTime lockUntil;
-
     // =========================
     // JPA HOOKS
     // =========================
@@ -132,22 +126,6 @@ public class Vendor implements UserDetails {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
-    }
-
-    public Integer getFailedLoginAttempts() {
-        return failedLoginAttempts;
-    }
-
-    public void setFailedLoginAttempts(Integer failedLoginAttempts) {
-        this.failedLoginAttempts = failedLoginAttempts;
-    }
-
-    public LocalDateTime getLockUntil() {
-        return lockUntil;
-    }
-
-    public void setLockUntil(LocalDateTime lockUntil) {
-        this.lockUntil = lockUntil;
     }
 
     // =========================

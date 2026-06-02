@@ -17,7 +17,6 @@ public class ProductResponse {
     private List<ProductMaterialDetail> materialesDetalle;
     private String gradoEscolar;
     private List<String> ocasion;
-    private List<String> caracteristicas;
     private Boolean materialesReciclables;
     private Integer stock;
     private List<RelatedProduct> relacionados;
@@ -253,14 +252,6 @@ public class ProductResponse {
 
     public void setOcasion(List<String> ocasion) {
         this.ocasion = ocasion;
-    }
-
-    public List<String> getCaracteristicas() {
-        return caracteristicas;
-    }
-
-    public void setCaracteristicas(List<String> caracteristicas) {
-        this.caracteristicas = caracteristicas;
     }
 
     public Boolean getMaterialesReciclables() {

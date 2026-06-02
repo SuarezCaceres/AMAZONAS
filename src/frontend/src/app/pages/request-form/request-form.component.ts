@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs';
 import { ModelItem } from '../data/model';
 import { PurchaseRequestService } from '../../services/purchase-request.service';
 import { PurchaseRequestRequest } from '../../models/purchase-request.model';
@@ -51,8 +50,6 @@ export class RequestFormComponent {
 
   @Output() changedMode = new EventEmitter<RequestMode>();
   @Output() submitted = new EventEmitter<SavedRequest>();
-
-  loading = false;
 
   materialOptions = [
     'Carton reciclado',
@@ -122,7 +119,6 @@ export class RequestFormComponent {
   selectedMaterials: string[] = [];
   selectedExtras: string[] = [];
   successMessage = '';
-  errorMessage = '';
 
   ngOnChanges(): void {
 
@@ -274,12 +270,7 @@ export class RequestFormComponent {
       });
     }
 
-    this.successMessage = '';
-    this.errorMessage = '';
-    this.loading = true;
-    this.requestService.crear(reqBody).pipe(
-      finalize(() => this.loading = false)
-    ).subscribe({
+    this.requestService.crear(reqBody).subscribe({
       next: (response) => {
         console.log('Solicitud creada en backend con éxito', response);
         const saved = this.getSavedRequests();
@@ -293,24 +284,13 @@ export class RequestFormComponent {
       },
       error: (err) => {
         console.error('Error al crear solicitud en el backend', err);
-        if (err?.status === 409) {
-          this.errorMessage = 'Ya has enviado una solicitud para este producto recientemente. Por favor, espera 1 minuto.';
-        } else if (err?.status === 400) {
-          this.errorMessage = err?.error?.message || 'Error de validación en los datos de la solicitud.';
-        } else if (err?.status === 401 || err?.status === 403) {
-          this.errorMessage = 'No tienes autorización. Por favor, inicia sesión de nuevo.';
-        } else if (err?.status === 0) {
-          // Servidor caído: permitimos guardar de forma local temporal
-          const saved = this.getSavedRequests();
-          localStorage.setItem(
-            'maquetasRequests',
-            JSON.stringify([request, ...saved])
-          );
-          this.successMessage = 'El servidor no responde. Solicitud guardada localmente de forma temporal.';
-          this.submitted.emit(request);
-        } else {
-          this.errorMessage = err?.error?.message || err?.error || 'Error al procesar la solicitud. Intenta nuevamente.';
-        }
+        const saved = this.getSavedRequests();
+        localStorage.setItem(
+          'maquetasRequests',
+          JSON.stringify([request, ...saved])
+        );
+        this.successMessage = 'Solicitud enviada (modo local temporal).';
+        this.submitted.emit(request);
       }
     });
   }

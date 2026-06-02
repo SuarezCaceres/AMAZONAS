@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests' | 'categories' | 'vendedor' | 'reset-password';
+type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests';
 
 @Component({
   selector: 'app-header',
@@ -10,7 +10,7 @@ type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent {
 
   @Input() activePage: PageView = 'inicio';
   @Input() userName = '';
@@ -22,11 +22,8 @@ export class HeaderComponent implements OnInit {
   @Output() loginClicked = new EventEmitter<void>();
   @Output() registerClicked = new EventEmitter<void>();
   @Output() logoutClicked = new EventEmitter<void>();
-  @Output() categoriesClicked = new EventEmitter<void>();
 
   menuOpen = false;
-
-  ngOnInit(): void {}
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;

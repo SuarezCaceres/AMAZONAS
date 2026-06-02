@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, inject, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Subject, of } from 'rxjs';
+import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 
 import { ModelItem } from '../../../data/model';
@@ -50,16 +50,7 @@ export class BuscadorInteligente implements OnInit, OnDestroy {
         this.categoriasFiltradas = [];
         this.cargando = false;
         this.intentResponse = null;
-        return of({
-          content: [],
-          totalElements: 0,
-          totalPages: 0,
-          size: 0,
-          number: 0,
-          first: true,
-          last: true,
-          empty: true
-        });
+        return [];
       }
       this.cargando = true;
 
@@ -169,33 +160,15 @@ export class BuscadorInteligente implements OnInit, OnDestroy {
   }
 
   private mapearProducto(p: Product): ModelItem {
-    let mappedCategory: any = 'Educativo';
-    const rawCat = (p.categoriaId || p.categoriaNombre || '').toLowerCase();
-    if (rawCat.includes('cien')) {
-      mappedCategory = 'Ciencia';
-    } else if (rawCat.includes('arq')) {
-      mappedCategory = 'Arquitectura';
-    } else if (rawCat.includes('incl')) {
-      mappedCategory = 'Inclusivo';
-    }
-
     return {
       id: p.id,
       title: p.titulo,
-      category: mappedCategory,
-      level: p.gradoEscolar || 'Escolar',
-      imageUrl: p.imageUrl || 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(p.titulo),
-      description: p.descripcion || '',
-      materials: p.materiales || [],
-      features: (p.caracteristicas && p.caracteristicas.length > 0)
-        ? p.caracteristicas
-        : [
-            'Elaborado con materiales sostenibles',
-            p.materialesReciclables ? 'Contiene materiales reciclables' : 'Diseno educativo y didactico',
-            'Durabilidad garantizada',
-            'Hecho a mano con atencion al detalle'
-          ],
-      rawProduct: p
+      category: (p.categoriaNombre ?? 'Ciencia') as any,
+      level: p.gradoEscolar ?? '',
+      imageUrl: p.imageUrl ?? '',
+      description: p.descripcion ?? '',
+      materials: p.materiales ?? [],
+      features: []
     };
   }
 

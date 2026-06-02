@@ -1,5 +1,9 @@
--- ============================================================================
+﻿-- ============================================================================
 -- BASE DE DATOS COMPLETA - SISTEMA MAQUETAS EDUCATIVAS AMAZONAS
+-- Estructura nueva con Opción A (Tablas Separadas) ya incorporada
+-- PostgreSQL 15+ / Neon
+--
+-- ¡EJECUTAR TODO DE UNA VEZ EN EL SQL EDITOR DE NEON!
 -- ============================================================================
 
 
@@ -942,6 +946,5 @@ INSERT INTO users (nombre, email, password, telefono, role) VALUES
     'ADMIN'
 )
 ON CONFLICT (email) DO NOTHING;
-
 
 
