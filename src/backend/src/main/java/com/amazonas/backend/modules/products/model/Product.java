@@ -53,6 +53,10 @@ public class Product {
     @Column(name = "ocasion", columnDefinition = "text[]")
     private List<String> ocasion;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.ARRAY)
+    @Column(name = "caracteristicas", columnDefinition = "text[]")
+    private List<String> caracteristicas;
+
     @Column(name = "materiales_reciclables")
     private Boolean materialesReciclables = false;
 
@@ -161,6 +165,14 @@ public class Product {
 
     public void setOcasion(List<String> ocasion) {
         this.ocasion = ocasion;
+    }
+
+    public List<String> getCaracteristicas() {
+        return caracteristicas;
+    }
+
+    public void setCaracteristicas(List<String> caracteristicas) {
+        this.caracteristicas = caracteristicas;
     }
 
     public Boolean getMaterialesReciclables() {

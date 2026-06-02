@@ -1,5 +1,6 @@
 package com.amazonas.backend.modules.requests.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +19,15 @@ import com.amazonas.backend.modules.users.model.User;
 public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest, UUID> {
 
     List<PurchaseRequest> findByUsuarioIdOrderByCreatedAtDesc(UUID usuarioId);
+
+    @Query("SELECT COUNT(pr) > 0 FROM PurchaseRequest pr WHERE pr.usuario.id = :usuarioId " +
+           "AND pr.productoNombre = :productoNombre " +
+           "AND pr.createdAt >= :since")
+    boolean existsDuplicateRequest(
+            @Param("usuarioId") UUID usuarioId,
+            @Param("productoNombre") String productoNombre,
+            @Param("since") LocalDateTime since
+    );
 
     @Query("SELECT pr FROM PurchaseRequest pr WHERE " +
            "(:estado IS NULL OR pr.estado = :estado) AND " +

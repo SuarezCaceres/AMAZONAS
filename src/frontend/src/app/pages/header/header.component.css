@@ -45,15 +45,16 @@
 
 .brand-copy strong,
 .brand-copy small {
- display: block;
+  display: block;
 }
+
 .brand-copy strong {
   font-size: 14px;
   line-height: 1.1;
 }
 
 .brand-copy small {
-   margin-top: 3px;
+  margin-top: 3px;
   color: #64748b;
   font-size: 10px;
 }
@@ -98,9 +99,11 @@
   font-weight: 800;
   cursor: pointer;
 }
+
 .logged-actions {
   gap: 14px;
 }
+
 .user-chip {
   color: #263241;
   font-size: 12px;
@@ -133,7 +136,7 @@
 .menu-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   z-index: 90;
 }
 
@@ -166,7 +169,7 @@
     gap: 14px;
     padding: 16px 20px;
 
-    box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
     border-bottom: 1px solid #e6eaee;
 
     transform: translateY(-10px);
@@ -200,58 +203,59 @@
   }
 
   .auth-actions {
-   padding-left: 0;
+    padding-left: 0;
     border-left: 0;
   }
 
   .auth-actions button {
-  height: 28px;
-  border-radius: 7px;
-  padding: 0 13px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 800;
+    height: 28px;
+    border-radius: 7px;
+    padding: 0 13px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
   }
 
 
   .main-nav {
-   position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  background: #fff;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px 20px;
-  box-shadow: 0 12px 25px rgba(0,0,0,0.08);
-  border-bottom: 1px solid #e6eaee;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: #fff;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 20px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid #e6eaee;
 
-  transform: translateY(-10px);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: 0.25s ease;
-  z-index: 100;
-}
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: 0.25s ease;
+    z-index: 100;
+  }
 
-.auth-actions {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  margin-top: 220px; /* ajusta según la cantidad de opciones */
-  background: #fff;
-  flex-direction: column;
-  gap: 14px;
-  padding: 0 20px 16px;
-  border-bottom: 1px solid #e6eaee;
+  .auth-actions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 220px;
+    /* ajusta según la cantidad de opciones */
+    background: #fff;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 20px 16px;
+    border-bottom: 1px solid #e6eaee;
 
-  transform: translateY(-10px);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: 0.25s ease;
-  z-index: 100;
-}
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: 0.25s ease;
+    z-index: 100;
+  }
 
 }

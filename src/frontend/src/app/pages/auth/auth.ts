@@ -35,6 +35,7 @@ export class Auth implements OnChanges {
   successMessage = '';
   errorMessage = '';
   isLoading = false;
+  isVendor = false;
 
   login = {
     name: '',
@@ -88,6 +89,23 @@ export class Auth implements OnChanges {
       return;
     }
 
+    const email = this.login.email.trim().toLowerCase();
+    const emailKey = `lock_until_${email}`;
+    const attemptsKey = `failed_attempts_${email}`;
+    
+    const localLockUntil = localStorage.getItem(emailKey);
+    if (localLockUntil) {
+      const lockTime = parseInt(localLockUntil, 10);
+      if (Date.now() < lockTime) {
+        const minutesLeft = Math.ceil((lockTime - Date.now()) / (60 * 1000));
+        this.errorMessage = `La cuenta está bloqueada temporalmente por exceso de intentos. Inténtalo de nuevo en ${minutesLeft} minutos.`;
+        return;
+      } else {
+        localStorage.removeItem(emailKey);
+        localStorage.setItem(attemptsKey, '0');
+      }
+    }
+
     this.isLoading = true;
 
     const request = {
@@ -95,9 +113,16 @@ export class Auth implements OnChanges {
       password: this.login.password
     };
 
-    this.authService.loginAuto(request).subscribe({
+    const requestObservable = this.isVendor
+      ? this.authService.vendorLogin({ email: request.email, password: request.password })
+      : this.authService.loginAuto(request);
+
+    requestObservable.subscribe({
       next: (response: AuthResponse) => {
         this.isLoading = false;
+        localStorage.removeItem(emailKey);
+        localStorage.removeItem(attemptsKey);
+
         this.successMessage = `Bienvenido, ${response.nombre || response.email}.`;
         this.authenticated.emit({
           name: response.nombre || response.email,
@@ -108,7 +133,22 @@ export class Auth implements OnChanges {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || err?.error || 'Correo o contraseña incorrectos.';
+
+        let attempts = parseInt(localStorage.getItem(attemptsKey) || '0', 10);
+        attempts++;
+        localStorage.setItem(attemptsKey, attempts.toString());
+
+        if (attempts >= 3) {
+          const lockTime = Date.now() + 15 * 60 * 1000; // 15 minutos
+          localStorage.setItem(emailKey, lockTime.toString());
+          this.errorMessage = 'La cuenta está bloqueada temporalmente por exceso de intentos (15 min).';
+        } else {
+          if (err?.status === 423) {
+            this.errorMessage = err?.error?.message || err?.error || 'La cuenta está bloqueada temporalmente por exceso de intentos (15 min).';
+          } else {
+            this.errorMessage = err?.error?.message || err?.error || 'Correo o contraseña incorrectos.';
+          }
+        }
       }
     });
   }
@@ -147,7 +187,11 @@ export class Auth implements OnChanges {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || err?.error || 'Error al crear la cuenta. Intenta de nuevo.';
+        if (err?.status === 409) {
+          this.errorMessage = 'El correo ya se encuentra registrado';
+        } else {
+          this.errorMessage = err?.error?.message || err?.error || 'Error al crear la cuenta. Intenta de nuevo.';
+        }
       }
     });
   }
@@ -155,16 +199,27 @@ export class Auth implements OnChanges {
   sendRecovery(): void {
     this.clearMessages();
 
-    if (!this.login.email.trim()) {
+    const email = this.login.email.trim();
+    if (!email) {
       this.errorMessage = 'Escribe tu correo electrónico para recuperar tu cuenta.';
       return;
     }
 
-    this.recoverySent = true;
-    this.successMessage = 'Se envió un enlace de recuperación (simulado).';
+    this.isLoading = true;
+    this.authService.forgotPassword(email).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.recoverySent = true;
+        this.successMessage = 'Se envió un enlace de recuperación a tu correo electrónico.';
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err?.error?.message || err?.error || 'No se pudo enviar el correo de recuperación. Verifica el correo e intenta de nuevo.';
+      }
+    });
   }
 
-  private clearMessages(): void {
+  clearMessages(): void {
     this.recoverySent = false;
     this.successMessage = '';
     this.errorMessage = '';

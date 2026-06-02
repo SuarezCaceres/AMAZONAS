@@ -943,5 +943,7 @@ INSERT INTO users (nombre, email, password, telefono, role) VALUES
 )
 ON CONFLICT (email) DO NOTHING;
 
-
-
+-- ============================================================================
+-- ADICION DE COLUMNA DE CARACTERISTICAS PARA PRODUCTOS
+-- ============================================================================
+ALTER TABLE products ADD COLUMN IF NOT EXISTS caracteristicas TEXT[];

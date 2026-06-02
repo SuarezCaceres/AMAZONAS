@@ -3,23 +3,21 @@
     <div class="hero-copy">
       <span class="eyebrow">Maquetas escolares a pedido</span>
       <h1>Busca maquetas listas para aprender, exponer y presentar mejor.</h1>
-      <p>Explora modelos educativos por categoria, revisa sus materiales y elige si quieres comprarla lista o personalizarla.</p>
+      <p>Explora modelos educativos por categoria, revisa sus materiales y elige si quieres comprarla lista o
+        personalizarla.</p>
     </div>
 
     <div class="search-panel">
       <label for="catalogSearch">Buscar maquetas</label>
       <div class="search-box">
         <span aria-hidden="true">⌕</span>
-        <input id="catalogSearch" type="search" placeholder="Sistema solar, casa ecologica, braille..." [(ngModel)]="searchTerm">
+        <input id="catalogSearch" type="search" placeholder="Sistema solar, casa ecologica, braille..."
+          [(ngModel)]="searchTerm">
       </div>
 
       <div class="category-list" aria-label="Categorias">
-        <button
-          *ngFor="let category of categories"
-          type="button"
-          [class.selected]="selectedCategory === category"
-          (click)="selectCategory(category)"
-        >
+        <button *ngFor="let category of categories" type="button" [class.selected]="selectedCategory === category"
+          (click)="selectCategory(category)">
           {{ category }}
         </button>
       </div>

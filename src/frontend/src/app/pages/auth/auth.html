@@ -23,6 +23,26 @@
         <h2>Iniciar Sesi&oacute;n</h2>
         <p class="subtitle">Ingresa a tu cuenta para continuar</p>
 
+        <div class="login-type-toggle">
+          <button
+            type="button"
+            class="toggle-option"
+            [class.active]="!isVendor"
+            (click)="isVendor = false; clearMessages()">
+            <span class="icon">&#128100;</span>
+            <span class="label">Cliente</span>
+          </button>
+          <button
+            type="button"
+            class="toggle-option"
+            [class.active]="isVendor"
+            (click)="isVendor = true; clearMessages()">
+            <span class="icon">&#128188;</span>
+            <span class="label">Vendedor</span>
+          </button>
+          <div class="slider-background" [class.slide-right]="isVendor"></div>
+        </div>
+
         <form (ngSubmit)="submitLogin()" #loginForm="ngForm">
           <label for="loginEmail">Correo electr&oacute;nico</label>
           <div class="input-wrap">
@@ -54,7 +74,7 @@
           <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
           <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-          <button class="link-button forgot-link" type="button" (click)="sendRecovery()">&iquest;Olvidaste tu contrase&ntilde;a?</button>
+          <button *ngIf="!isVendor" class="link-button forgot-link" type="button" (click)="sendRecovery()">&iquest;Olvidaste tu contrase&ntilde;a?</button>
 
           <button class="primary-button" type="submit" [disabled]="isLoading">
             <span *ngIf="!isLoading">Ingresar</span>
@@ -62,7 +82,7 @@
           </button>
         </form>
 
-        <p class="switch-copy">&iquest;No tienes cuenta? <button type="button" class="link-button" (click)="switchToRegister()">Reg&iacute;strate aqu&iacute;</button></p>
+        <p *ngIf="!isVendor" class="switch-copy">&iquest;No tienes cuenta? <button type="button" class="link-button" (click)="switchToRegister()">Reg&iacute;strate aqu&iacute;</button></p>
       </ng-container>
 
       <ng-template #registerTemplate>

@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ComboboxInputComponent } from './combobox-input/combobox-input.component';
@@ -48,6 +48,7 @@ export interface NuevaMaquetaForm {
   ocasion: string;
   gradoEscolar: string;
   descripcion: string;
+  caracteristicas: string;
   maquetaSeleccionada: string;
   materiales: MaquetaMaterialItem[];
   stock: number;
@@ -170,6 +171,7 @@ export class MaquetaComponent implements OnInit {
     ocasion: '',
     gradoEscolar: '',
     descripcion: '',
+    caracteristicas: '',
     maquetaSeleccionada: '',
     materiales: [],
     stock: 10,
@@ -320,6 +322,7 @@ export class MaquetaComponent implements OnInit {
       this.form.ocasion = '';
       this.form.gradoEscolar = '';
       this.form.descripcion = '';
+      this.form.caracteristicas = '';
       this.form.stock = 10;
       this.form.materialesReciclables = false;
       this.form.materiales = [];
@@ -336,6 +339,9 @@ export class MaquetaComponent implements OnInit {
         this.form.ocasion = product.ocasion && product.ocasion.length > 0 ? product.ocasion[0] : '';
         this.form.gradoEscolar = product.gradoEscolar || '';
         this.form.descripcion = product.descripcion || '';
+        this.form.caracteristicas = (product.caracteristicas && product.caracteristicas.length > 0)
+          ? product.caracteristicas.join('\n')
+          : '';
         this.form.stock = product.stock || 0;
         this.form.materialesReciclables = product.materialesReciclables || false;
 
@@ -457,6 +463,7 @@ export class MaquetaComponent implements OnInit {
       ocasion: '',
       gradoEscolar: '',
       descripcion: '',
+      caracteristicas: '',
       maquetaSeleccionada: '',
       materiales: [],
       stock: 10,
@@ -513,6 +520,9 @@ export class MaquetaComponent implements OnInit {
       materiales: materialesRequest,
       gradoEscolar: this.form.gradoEscolar,
       ocasion: this.form.ocasion ? [this.form.ocasion] : [],
+      caracteristicas: this.form.caracteristicas
+        ? this.form.caracteristicas.split('\n').map((c: string) => c.trim()).filter((c: string) => c.length > 0)
+        : [],
       materialesReciclables: this.form.materialesReciclables,
       stock: this.form.stock || 0
     };

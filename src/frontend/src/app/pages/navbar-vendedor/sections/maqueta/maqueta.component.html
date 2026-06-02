@@ -1,4 +1,4 @@
-﻿<div class="maqueta-wrapper">
+<div class="maqueta-wrapper">
 
   @if (loading) {
     <div class="loader-overlay">
@@ -209,6 +209,20 @@
               rows="3"
               [(ngModel)]="form.descripcion">
             </textarea>
+          </div>
+
+          <!-- Row 5: Características -->
+          <div class="form-field">
+            <label class="field-label">Características de la Maqueta (opcional)</label>
+            <textarea
+              class="field-textarea"
+              placeholder="Escribe una característica por línea, por ejemplo:&#10;Elaborado con materiales sostenibles&#10;Diseño educativo y didáctico&#10;Durabilidad garantizada"
+              rows="4"
+              [(ngModel)]="form.caracteristicas">
+            </textarea>
+            <p class="field-hint" style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">
+              Escribe una característica por línea. Se mostrarán en el catálogo público.
+            </p>
           </div>
 
         </div>

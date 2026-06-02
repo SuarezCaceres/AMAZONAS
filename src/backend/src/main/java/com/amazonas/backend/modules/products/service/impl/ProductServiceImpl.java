@@ -129,6 +129,17 @@ public class ProductServiceImpl implements ProductService {
             product.setOcasion(null);
         }
 
+        // Caracteristicas normalizacion
+        if (request.getCaracteristicas() != null) {
+            List<String> normalizedCaracteristicas = request.getCaracteristicas().stream()
+                    .filter(c -> c != null && !c.trim().isEmpty())
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+            product.setCaracteristicas(normalizedCaracteristicas.isEmpty() ? null : normalizedCaracteristicas);
+        } else {
+            product.setCaracteristicas(null);
+        }
+
         product.setMaterialesReciclables(
                 request.getMaterialesReciclables() != null && request.getMaterialesReciclables());
         product.setStock(request.getStock());
@@ -244,6 +255,7 @@ public class ProductServiceImpl implements ProductService {
         response.setGradoEscolar(product.getGradoEscolar());
         response.setMaterialesReciclables(product.getMaterialesReciclables());
         response.setOcasion(product.getOcasion());
+        response.setCaracteristicas(product.getCaracteristicas());
         if (product.getCategoria() != null) {
             response.setCategoriaId(product.getCategoria().getId());
             response.setCategoriaNombre(product.getCategoria().getNombre());

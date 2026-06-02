@@ -4,6 +4,8 @@ import com.amazonas.backend.modules.auth.dto.AuthResponse;
 import com.amazonas.backend.modules.auth.dto.LoginRequest;
 import com.amazonas.backend.modules.auth.dto.LoginVendorRequest;
 import com.amazonas.backend.modules.auth.dto.RegisterRequest;
+import com.amazonas.backend.modules.auth.dto.ForgotPasswordRequest;
+import com.amazonas.backend.modules.auth.dto.ResetPasswordRequest;
 import com.amazonas.backend.modules.vendors.model.Vendor;
 
 public interface AuthService {
@@ -12,4 +14,6 @@ public interface AuthService {
     AuthResponse login(LoginRequest request);
     AuthResponse vendorLogin(LoginVendorRequest request);
     Vendor getRemoteVendor(String token);
+    void forgotPassword(ForgotPasswordRequest request);
+    void resetPassword(ResetPasswordRequest request);
 }

@@ -18,6 +18,12 @@
   grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.14fr);
   gap: clamp(24px, 4vw, 48px);
   align-items: start;
+  transition: opacity 200ms ease;
+}
+
+.detail-layout.loading-fade {
+  opacity: 0.7;
+  pointer-events: none;
 }
 
 .detail-media {

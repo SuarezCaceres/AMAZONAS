@@ -1,11 +1,7 @@
 <header class="site-header">
 
   <!-- BRAND -->
-  <button
-    class="brand"
-    type="button"
-    (click)="catalogClicked.emit(); closeMenu()"
-    aria-label="Ir al inicio">
+  <button class="brand" type="button" (click)="catalogClicked.emit(); closeMenu()" aria-label="Ir al inicio">
 
     <span class="brand-mark">MA</span>
 
@@ -17,60 +13,43 @@
   </button>
 
   <!-- HAMBURGUESA -->
-  <button
-    class="hamburger"
-    type="button"
-    (click)="toggleMenu()">
+  <button class="hamburger" type="button" (click)="toggleMenu()">
 
     ☰
   </button>
 
   <!-- NAV -->
-  <nav
-    class="main-nav"
-    [class.open]="menuOpen"
-    aria-label="Navegacion principal">
+  <nav class="main-nav" [class.open]="menuOpen" aria-label="Navegacion principal">
 
     <!-- INICIO -->
-    <button
-      type="button"
-      [class.active]="activePage === 'inicio'"
-      (click)="inicioClicked.emit(); closeMenu()">
+    <button type="button" [class.active]="activePage === 'inicio'" (click)="inicioClicked.emit(); closeMenu()">
 
       Inicio
     </button>
 
     <!-- NOSOTROS -->
-    <button
-      type="button"
-      [class.active]="activePage === 'nosotros'"
-      (click)="nosotrosClicked.emit(); closeMenu()">
+    <button type="button" [class.active]="activePage === 'nosotros'" (click)="nosotrosClicked.emit(); closeMenu()">
 
       Nosotros
-    </button>
-
-    <!-- CATALOGO -->
-    <button
-      type="button"
-      [class.active]="activePage === 'catalog' || activePage === 'detail'"
-      (click)="catalogClicked.emit(); closeMenu()">
-
-      Catálogo
     </button>
 
     <!-- CATEGORIAS -->
     <button
       type="button"
-      (click)="closeMenu()">
-
+      [class.active]="activePage === 'categories'"
+      (click)="categoriesClicked.emit(); closeMenu()">
       Categorías
     </button>
 
+    <!-- CATALOGO -->
+    <button type="button" [class.active]="activePage === 'catalog' || activePage === 'detail'"
+      (click)="catalogClicked.emit(); closeMenu()">
+
+      Catálogo
+    </button>
+
     <!-- MIS SOLICITUDES -->
-    <button
-      type="button"
-      *ngIf="isLoggedIn"
-      [class.active]="activePage === 'requests'"
+    <button type="button" *ngIf="isLoggedIn" [class.active]="activePage === 'requests'"
       (click)="requestsClicked.emit(); closeMenu()">
 
       Mis Solicitudes
@@ -79,23 +58,14 @@
   </nav>
 
   <!-- AUTH INVITADO -->
-  <div
-    class="auth-actions"
-    [class.open]="menuOpen"
-    *ngIf="!isLoggedIn; else loggedActions">
+  <div class="auth-actions" [class.open]="menuOpen" *ngIf="!isLoggedIn; else loggedActions">
 
-    <button
-      class="login-button"
-      type="button"
-      (click)="loginClicked.emit(); closeMenu()">
+    <button class="login-button" type="button" (click)="loginClicked.emit(); closeMenu()">
 
       Iniciar Sesión
     </button>
 
-    <button
-      class="register-button"
-      type="button"
-      (click)="registerClicked.emit(); closeMenu()">
+    <button class="register-button" type="button" (click)="registerClicked.emit(); closeMenu()">
 
       Registrarse
     </button>
@@ -105,21 +75,14 @@
   <!-- AUTH USUARIO LOGUEADO -->
   <ng-template #loggedActions>
 
-    <div
-      class="auth-actions logged-actions"
-      [class.open]="menuOpen">
+    <div class="auth-actions logged-actions" [class.open]="menuOpen">
 
-      <span
-        class="user-chip"
-        aria-label="Usuario conectado">
+      <span class="user-chip" aria-label="Usuario conectado">
 
         &#128100; {{ userName }}
       </span>
 
-      <button
-        class="login-button"
-        type="button"
-        (click)="logoutClicked.emit(); closeMenu()">
+      <button class="login-button" type="button" (click)="logoutClicked.emit(); closeMenu()">
 
         Salir
       </button>
@@ -131,8 +94,5 @@
 </header>
 
 <!-- BACKDROP -->
-<div
-  class="menu-backdrop"
-  *ngIf="menuOpen"
-  (click)="closeMenu()">
+<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()">
 </div>

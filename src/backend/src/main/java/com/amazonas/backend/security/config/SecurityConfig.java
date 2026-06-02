@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.util.List;
 import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Value;
 import com.amazonas.backend.security.jwt.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,9 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+
+    @Value("${app.frontend-url:http://localhost:4200}")
+    private String frontendUrl;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,8 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/products/classify-intent").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
-                        .requestMatchers("/api/admin/files/upload").permitAll()
-                        .requestMatchers("/api/admin/purchase-requests/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/purchase-requests/**").authenticated()
                         .requestMatchers("/api/budgets/**").authenticated()
                         .anyRequest().authenticated())
@@ -52,10 +55,16 @@ public class SecurityConfig {
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",
-                "http://localhost:5173",
-                "http://localhost:3000"));
+        
+        java.util.Set<String> allowedOrigins = new java.util.LinkedHashSet<>();
+        if (frontendUrl != null && !frontendUrl.isBlank()) {
+            allowedOrigins.add(frontendUrl.trim());
+        }
+        allowedOrigins.add("http://localhost:4200");
+        allowedOrigins.add("http://localhost:5173");
+        allowedOrigins.add("http://localhost:3000");
+
+        configuration.setAllowedOrigins(List.copyOf(allowedOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(
                 List.of("Authorization", "Content-Type", "Cache-Control", "Accept", "Origin", "X-Requested-With"));

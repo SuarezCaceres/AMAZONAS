@@ -58,6 +58,10 @@ export class AuthService {
         },
         error: (err) => {
           console.log('Client login failed, checking fallback. Error:', err);
+          if (err?.status === 423) {
+            subscriber.error(err);
+            return;
+          }
           const errMsg = typeof err?.error === 'string' ? err.error : (err?.error?.message || '');
           const isWrongPassword = errMsg.toLowerCase().includes('contraseña') || errMsg.toLowerCase().includes('password');
           
@@ -169,6 +173,14 @@ export class AuthService {
 
   getUserRole(): string | null {
     return localStorage.getItem('auth_role');
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/reset-password`, { token, newPassword });
   }
 
   /** Decodifica el JWT y verifica si el claim `exp` ya paso. */

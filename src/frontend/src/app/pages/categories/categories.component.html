@@ -1,0 +1,148 @@
+<section class="categories-filter-page">
+  <!-- TITLE & SUBTITLE -->
+  <div class="page-header animate-fade-in">
+    <h1>Categorías y Filtros</h1>
+    <p class="subtitle">Explora nuestras maquetas y filtra por categoría, materiales, ocasión o grado escolar</p>
+  </div>
+
+  <!-- CATEGORY CARDS GRID -->
+  <div class="category-cards-grid animate-fade-in">
+    <div 
+      *ngFor="let cat of categories" 
+      class="category-badge-card" 
+      [class.active]="selectedCategory === cat.id.toLowerCase() || (cat.id.toLowerCase().includes('cien') && selectedCategory === 'ciencia') || (cat.id.toLowerCase().includes('arq') && selectedCategory === 'arquitectura') || (cat.id.toLowerCase().includes('incl') && selectedCategory === 'inclusivo') || (cat.id.toLowerCase().includes('edu') && selectedCategory === 'educativo')"
+      [ngClass]="getMeta(cat.id).bgClass"
+      (click)="toggleCategory(cat.id)"
+      role="button"
+      tabindex="0"
+      (keydown.enter)="toggleCategory(cat.id)">
+      
+      <span class="material-icons card-icon" [ngClass]="getMeta(cat.id).textClass">
+        {{ getMeta(cat.id).icon }}
+      </span>
+      <span class="card-name" [ngClass]="getMeta(cat.id).textClass">
+        {{ cat.nombre }}
+      </span>
+      <span class="card-count">
+        {{ getCategoryCount(cat.id) }} maquetas
+      </span>
+    </div>
+  </div>
+
+  <!-- ADVANCED FILTERS CARD -->
+  <div class="advanced-filters-card animate-fade-in">
+    <h2 class="filter-header">Filtros Avanzados</h2>
+    
+    <div class="filters-grid">
+      <!-- CHECKBOX KIT -->
+      <div class="filter-col checkbox-col">
+        <label class="checkbox-container">
+          <input type="checkbox" [(ngModel)]="selectKitOnly">
+          <span class="custom-checkbox"></span>
+          <span class="checkbox-label-wrapper">
+            <span class="checkbox-title">
+              <span class="material-icons checkbox-icon">inventory_2</span>
+              Seleccionar Kit
+            </span>
+            <span class="checkbox-desc">Compra kits completos o materiales individuales</span>
+          </span>
+        </label>
+      </div>
+
+      <!-- SELECT OCASIÓN -->
+      <div class="filter-col select-col">
+        <label class="select-label">
+          <span class="material-icons select-icon">event</span>
+          Ocasión
+        </label>
+        <div class="select-wrapper">
+          <select class="custom-select" [(ngModel)]="selectedOccasion">
+            <option *ngFor="let oc of ocasiones" [value]="oc">{{ oc }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SELECT GRADO ESCOLAR -->
+      <div class="filter-col select-col">
+        <label class="select-label">
+          <span class="material-icons select-icon">school</span>
+          Grado Escolar
+        </label>
+        <div class="select-wrapper">
+          <select class="custom-select" [(ngModel)]="selectedGrade">
+            <option *ngFor="let gr of grados" [value]="gr">{{ gr }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS / PLACEHOLDER AREA -->
+  <div class="results-section">
+    <!-- NO FILTERS ACTIVE PLACEHOLDER -->
+    <div class="placeholder-container animate-fade-in" *ngIf="!isFilterActive">
+      <span class="material-icons placeholder-main-icon">menu_book</span>
+      <h2>Selecciona Filtros Avanzados</h2>
+      <p>Usa los filtros de arriba para encontrar maquetas por categoría, ocasión o grado escolar</p>
+      <p class="secondary-p">O activa "Seleccionar Kit" para armar tu pedido de materiales</p>
+    </div>
+
+    <!-- FILTERS ACTIVE BUT NO RESULTS -->
+    <div class="placeholder-container empty-results animate-fade-in" *ngIf="isFilterActive && filteredProducts.length === 0 && !isLoading">
+      <span class="material-icons placeholder-main-icon">search_off</span>
+      <h2>No se encontraron maquetas</h2>
+      <p>Intenta cambiar los filtros seleccionados para encontrar lo que buscas.</p>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div class="loading-container animate-fade-in" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Cargando maquetas...</p>
+    </div>
+
+    <!-- MAQUETAS RESULTS GRID -->
+    <div class="results-grid animate-fade-in" *ngIf="isFilterActive && filteredProducts.length > 0 && !isLoading">
+      <div 
+        *ngFor="let prod of filteredProducts" 
+        class="maqueta-result-card" 
+        (click)="selectProduct(prod)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="selectProduct(prod)">
+        
+        <div class="card-img-wrapper">
+          <img 
+            [src]="prod.imageUrl || 'https://via.placeholder.com/400x300?text=Maqueta'" 
+            [alt]="prod.titulo" 
+            class="card-img"
+            loading="lazy">
+          <div class="card-badge" *ngIf="prod.materialesReciclables">Reciclable</div>
+        </div>
+
+        <div class="card-info">
+          <span class="card-tag">{{ prod.categoriaNombre }}</span>
+          <h3>{{ prod.titulo }}</h3>
+          <p class="card-desc">{{ prod.descripcion }}</p>
+          
+          <div class="card-meta">
+            <span class="meta-grade">
+              <span class="material-icons">school</span>
+              {{ prod.gradoEscolar }}
+            </span>
+            <span class="meta-materials" *ngIf="prod.materiales && prod.materiales.length > 0">
+              <span class="material-icons">inventory_2</span>
+              {{ prod.materiales.length }} materiales
+            </span>
+          </div>
+
+          <div class="card-footer">
+            <span class="view-detail-btn">
+              Ver Detalles
+              <span class="material-icons">arrow_forward</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

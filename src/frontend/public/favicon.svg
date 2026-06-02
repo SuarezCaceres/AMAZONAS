@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#00a982" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded background matching modern app icon shapes -->
+  <rect width="512" height="512" rx="128" fill="url(#grad)" />
+  
+  <!-- Amazon river curves forming a leaf-like layout -->
+  <path d="M 160 360 C 220 280, 250 200, 360 160 C 280 200, 250 280, 160 360 Z" fill="#ffffff" />
+  <path d="M 360 160 C 300 240, 270 320, 160 360 C 240 320, 270 240, 360 160 Z" fill="#ffffff" opacity="0.8" />
+  
+  <!-- Small sprouting eco leaf accent -->
+  <path d="M 330 130 C 360 130, 380 160, 350 180 C 330 160, 320 140, 330 130 Z" fill="#34d399" />
+</svg>

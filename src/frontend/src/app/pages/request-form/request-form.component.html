@@ -112,9 +112,10 @@
       </section>
 
       <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
 
-      <button class="submit-button" type="submit" [class.purchase]="!isCustomization">
-        {{ submitLabel }}
+      <button class="submit-button" type="submit" [class.purchase]="!isCustomization" [disabled]="loading">
+        {{ loading ? 'Enviando...' : submitLabel }}
       </button>
     </form>
   </section>

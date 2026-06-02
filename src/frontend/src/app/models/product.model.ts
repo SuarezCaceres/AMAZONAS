@@ -21,6 +21,7 @@ export interface Product {
   materialesDetalle?: ProductMaterialDetail[];
   gradoEscolar: string;
   ocasion: string[];
+  caracteristicas?: string[];
   materialesReciclables: boolean;
   stock: number;
   relacionados: RelatedProduct[];
@@ -48,6 +49,7 @@ export interface ProductRequest {
   materiales?: ProductMaterialInput[];
   gradoEscolar?: string;
   ocasion?: string[];
+  caracteristicas?: string[];
   materialesReciclables?: boolean;
   stock: number;
 }

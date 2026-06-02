@@ -1,77 +1,40 @@
 <main class="page-shell">
-  <app-header
-    *ngIf="page !== 'auth' && page !== 'vendedor'"
-    [activePage]="page"
-    [isLoggedIn]="!!currentUser"
-    [userName]="currentUser?.name || ''"
-    (inicioClicked)="showInicio()"
-    (nosotrosClicked)="showNosotros()"
-    (catalogClicked)="showCatalog()"
-    (requestsClicked)="showRequests()"
-    (loginClicked)="showLogin()"
-    (loginClicked)="requestAccess('comprar')"
-    (registerClicked)="showRegister()"
-    (logoutClicked)="logout()"
-  ></app-header>
-  
-<app-inicio
-  *ngIf="page === 'inicio'"
-  [isLoggedIn]="!!currentUser"
-  (registerClicked)="showRegister()"
-  (catalogClicked)="showCatalog()"
-  (requestAccess)="openStandaloneRequest()"
-  (modelSelected)="showDetails($event)">
-</app-inicio>
+  <app-header *ngIf="page !== 'auth' && page !== 'vendedor' && page !== 'reset-password'" [activePage]="page"
+    [isLoggedIn]="!!currentUser" [userName]="currentUser?.name || ''" (inicioClicked)="showInicio()"
+    (nosotrosClicked)="showNosotros()" (catalogClicked)="showCatalog()" (requestsClicked)="showRequests()"
+    (loginClicked)="showLogin()" (registerClicked)="showRegister()" (logoutClicked)="logout()"
+    (categoriesClicked)="showCategories()"></app-header>
+
+  <app-inicio *ngIf="page === 'inicio'" [isLoggedIn]="!!currentUser" (registerClicked)="showRegister()"
+    (catalogClicked)="showCatalog()" (requestAccess)="openStandaloneRequest()" (modelSelected)="showDetails($event)">
+  </app-inicio>
 
 
 
-<app-nosotros *ngIf="page === 'nosotros'"
-  (catalogClicked)="showCatalog()"></app-nosotros>
+  <app-nosotros *ngIf="page === 'nosotros'" (catalogClicked)="showCatalog()"></app-nosotros>
 
-  <app-catalog
-    *ngIf="page === 'catalog'"
-    (viewDetails)="showDetails($event)"
-  ></app-catalog>
+  <app-categories *ngIf="page === 'categories'" (categorySelected)="handleCategoryFromHeader($event)" (modelSelected)="showDetails($event)"></app-categories>
 
-  <app-catalog-detail
-    *ngIf="page === 'detail'"
-    [model]="selectedModel"
-    (back)="showCatalog()"
-    (accessRequested)="requestAccess($event)"
-    (relatedSelected)="showDetails($event)"
-  ></app-catalog-detail>
+  <app-catalog *ngIf="page === 'catalog'" [preselectedCategory]="preselectedCategory" (viewDetails)="showDetails($event)"></app-catalog>
 
-  <app-auth
-    *ngIf="page === 'auth'"
-    [accessNotice]="accessNotice"
-    [initialView]="authView"
-    (closed)="closeAuth()"
-    (authenticated)="completeLogin($event)"
-    ></app-auth>
-  <app-request-form
-    *ngIf="page === 'request'"
-    [model]="selectedModel"
-    [mode]="requestMode"
-    [user]="currentUser"
-    (changedMode)="switchRequestMode($event)"
-    (submitted)="handleRequestSubmitted($event)"
-    [standaloneRequest]="isStandaloneRequest"
-  ></app-request-form>
+  <app-catalog-detail *ngIf="page === 'detail'" [model]="selectedModel" (back)="showCatalog()"
+    (accessRequested)="requestAccess($event)" (relatedSelected)="showDetails($event)"></app-catalog-detail>
 
-  <app-my-requests
-    *ngIf="page === 'requests'"
-    [user]="currentUser"
-  ></app-my-requests>
+  <app-auth *ngIf="page === 'auth'" [accessNotice]="accessNotice" [initialView]="authView" (closed)="closeAuth()"
+    (authenticated)="completeLogin($event)"></app-auth>
+  <app-request-form *ngIf="page === 'request'" [model]="selectedModel" [mode]="requestMode" [user]="currentUser"
+    (changedMode)="switchRequestMode($event)" (submitted)="handleRequestSubmitted($event)"
+    [standaloneRequest]="isStandaloneRequest"></app-request-form>
 
-  <app-footer
-    *ngIf="page !== 'auth' && page !== 'vendedor'"
-    (catalogClicked)="showCatalog()"
-    (loginClicked)="showLogin()"
-  ></app-footer>
+  <app-my-requests *ngIf="page === 'requests'" [user]="currentUser"></app-my-requests>
 
-  <app-navbar-vendedor
-    *ngIf="page === 'vendedor'"
-    (salir)="salirPanel()">
+  <app-footer *ngIf="page !== 'auth' && page !== 'vendedor' && page !== 'reset-password'"
+    (catalogClicked)="showCatalog()" (loginClicked)="showLogin()"></app-footer>
+
+  <app-navbar-vendedor *ngIf="page === 'vendedor'" (salir)="salirPanel()">
   </app-navbar-vendedor>
+
+  <app-reset-password *ngIf="page === 'reset-password'" [token]="tokenToReset"
+    (completed)="handleResetCompleted()"></app-reset-password>
 
 </main>

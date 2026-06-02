@@ -277,3 +277,57 @@ input:focus {
   align-items: center;
   justify-content: center;
 }
+
+.login-type-toggle {
+  position: relative;
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  padding: 4px;
+  margin: 10px 0 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03) inset;
+}
+
+.toggle-option {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-option.active {
+  color: #ffffff;
+}
+
+.toggle-option .icon {
+  font-size: 15px;
+}
+
+.slider-background {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #09b879, #009c89);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  box-shadow: 0 4px 12px rgba(0, 156, 137, 0.22);
+}
+
+.slider-background.slide-right {
+  transform: translateX(100%);
+}

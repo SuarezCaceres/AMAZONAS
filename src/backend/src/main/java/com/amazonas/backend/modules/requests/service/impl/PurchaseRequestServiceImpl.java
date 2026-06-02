@@ -1,12 +1,15 @@
 package com.amazonas.backend.modules.requests.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.amazonas.backend.modules.materials.model.Material;
 import com.amazonas.backend.modules.materials.repository.MaterialRepository;
@@ -72,6 +75,12 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             productoNombre = producto.getTitulo();
         }
         solicitud.setProductoNombre(productoNombre);
+
+        // Check for duplicate requests within the last minute
+        LocalDateTime since = LocalDateTime.now().minusMinutes(1);
+        if (purchaseRequestRepository.existsDuplicateRequest(usuario.getId(), productoNombre, since)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya has enviado esta solicitud recientemente. Por favor, espera un minuto.");
+        }
 
         // ─── Flujo 2: Kit de Maquetas ───
         if (Boolean.TRUE.equals(req.getIsKit()) && req.getKits() != null) {

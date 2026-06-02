@@ -327,6 +327,17 @@
   font-weight: 800;
 }
 
+.error-message {
+  margin-top: 18px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 11px 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .submit-button {
   width: 100%;
   min-height: 44px;

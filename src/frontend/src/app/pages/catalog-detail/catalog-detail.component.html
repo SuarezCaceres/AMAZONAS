@@ -1,28 +1,28 @@
-<section class="detail-page">
+<section class="detail-page" *ngIf="detailedModel">
   <button class="back-button" type="button" (click)="back.emit()">← Volver al catalogo</button>
 
-  <article class="detail-layout">
+  <article class="detail-layout" [class.loading-fade]="isLoading">
     <div class="detail-media">
-      <img [src]="model.imageUrl" [alt]="model.title">
+      <img [src]="detailedModel.imageUrl" [alt]="detailedModel.title">
     </div>
 
     <div class="detail-content">
-      <span class="eyebrow">{{ model.category }} · {{ model.level }}</span>
-      <h1>{{ model.title }}</h1>
-      <p class="detail-description">{{ model.description }}</p>
+      <span class="eyebrow">{{ detailedModel.category }} · {{ detailedModel.level }}</span>
+      <h1>{{ detailedModel.title }}</h1>
+      <p class="detail-description">{{ detailedModel.description }}</p>
 
       <div class="info-grid">
         <section>
           <h2>Materiales Utilizados</h2>
           <ul>
-            <li *ngFor="let material of model.materials">{{ material }}</li>
+            <li *ngFor="let material of detailedModel.materials">{{ material }}</li>
           </ul>
         </section>
 
         <section>
           <h2>Caracteristicas</h2>
           <ul>
-            <li *ngFor="let feature of model.features">{{ feature }}</li>
+            <li *ngFor="let feature of detailedModel.features">{{ feature }}</li>
           </ul>
         </section>
       </div>
