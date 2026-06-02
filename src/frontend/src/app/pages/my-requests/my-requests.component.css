@@ -1,0 +1,138 @@
+.requests-page {
+  min-height: calc(100vh - 56px);
+  padding: 40px clamp(18px, 5vw, 70px) 70px;
+  background: #f6faf8;
+}
+
+.requests-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.requests-heading span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: #00a982;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.requests-heading h1,
+.requests-heading p {
+  margin: 0;
+}
+
+.requests-heading h1 {
+  color: #223045;
+  font-size: 30px;
+}
+
+.requests-heading p {
+  margin-top: 5px;
+  color: #667085;
+}
+
+.empty-state,
+.request-card {
+  border: 1px solid #e1e8ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 34px rgba(31, 41, 51, 0.07);
+}
+
+.empty-state {
+  padding: 34px;
+}
+
+.empty-state h2,
+.empty-state p {
+  margin: 0;
+}
+
+.empty-state p {
+  margin-top: 8px;
+  color: #667085;
+}
+
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.request-card {
+  padding: 22px;
+}
+
+.request-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.request-card header span {
+  border-radius: 8px;
+  padding: 5px 9px;
+  background: #eafaf4;
+  color: #07825f;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.request-card time {
+  color: #748195;
+  font-size: 12px;
+}
+
+.request-card h2 {
+  margin: 0;
+  color: #253247;
+  font-size: 20px;
+}
+
+.request-card p {
+  min-height: 44px;
+  margin: 10px 0 18px;
+  color: #5e6c7f;
+  line-height: 1.5;
+}
+
+.request-card dl {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.request-card dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #edf1f5;
+  padding-top: 9px;
+}
+
+.request-card dt {
+  color: #7a8698;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.request-card dd {
+  margin: 0;
+  color: #2f3b4d;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.request-card small {
+  display: block;
+  color: #657386;
+  line-height: 1.45;
+}

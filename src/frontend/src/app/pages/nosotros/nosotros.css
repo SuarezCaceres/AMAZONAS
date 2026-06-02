@@ -1,0 +1,506 @@
+/* ===== GENERAL ===== */
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+:host{
+  display:block;
+  font-family:'Segoe UI', sans-serif;
+  color:#162544;
+  background:#ffffff;
+}
+
+.container{
+  width:90%;
+  max-width:1280px;
+  margin:auto;
+}
+
+/* ===== HERO ===== */
+
+.hero{
+  background:#edf7f5;
+  padding:90px 20px;
+  text-align:center;
+}
+
+.hero h1{
+  font-size:4.2rem;
+  font-weight:800;
+  color:#172544;
+  margin-bottom:18px;
+  letter-spacing:-2px;
+}
+
+.hero p{
+  font-size:1.6rem;
+  color:#45526d;
+  font-weight:400;
+}
+
+/* ===== HISTORIA ===== */
+
+.historia{
+  padding:90px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:70px;
+}
+
+.historia-texto{
+  flex:1;
+}
+
+.historia-texto h2{
+  font-size:3rem;
+  margin-bottom:35px;
+  color:#172544;
+  font-weight:800;
+}
+
+.historia-texto p{
+  font-size:1.28rem;
+  line-height:1.9;
+  color:#41506c;
+  margin-bottom:28px;
+}
+
+.historia-img{
+  flex:1;
+}
+
+.historia-img img{
+  width:100%;
+  border-radius:24px;
+  object-fit:cover;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* ===== TITULOS ===== */
+
+.titulo-seccion{
+  text-align:center;
+  margin-bottom:70px;
+}
+
+.titulo-seccion h2{
+  font-size:3.2rem;
+  color:#172544;
+  font-weight:800;
+  margin-bottom:18px;
+}
+
+.titulo-seccion p{
+  color:#4f5c76;
+  font-size:1.5rem;
+}
+
+/* ===== CONTACTO ===== */
+
+.contacto{
+  background:#f7f9fc;
+  padding:100px 0;
+}
+
+.cards-contacto{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:28px;
+}
+
+.card{
+  background:#ffffff;
+  border:1px solid #ebedf2;
+  border-radius:22px;
+  padding:35px;
+  transition:0.3s ease;
+  box-shadow:0 3px 10px rgba(0,0,0,0.03);
+}
+
+.card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+.card h3{
+  font-size:1.8rem;
+  margin-bottom:18px;
+  color:#172544;
+}
+
+.card p{
+  color:#4d5b76;
+  line-height:1.8;
+  font-size:1.08rem;
+}
+
+/* ===== ICONOS ===== */
+
+.icon{
+  width:62px;
+  height:62px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:28px;
+}
+
+.verde{
+  background:#dff7ea;
+}
+
+.morado{
+  background:#f2e8ff;
+}
+
+.amarillo{
+  background:#fff3cf;
+}
+
+.azul{
+  background:#dfeaff;
+}
+
+/* ===== VALORES ===== */
+
+.valores{
+  padding:110px 0;
+}
+
+.valores-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:50px;
+}
+
+.valor{
+  text-align:center;
+}
+
+.valor .icon{
+  margin:auto;
+  margin-bottom:28px;
+  border-radius:50%;
+  width:70px;
+  height:70px;
+}
+
+.valor h3{
+  font-size:1.8rem;
+  margin-bottom:18px;
+  color:#172544;
+}
+
+.valor p{
+  color:#50607b;
+  line-height:1.9;
+  font-size:1.1rem;
+}
+
+/* ===== SERVICIOS ===== */
+
+.servicios{
+  background:#f7f9fc;
+  padding:100px 0;
+}
+
+.servicios-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:30px;
+}
+
+.servicio-card{
+  background:#ffffff;
+  border-radius:22px;
+  padding:45px 35px;
+  border:1px solid #ebedf2;
+  min-height:220px;
+  transition:0.3s ease;
+  box-shadow:0 3px 10px rgba(0,0,0,0.03);
+  height: 100%;
+}
+
+.servicio-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 12px 25px rgba(0,0,0,0.08);
+}
+
+.servicio-card h3{
+  font-size:2rem;
+  color:#172544;
+  margin-bottom:18px;
+}
+
+.servicio-card p{
+  color:#53627d;
+  line-height:1.8;
+  font-size:1.08rem;
+}
+
+/* ===== CTA ===== */
+
+.cta-section{
+  background:#009966;
+  color:white;
+  padding:90px 20px;
+  text-align:center;
+}
+
+.cta-section h2{
+  font-size:3rem;
+  max-width:700px;
+  margin:auto;
+  line-height:1.2;
+  font-weight:800;
+}
+
+.cta-section p{
+  margin-top:22px;
+  font-size:1.3rem;
+  line-height:1.8;
+  max-width:850px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.cta-buttons{
+  margin-top:45px;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.catalog-btn,
+.register-btn{
+  padding:18px 38px;
+  border-radius:14px;
+  font-size:17px;
+  font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:all .3s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-width:210px;
+}
+
+.catalog-btn{
+  background:white;
+  color:#009966;
+  box-shadow:0 8px 20px rgba(0,0,0,0.12);
+}
+
+.catalog-btn:hover{
+  transform:translateY(-4px);
+  background:#f4f4f4;
+  box-shadow:0 14px 30px rgba(0,0,0,0.18);
+}
+
+.register-btn{
+  background:rgba(255,255,255,0.12);
+  border:1.5px solid rgba(255,255,255,0.7);
+  color:white;
+  backdrop-filter:blur(6px);
+}
+
+.register-btn:hover{
+  background:white;
+  color:#009966;
+  transform:translateY(-4px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media(max-width:1100px){
+
+  .historia{
+    flex-direction:column;
+  }
+
+  .cards-contacto,
+  .servicios-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .valores-grid{
+    grid-template-columns:1fr 1fr;
+    gap:60px;
+  }
+}
+
+@media(max-width:768px){
+
+  .hero{
+    padding:70px 20px;
+  }
+
+  .hero h1{
+    font-size:3rem;
+  }
+
+  .hero p{
+    font-size:1.15rem;
+    line-height:1.6;
+  }
+
+  .historia{
+    padding:70px 0;
+  }
+
+  .historia-texto h2,
+  .titulo-seccion h2,
+  .cta-section h2{
+    font-size:2.4rem;
+  }
+
+  .historia-texto p{
+    font-size:1.05rem;
+  }
+
+  .cards-contacto,
+  .valores-grid,
+  .servicios-grid{
+    grid-template-columns:1fr;
+  }
+
+  .card,
+  .servicio-card{
+    padding:30px;
+  }
+
+  .cta-buttons{
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .catalog-btn,
+  .register-btn{
+    width:100%;
+    max-width:320px;
+ 
+  }
+
+  @media (max-width: 480px) {
+
+  .container{
+    width: 92%;
+  }
+
+  /* HERO */
+
+  .hero{
+    padding: 50px 16px;
+  }
+
+  .hero h1{
+    font-size: 2.2rem;
+    line-height: 1.15;
+    letter-spacing: -1px;
+  }
+
+  .hero p{
+    font-size: 1rem;
+  }
+
+  /* HISTORIA */
+
+  .historia{
+    gap: 35px;
+    padding: 50px 0;
+  }
+
+  .historia-texto h2,
+  .titulo-seccion h2,
+  .cta-section h2{
+    font-size: 1.9rem;
+    line-height: 1.2;
+  }
+
+  .historia-texto p,
+  .titulo-seccion p{
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .historia-img img{
+    border-radius: 18px;
+  }
+
+  /* CONTACTO */
+
+  .contacto,
+  .valores,
+  .servicios{
+    padding: 60px 0;
+  }
+
+  .titulo-seccion{
+    margin-bottom: 40px;
+    padding: 0 16px;
+  }
+
+  .card,
+  .servicio-card{
+    padding: 24px;
+    border-radius: 18px;
+  }
+
+  .card h3,
+  .valor h3,
+  .servicio-card h3{
+    font-size: 1.4rem;
+  }
+
+  .card p,
+  .valor p,
+  .servicio-card p{
+    font-size: 0.95rem;
+  }
+
+  /* ICONOS */
+
+  .icon{
+    width: 52px;
+    height: 52px;
+    margin-bottom: 18px;
+    font-size: 1.2rem;
+  }
+
+  .valor .icon{
+    width: 60px;
+    height: 60px;
+  }
+
+  /* CTA */
+
+  .cta-section{
+    padding: 60px 20px;
+  }
+
+  .cta-section p{
+    font-size: 1rem;
+  }
+
+  .catalog-btn,
+  .register-btn{
+    min-width: unset;
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    font-size: 15px;
+  }
+.servicio-card{
+    min-height: auto;
+  }
+}
+}

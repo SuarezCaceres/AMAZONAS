@@ -1,0 +1,583 @@
+<div class="materials-container">
+  <!-- Header -->
+  <div class="materials-header-section">
+    <div>
+      <h1 class="materials-title">Gestión de Materiales</h1>
+      <p class="materials-subtitle">Administra los costos de materiales para presupuestos</p>
+    </div>
+    <button
+      (click)="isAdding = true; editingId = null; resetMaterialForm()"
+      class="btn-primary"
+      type="button"
+    >
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Agregar Material
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-content">
+        <div>
+          <p class="summary-label">Total Materiales</p>
+          <p class="summary-value">{{ materials.length }}</p>
+        </div>
+        <div class="summary-icon icon-blue">
+          <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-content">
+        <div>
+          <p class="summary-label">Valor del Inventario</p>
+          <p class="summary-value color-emerald">S/ {{ totalInventoryValue.toFixed(2) }}</p>
+        </div>
+        <div class="summary-icon icon-emerald">
+          <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-content">
+        <div>
+          <p class="summary-label">Categorías Activas</p>
+          <p class="summary-value">{{ totalCategoriesCount }}</p>
+        </div>
+        <div class="summary-icon icon-purple">
+          <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Precios de Maquetas Section -->
+  <div class="section-card border-blue">
+    <div class="section-card-header">
+      <div>
+        <h2 class="section-card-title flex-center">
+          <svg class="title-icon color-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          Precios de Maquetas Completas
+        </h2>
+        <p class="section-card-subtitle">Define precios fijos para maquetas completas ya armadas</p>
+      </div>
+      <button
+        (click)="isAddingPrecio = true; editingPrecioId = null; precioFormData = { maquetaId: '', precioCompleta: 0, descripcion: '' }"
+        class="btn-outline-blue"
+        type="button"
+      >
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Agregar Precio
+      </button>
+    </div>
+
+    <div class="section-card-body">
+      <!-- Add/Edit Precio Form -->
+      @if (isAddingPrecio || editingPrecioId) {
+        <div class="form-wrapper bg-blue-light border-blue-light">
+          <h3 class="form-section-title color-blue-dark">
+            {{ isAddingPrecio ? 'Agregar Nuevo Precio de Maqueta' : 'Editar Precio de Maqueta' }}
+          </h3>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Maqueta *</label>
+              <select
+                [(ngModel)]="precioFormData.maquetaId"
+                class="form-select"
+              >
+                <option value="">Seleccionar maqueta...</option>
+                @for (prod of products; track prod.id) {
+                  <option [value]="prod.id">{{ prod.titulo }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Precio Completa (S/) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                [(ngModel)]="precioFormData.precioCompleta"
+                class="form-input"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label">Descripción (opcional)</label>
+              <input
+                type="text"
+                [(ngModel)]="precioFormData.descripcion"
+                class="form-input"
+                placeholder="Ej: Incluye maqueta completamente armada y pintada"
+              />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button (click)="handleSavePrecio()" class="btn-action bg-blue-btn" type="button">Guardar Precio</button>
+            <button (click)="handleCancelPrecio()" class="btn-action-cancel" type="button">Cancelar</button>
+          </div>
+        </div>
+      }
+
+      <!-- Precios List -->
+      @if (preciosMaquetas.length > 0) {
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr class="bg-blue-light-tr">
+                <th>Maqueta</th>
+                <th class="text-right">Precio Completa</th>
+                <th>Descripción</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (precio of preciosMaquetas; track precio.id) {
+                <tr class="hover-blue-tr">
+                  <td class="font-semibold text-slate-800">{{ precio.maquetaNombre }}</td>
+                  <td class="text-right font-bold color-blue text-nowrap">S/ {{ precio.precioCompleta.toFixed(2) }}</td>
+                  <td class="text-slate-600 max-w-xs text-truncate">{{ precio.descripcion || '-' }}</td>
+                  <td class="text-right">
+                    <div class="flex-end gap-2">
+                      <button (click)="handleEditPrecio(precio)" class="btn-table-action" title="Editar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="table-icon-svg">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                      </button>
+                      <button (click)="handleDeletePrecio(precio.id)" class="btn-table-action color-red-btn" title="Eliminar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="table-icon-svg">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state border-blue-dashed">
+          <svg class="empty-icon color-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <p class="empty-title color-blue-dark">No hay precios de maquetas creados</p>
+          <p class="empty-desc">Define precios para maquetas completas ya armadas</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Kits Completos Section -->
+  <div class="section-card border-purple">
+    <div class="section-card-header">
+      <div>
+        <h2 class="section-card-title flex-center">
+          <svg class="title-icon color-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+          Kits Completos por Maqueta
+        </h2>
+        <p class="section-card-subtitle">Define precios fijos para kits completos de cada maqueta</p>
+      </div>
+      <button
+        (click)="isAddingKit = true; editingKitId = null; kitFormData = { maquetaId: '', precioTotal: 0, descripcion: '' }; kitMaterialesForm = []"
+        class="btn-outline-purple"
+        type="button"
+      >
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Agregar Kit
+      </button>
+    </div>
+
+    <div class="section-card-body">
+      <!-- Add/Edit Kit Form -->
+      @if (isAddingKit || editingKitId) {
+        <div class="form-wrapper bg-purple-light border-purple-light">
+          <h3 class="form-section-title color-purple-dark">
+            {{ isAddingKit ? 'Agregar Nuevo Kit Completo' : 'Editar Kit Completo' }}
+          </h3>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Maqueta *</label>
+              <select
+                [(ngModel)]="kitFormData.maquetaId"
+                class="form-select"
+              >
+                <option value="">Seleccionar maqueta...</option>
+                @for (prod of products; track prod.id) {
+                  <option [value]="prod.id">{{ prod.titulo }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Precio Total del Kit (S/) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                [(ngModel)]="kitFormData.precioTotal"
+                class="form-input"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="form-group span-2">
+              <label class="form-label">Descripción (opcional)</label>
+              <input
+                type="text"
+                [(ngModel)]="kitFormData.descripcion"
+                class="form-input"
+                placeholder="Ej: Incluye todos los materiales estándar"
+              />
+            </div>
+          </div>
+
+          <!-- Materiales del Kit -->
+          <div class="kit-materials-subform">
+            <div class="flex-between mb-4">
+              <h4 class="form-subtitle color-purple-dark">Materiales del Kit</h4>
+              <button
+                (click)="agregarMaterialKit()"
+                class="btn-add-sub"
+                type="button"
+              >
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Agregar Material
+              </button>
+            </div>
+
+            @if (kitMaterialesForm.length > 0) {
+              <div class="kit-materials-list">
+                @for (matKit of kitMaterialesForm; track $index) {
+                  <div class="kit-material-row">
+                    <div class="flex-grow">
+                      <label class="row-label">Material</label>
+                      <select
+                        [(ngModel)]="matKit.materialNombre"
+                        class="form-select"
+                      >
+                        <option value="">Seleccionar material...</option>
+                        @for (mat of materials; track mat.id) {
+                          <option [value]="mat.nombre">{{ mat.nombre }} ({{ mat.unidad }})</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="width-32">
+                      <label class="row-label">Cantidad</label>
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        [(ngModel)]="matKit.cantidad"
+                        class="form-input"
+                      />
+                    </div>
+                    <button
+                      (click)="eliminarMaterialKit($index)"
+                      class="btn-delete-row"
+                      type="button"
+                      title="Eliminar material del kit"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="table-icon-svg">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-sub-state">
+                <p class="empty-sub-text">No hay materiales agregados al kit</p>
+                <p class="empty-sub-subtext">Agrega materiales con sus respectivas cantidades recomendadas</p>
+              </div>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button (click)="handleSaveKit()" class="btn-action bg-purple-btn" type="button">Guardar Kit</button>
+            <button (click)="handleCancelKit()" class="btn-action-cancel" type="button">Cancelar</button>
+          </div>
+        </div>
+      }
+
+      <!-- Kits List -->
+      @if (kitsCompletos.length > 0) {
+        <div class="kits-wrapper-list">
+          @for (kit of kitsCompletos; track kit.id) {
+            <div class="kit-item-card">
+              <div class="kit-item-header">
+                <div>
+                  <h4 class="kit-item-title">{{ kit.maquetaNombre }}</h4>
+                  @if (kit.descripcion) {
+                    <p class="kit-item-desc">{{ kit.descripcion }}</p>
+                  }
+                </div>
+                <div class="kit-item-actions-box">
+                  <div class="kit-item-price-info">
+                    <span class="price-label">Precio Total</span>
+                    <span class="price-value color-purple">S/ {{ kit.precioTotal.toFixed(2) }}</span>
+                  </div>
+                  <div class="flex gap-2">
+                    <button (click)="handleEditKit(kit)" class="btn-table-action" title="Editar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="table-icon-svg">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                    </button>
+                    <button (click)="handleDeleteKit(kit.id)" class="btn-table-action color-red-btn" title="Eliminar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="table-icon-svg">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Materials list inside kit card -->
+              @if (kit.materiales && kit.materiales.length > 0) {
+                <div class="kit-pills-box">
+                  <span class="pills-label color-purple">Materiales incluidos:</span>
+                  <div class="pills-container">
+                    @for (mat of kit.materiales; track $index) {
+                      <span class="badge-pill bg-purple-badge">
+                        {{ mat.materialNombre }}: {{ mat.cantidad }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state border-purple-dashed">
+          <svg class="empty-icon color-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          <p class="empty-title color-purple-dark">No hay kits completos creados</p>
+          <p class="empty-desc">Crea kits completos para cotizaciones rápidas con un solo click</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Add/Edit Material Form (Viene de Agregar Material en el header o Editar en la lista) -->
+  @if (isAdding || editingId) {
+    <div class="section-card border-emerald bg-emerald-light-card">
+      <div class="section-card-header">
+        <h2 class="section-card-title color-emerald-dark">
+          {{ isAdding ? 'Agregar Nuevo Material' : 'Editar Material' }}
+        </h2>
+      </div>
+      <div class="section-card-body">
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Nombre *</label>
+            <input
+              type="text"
+              [(ngModel)]="formData.nombre"
+              class="form-input"
+              placeholder="Ej: Cartón corrugado"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unidad *</label>
+            <input
+              type="text"
+              [(ngModel)]="formData.unidad"
+              class="form-input"
+              placeholder="Ej: hoja, kg, paquete"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Costo de Compra (S/) *</label>
+            <input
+              type="number"
+              step="0.01"
+              [(ngModel)]="formData.costoCompra"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Costo de Venta (S/) *</label>
+            <input
+              type="number"
+              step="0.01"
+              [(ngModel)]="formData.costoVenta"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock Actual *</label>
+            <input
+              type="number"
+              [(ngModel)]="formData.stockActual"
+              class="form-input"
+              placeholder="0"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categoría *</label>
+            <select
+              [(ngModel)]="formData.categoriaId"
+              class="form-select"
+            >
+              <option value="">Seleccionar categoría...</option>
+              @for (cat of categories; track cat.id) {
+                <option [value]="cat.id">{{ cat.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Proveedor</label>
+            <input
+              type="text"
+              [(ngModel)]="formData.proveedor"
+              class="form-input"
+              placeholder="Ej: Librería Comercial"
+            />
+          </div>
+          <div class="form-group flex-center-y pt-4">
+            <label class="form-checkbox-label">
+              <input
+                type="checkbox"
+                [(ngModel)]="formData.activo"
+                class="form-checkbox"
+              />
+              Material Activo
+            </label>
+          </div>
+        </div>
+        <div class="form-actions mt-6">
+          <button (click)="handleSave()" class="btn-action bg-emerald-btn" type="button" [disabled]="saving">
+            {{ saving ? 'Guardando...' : 'Guardar Material' }}
+          </button>
+          <button (click)="handleCancel()" class="btn-action-cancel" type="button">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Materials List by Category -->
+  <div class="materials-by-cat-section">
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p class="loading-text">Cargando catálogo de materiales...</p>
+      </div>
+    } @else if (materials.length > 0) {
+      <div class="categories-list-wrapper">
+        @for (group of getGroupedMaterials(); track group.key) {
+          <div class="category-materials-block">
+            <div class="category-block-header">
+              <h3 class="category-block-title">{{ group.key }}</h3>
+              <span class="category-block-badge">{{ group.value.length }} materiales</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Unidad</th>
+                    <th class="text-right">Costo Compra</th>
+                    <th class="text-right">Costo Venta</th>
+                    <th class="text-right">Stock</th>
+                    <th class="text-right">Valor Total</th>
+                    <th class="text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (material of group.value; track material.id) {
+                    <tr class="hover-slate-tr" [class.inactive-row]="!material.activo">
+                      <td>
+                        <div class="flex-column">
+                          <span class="material-name-td">{{ material.nombre }}</span>
+                          @if (material.proveedor) {
+                            <span class="material-vendor-td">{{ material.proveedor }}</span>
+                          }
+                        </div>
+                      </td>
+                      <td class="text-slate-600">{{ material.unidad }}</td>
+                      <td class="text-right font-medium color-blue text-nowrap">
+                        S/ {{ material.costoCompra.toFixed(2) }}
+                      </td>
+                      <td class="text-right font-medium color-emerald text-nowrap">
+                        S/ {{ material.costoVenta.toFixed(2) }}
+                      </td>
+                      <td class="text-right text-slate-600 font-semibold">{{ material.stockActual }}</td>
+                      <td class="text-right font-bold text-slate-800 text-nowrap">
+                        S/ {{ (material.costoCompra * material.stockActual).toFixed(2) }}
+                      </td>
+                      <td class="text-right">
+                        <div class="flex-end gap-2">
+                          <button (click)="handleEdit(material)" class="btn-table-action" title="Editar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="table-icon-svg">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                          </button>
+                          <button (click)="handleDelete(material.id)" class="btn-table-action color-red-btn" title="Eliminar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="table-icon-svg">
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state border-slate-dashed">
+        <svg class="empty-icon color-slate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p class="empty-title">El catálogo de materiales está vacío</p>
+        <p class="empty-desc">Registra tus primeros materiales para comenzar a generar cotizaciones</p>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,172 @@
+<div class="stock-container">
+  <!-- Title Section -->
+  <div class="stock-header">
+    <h1 class="stock-title">Gestión de Stock</h1>
+    <p class="stock-subtitle">Administra el inventario de tus maquetas educativas</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <!-- Card: Total -->
+    <div class="summary-card card-total">
+      <div class="summary-content">
+        <div class="summary-text">
+          <p class="summary-label">Total Productos</p>
+          <p class="summary-value">{{ totalProducts }}</p>
+        </div>
+        <div class="summary-icon icon-blue">
+          <svg viewBox="0 0 24 24" class="svg-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Low Stock -->
+    <div class="summary-card card-low">
+      <div class="summary-content">
+        <div class="summary-text">
+          <p class="summary-label">Stock Bajo</p>
+          <p class="summary-value color-amber">{{ lowStockProductsCount }}</p>
+        </div>
+        <div class="summary-icon icon-amber">
+          <svg viewBox="0 0 24 24" class="svg-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Out of Stock -->
+    <div class="summary-card card-out">
+      <div class="summary-content">
+        <div class="summary-text">
+          <p class="summary-label">Agotados</p>
+          <p class="summary-value color-red">{{ outOfStockProductsCount }}</p>
+        </div>
+        <div class="summary-icon icon-red">
+          <svg viewBox="0 0 24 24" class="svg-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Card -->
+  <div class="search-card">
+    <div class="search-wrapper">
+      <svg viewBox="0 0 24 24" class="search-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        placeholder="Buscar por nombre o categoría..."
+        [(ngModel)]="searchTerm"
+        class="search-input"
+      />
+    </div>
+  </div>
+
+  <!-- Products Card -->
+  <div class="products-card">
+    <div class="card-header-custom">
+      <h2 class="card-title-custom">Productos en Inventario</h2>
+    </div>
+    <div class="card-body-custom">
+      <div class="product-list">
+        @for (product of filteredProducts; track product.id) {
+          @let status = getStockStatus(product.stock);
+          <div class="product-item" [class.editing]="editingId === product.id">
+            <!-- Product Info Header -->
+            <div class="product-info">
+              <img [src]="displayImageUrl(product)" [alt]="product.titulo" (error)="handleImageError($event)" class="product-image" />
+              <div class="product-details">
+                <h3 class="product-name">{{ product.titulo }}</h3>
+                <p class="product-category">{{ product.categoriaNombre }}</p>
+                
+                <span class="badge" [ngClass]="status.class">
+                  @if (product.stock === 0) {
+                    <!-- Alert Circle -->
+                    <svg viewBox="0 0 24 24" class="badge-icon" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  } @else if (product.stock < 5) {
+                    <!-- Alert Circle -->
+                    <svg viewBox="0 0 24 24" class="badge-icon" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  } @else {
+                    <!-- Check Circle -->
+                    <svg viewBox="0 0 24 24" class="badge-icon" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                  }
+                  {{ status.label }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Stock Control Action Footer -->
+            <div class="product-action-row">
+              @if (editingId === product.id) {
+                <div class="edit-controls">
+                  <div class="input-group">
+                    <label class="control-label">Stock:</label>
+                    <input
+                      type="number"
+                      min="0"
+                      [(ngModel)]="tempStock"
+                      class="stock-input-field"
+                    />
+                  </div>
+                  <div class="button-group">
+                    <button (click)="handleSaveStock(product)" class="btn-save">
+                      Guardar
+                    </button>
+                    <button (click)="handleCancelEdit()" class="btn-cancel">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="display-controls">
+                  <div class="stock-display">
+                    <span class="stock-label">Stock Actual</span>
+                    <span class="stock-value" [ngClass]="status.statusClass">{{ product.stock }}</span>
+                  </div>
+                  <button (click)="handleEditStock(product)" class="btn-edit">
+                    Editar Stock
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (filteredProducts.length === 0) {
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <p class="empty-text">No se encontraron productos en el inventario</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

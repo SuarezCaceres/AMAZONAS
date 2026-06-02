@@ -1,0 +1,45 @@
+<section class="requests-page">
+  <header class="requests-heading">
+    <span>MA</span>
+    <div>
+      <h1>Mis Solicitudes</h1>
+      <p>Solicitudes enviadas desde el catalogo de maquetas.</p>
+    </div>
+  </header>
+
+  <section class="empty-state" *ngIf="requests.length === 0">
+    <h2>Aun no tienes solicitudes</h2>
+    <p>Cuando envies una compra o personalizacion, aparecera aqui.</p>
+  </section>
+
+  <div class="requests-grid" *ngIf="requests.length > 0">
+    <article class="request-card" *ngFor="let request of requests">
+      <header>
+        <span>{{ getTypeLabel(request.mode) }}</span>
+        <time>{{ request.date | date:'short' }}</time>
+      </header>
+
+      <h2>{{ request.modelTitle }}</h2>
+      <p>{{ request.detail || 'Sin mensaje adicional.' }}</p>
+
+      <dl>
+        <div>
+          <dt>Cliente</dt>
+          <dd>{{ request.fullName }}</dd>
+        </div>
+        <div>
+          <dt>Telefono</dt>
+          <dd>{{ request.phone }}</dd>
+        </div>
+        <div>
+          <dt>Explicacion</dt>
+          <dd>{{ request.explanation ? 'Solicitada' : 'No solicitada' }}</dd>
+        </div>
+      </dl>
+
+      <small *ngIf="request.selectedMaterials?.length">
+        Materiales: {{ request.selectedMaterials?.join(', ') }}
+      </small>
+    </article>
+  </div>
+</section>

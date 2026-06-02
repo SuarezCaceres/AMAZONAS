@@ -1,0 +1,60 @@
+<section class="catalog-page">
+  <section class="catalog-hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Maquetas escolares a pedido</span>
+      <h1>Busca maquetas listas para aprender, exponer y presentar mejor.</h1>
+      <p>Explora modelos educativos por categoria, revisa sus materiales y elige si quieres comprarla lista o personalizarla.</p>
+    </div>
+
+    <div class="search-panel">
+      <label for="catalogSearch">Buscar maquetas</label>
+      <div class="search-box">
+        <span aria-hidden="true">⌕</span>
+        <input id="catalogSearch" type="search" placeholder="Sistema solar, casa ecologica, braille..." [(ngModel)]="searchTerm">
+      </div>
+
+      <div class="category-list" aria-label="Categorias">
+        <button
+          *ngFor="let category of categories"
+          type="button"
+          [class.selected]="selectedCategory === category"
+          (click)="selectCategory(category)"
+        >
+          {{ category }}
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="catalog-section" aria-labelledby="catalogTitle">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">12 modelos disponibles</span>
+        <h2 id="catalogTitle">Catalogo de maquetas</h2>
+      </div>
+      <p>{{ filteredModels.length }} resultado(s)</p>
+    </div>
+
+    <div class="model-grid" *ngIf="filteredModels.length; else emptyState">
+      <article class="model-card" *ngFor="let model of filteredModels">
+        <img [src]="model.imageUrl" [alt]="model.title">
+        <div class="model-body">
+          <div class="card-meta">
+            <span>{{ model.category }}</span>
+            <small>{{ model.level }}</small>
+          </div>
+          <h3>{{ model.title }}</h3>
+          <p>{{ model.description }}</p>
+          <button type="button" class="detail-button" (click)="showDetails(model)">Ver detalles</button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <h3>No encontramos maquetas con esa busqueda</h3>
+        <p>Prueba con otra categoria o cambia el texto de busqueda.</p>
+      </div>
+    </ng-template>
+  </section>
+</section>

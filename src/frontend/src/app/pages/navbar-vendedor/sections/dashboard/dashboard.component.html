@@ -1,0 +1,152 @@
+<div class="dashboard-wrapper">
+
+  <!-- ══════════════════════ HEADER ══════════════════════ -->
+  <div class="dash-header">
+    <div class="dash-title-group">
+      <h2 class="dash-title">Dashboard</h2>
+      <p class="dash-subtitle">Resumen general de tu negocio</p>
+    </div>
+    <div class="dash-actions">
+      <button class="btn-demo-load" type="button" (click)="loadDashboardData()" [disabled]="loading">
+        <svg viewBox="0 0 24 24" class="btn-icon" [class.spinning]="loading" aria-hidden="true" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        {{ loading ? 'Sincronizando...' : 'Actualizar' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ STAT CARDS ══════════════════════ -->
+  <div class="stat-grid">
+
+    @for (card of statCards; track card.id) {
+      <div class="stat-card">
+
+        <div class="stat-card-top">
+          <span class="stat-label">{{ card.label }}</span>
+          <div class="stat-icon-wrap" [style.color]="card.iconColor">
+            <svg viewBox="0 0 24 24" class="stat-icon" aria-hidden="true">
+
+              @switch (card.icon) {
+
+                @case ('cart') {
+                  <circle cx="9" cy="21" r="1"/>
+                  <circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                }
+
+                @case ('box') {
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                }
+
+                @case ('alert-circle') {
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                }
+
+                @case ('package') {
+                  <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                }
+
+                @case ('calculator') {
+                  <rect x="3" y="2" width="18" height="20" rx="2"/>
+                  <line x1="8" y1="7" x2="16" y2="7"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                  <line x1="8" y1="17" x2="12" y2="17"/>
+                }
+
+                @case ('trending-up') {
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                  <polyline points="17 6 23 6 23 12"/>
+                }
+
+              }
+            </svg>
+          </div>
+        </div>
+
+        <p class="stat-value">{{ card.value }}</p>
+        <p class="stat-desc" [style.color]="card.descColor">{{ card.description }}</p>
+
+      </div>
+    }
+
+  </div>
+
+  <!-- ══════════════════════ ACCIONES RÁPIDAS ══════════════════════ -->
+  <div class="quick-section">
+    <h3 class="quick-title">Acciones Rápidas</h3>
+    <div class="quick-grid">
+
+      @for (action of quickActions; track action.id) {
+        <button
+          class="quick-card"
+          type="button"
+          (click)="handleQuickAction(action)">
+
+          <div class="quick-icon-wrap" [style.color]="action.iconColor">
+            <svg viewBox="0 0 24 24" class="quick-icon" aria-hidden="true">
+
+              @switch (action.icon) {
+
+                @case ('cart') {
+                  <circle cx="9" cy="21" r="1"/>
+                  <circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                }
+
+                @case ('box') {
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                }
+
+                @case ('calculator') {
+                  <rect x="3" y="2" width="18" height="20" rx="2"/>
+                  <line x1="8" y1="7" x2="16" y2="7"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                  <line x1="8" y1="17" x2="12" y2="17"/>
+                }
+
+                @case ('package') {
+                  <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                  <line x1="12" y1="22.08" x2="12" y2="12"/>
+                }
+
+                @case ('bar-chart') {
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                }
+
+                @case ('globe') {
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                }
+
+              }
+            </svg>
+          </div>
+
+          <div class="quick-text">
+            <span class="quick-label">{{ action.label }}</span>
+            <span class="quick-desc">{{ action.description }}</span>
+          </div>
+
+        </button>
+      }
+
+    </div>
+  </div>
+
+</div>

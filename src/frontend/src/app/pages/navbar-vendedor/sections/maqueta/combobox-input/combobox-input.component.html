@@ -1,0 +1,46 @@
+<div class="cb-container">
+
+  <label class="cb-label">
+    {{ label }}
+    @if (required) { <span class="cb-required">*</span> }
+  </label>
+
+  <div class="cb-input-wrap">
+    <input
+      class="cb-input"
+      type="text"
+      [placeholder]="placeholder"
+      [(ngModel)]="inputText"
+      (input)="onInput()"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+      autocomplete="off">
+
+    <svg class="cb-chevron" viewBox="0 0 24 24" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+
+    @if (showDropdown && (filteredOptions.length > 0 || showCrear)) {
+      <div class="cb-dropdown">
+
+        @for (opt of filteredOptions; track opt) {
+          <button class="cb-option" type="button" (mousedown)="selectOption(opt)">
+            {{ opt }}
+          </button>
+        }
+
+        @if (showCrear) {
+          <button class="cb-option cb-crear" type="button" (mousedown)="crearNuevo()">
+            <svg viewBox="0 0 24 24" class="cb-crear-icon" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Crear: "{{ inputText.trim() }}"
+          </button>
+        }
+
+      </div>
+    }
+  </div>
+
+</div>

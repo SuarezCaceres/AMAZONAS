@@ -1,0 +1,119 @@
+:host {
+  display: block;
+}
+
+.cb-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cb-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.cb-required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+/* ── input wrap ── */
+.cb-input-wrap {
+  position: relative;
+}
+
+.cb-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 36px 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a2a3a;
+  background: #fff;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.cb-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.cb-input::placeholder {
+  color: #9ca3af;
+}
+
+.cb-chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  stroke: #6b7280;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* ── dropdown panel ── */
+.cb-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 200;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* ── option button ── */
+.cb-option {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #1a2a3a;
+  cursor: pointer;
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cb-option:hover {
+  background: #f1f5f9;
+}
+
+/* ── crear nueva opción ── */
+.cb-crear {
+  color: #3b82f6;
+  font-weight: 600;
+  border-top: 1px solid #e2e8f0;
+}
+
+.cb-crear:hover {
+  background: #eff6ff;
+}
+
+.cb-crear-icon {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  flex-shrink: 0;
+}

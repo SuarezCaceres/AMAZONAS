@@ -1,0 +1,493 @@
+﻿<div class="maqueta-wrapper">
+
+  @if (loading) {
+    <div class="loader-overlay">
+      <div class="loader-spinner"></div>
+      <p class="loader-text">Sincronizando con el servidor...</p>
+    </div>
+  }
+
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HEADER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <div class="maqueta-header">
+    <div class="maqueta-title-group">
+      <h2 class="maqueta-title">Gestión de Maquetas</h2>
+      <p class="maqueta-subtitle">Define los materiales y costos de cada maqueta</p>
+    </div>
+    <button class="btn-configurar" type="button" (click)="abrirForm()">
+      <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Configurar Maqueta
+    </button>
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• STAT CARDS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <div class="stats-row">
+    @for (stat of stats; track stat.id) {
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <span class="stat-label">{{ stat.label }}</span>
+          <div class="stat-icon-wrap" [style.color]="stat.iconColor">
+            <svg viewBox="0 0 24 24" class="stat-icon" aria-hidden="true">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+            </svg>
+          </div>
+        </div>
+        <p class="stat-value" [style.color]="stat.valueColor">{{ stat.value }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• EMPTY STATE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  @if (configuradas === 0 && !showForm) {
+    <div class="empty-state-card">
+      <div class="empty-icon-wrap">
+        <svg viewBox="0 0 24 24" class="empty-icon" aria-hidden="true">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
+        </svg>
+      </div>
+      <p class="empty-title">No hay maquetas configuradas</p>
+      <p class="empty-subtitle">Comienza definiendo los materiales y costos de tus maquetas</p>
+      <button class="btn-configurar-primera" type="button" (click)="abrirForm()">
+        <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Configurar Primera Maqueta
+      </button>
+    </div>
+  }
+
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CONFIGURAR FORM â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  @if (showForm) {
+    <div class="config-panel">
+
+      <p class="config-panel-title">Configurar Nueva Maqueta</p>
+
+      <!-- TABS -->
+      <div class="config-tabs">
+        <button
+          class="config-tab"
+          type="button"
+          [class.active]="formTab === 'catalogo'"
+          (click)="formTab = 'catalogo'">
+          Maqueta del Catálogo
+        </button>
+        <button
+          class="config-tab"
+          type="button"
+          [class.active]="formTab === 'nueva'"
+          (click)="formTab = 'nueva'">
+          Crear Nueva Maqueta
+        </button>
+      </div>
+
+      <!-- TAB: MAQUETA DEL CATÃLOGO -->
+      @if (formTab === 'catalogo') {
+        <div class="config-form-card">
+          <div class="form-field">
+            <label class="field-label">Seleccionar Maqueta del Catálogo <span class="required">*</span></label>
+            <select class="field-select" [(ngModel)]="form.maquetaSeleccionada" (change)="onMaquetaSeleccionadaChange()">
+              <option value="">Seleccionar maqueta...</option>
+              @for (prod of products; track prod.id) {
+                <option [value]="prod.id">{{ prod.titulo }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      }
+
+      <!-- TAB: CREAR NUEVA MAQUETA / EDITAR EXISTENTE -->
+      @if (formTab === 'nueva' || (formTab === 'catalogo' && form.maquetaSeleccionada)) {
+        <div class="config-form-card" style="margin-top: 12px;">
+
+          <!-- Row 1: Nombre + Categoría -->
+          <div class="form-row">
+            <div class="form-field">
+              <label class="field-label">Nombre de la Maqueta <span class="required">*</span></label>
+              <input
+                class="field-input"
+                type="text"
+                placeholder="Ej: Casa Solar"
+                [(ngModel)]="form.nombre">
+            </div>
+            <app-combobox-input
+              label="Categoría"
+              [required]="true"
+              placeholder="Buscar o crear categoría..."
+              [initialOptions]="categorias"
+              [value]="form.categoria"
+              (valueChange)="form.categoria = $event">
+            </app-combobox-input>
+          </div>
+
+          <!-- Row 2: Ocasión + Grado Escolar -->
+          <div class="form-row">
+            <app-combobox-input
+              label="Ocasión"
+              placeholder="Buscar o crear ocasión..."
+              [initialOptions]="ocasionesOptions"
+              [value]="form.ocasion"
+              (valueChange)="form.ocasion = $event">
+            </app-combobox-input>
+            <app-combobox-input
+              label="Grado Escolar"
+              placeholder="Buscar o crear grado..."
+              [initialOptions]="gradosOptions"
+              [value]="form.gradoEscolar"
+              (valueChange)="form.gradoEscolar = $event">
+            </app-combobox-input>
+          </div>
+
+          <!-- Row 2.5: Stock + Materiales Reciclables -->
+          <div class="form-row">
+            <div class="form-field">
+              <label class="field-label">Stock Inicial <span class="required">*</span></label>
+              <input
+                class="field-input"
+                type="number"
+                min="0"
+                placeholder="Ej: 10"
+                [(ngModel)]="form.stock">
+            </div>
+            <div class="form-field">
+              <label class="field-label">¿Usa Materiales Reciclables?</label>
+              <div class="checkbox-container">
+                <input
+                  type="checkbox"
+                  class="field-checkbox"
+                  [(ngModel)]="form.materialesReciclables">
+                <span class="checkbox-text">Sí, promueve el reciclaje</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 3: Imagen -->
+          <div class="form-field">
+            <label class="field-label">Imagen de la Maqueta <span class="required">*</span></label>
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              class="file-hidden"
+              (change)="onImageSelected($event)">
+            @if (!imagenPreviewUrl) {
+              <div class="img-upload-area" (click)="fileInput.click()">
+                <svg viewBox="0 0 24 24" class="img-upload-icon" aria-hidden="true">
+                  <polyline points="16 16 12 12 8 16"/>
+                  <line x1="12" y1="12" x2="12" y2="21"/>
+                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                </svg>
+                <p class="img-upload-text">Haz clic para subir imagen</p>
+                <p class="img-upload-hint">PNG, JPG, WEBP (máx. 5 MB)</p>
+              </div>
+            } @else {
+              <div class="img-preview-wrap">
+                <img class="img-preview-thumb" [src]="imagenPreviewUrl" alt="Vista previa">
+                <div class="img-preview-info">
+                  <p class="img-preview-name">{{ imagenFile?.name || 'Imagen de maqueta existente' }}</p>
+                  <div class="img-preview-actions">
+                    <button class="btn-cambiar-img" type="button" (click)="fileInput.click()">Cambiar</button>
+                    <button class="btn-eliminar-img" type="button" (click)="removeImage()">Eliminar</button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Row 4: Descripción -->
+          <div class="form-field">
+            <label class="field-label">Descripción (opcional)</label>
+            <textarea
+              class="field-textarea"
+              placeholder="Breve descripción de la maqueta"
+              rows="3"
+              [(ngModel)]="form.descripcion">
+            </textarea>
+          </div>
+
+        </div>
+      }
+
+      <!-- MATERIALES -->
+      @if (formTab === 'nueva' || (formTab === 'catalogo' && form.maquetaSeleccionada)) {
+        <div class="materiales-section">
+          <div class="materiales-header">
+            <span class="materiales-label">Materiales de la Maqueta</span>
+            <button class="btn-agregar-material" type="button" (click)="agregarMaterial()">
+              <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Agregar Material
+            </button>
+          </div>
+          <div class="materiales-nota">
+            <strong>Nota:</strong> Los costos de compra y venta se sincronizan automáticamente desde el inventario de Materiales. Para modificar los precios, ve a la sección <strong>Materiales</strong>.
+          </div>
+          
+          @if (form.materiales && form.materiales.length > 0) {
+            <div class="materiales-list-improved">
+              @for (item of form.materiales; track $index; let idx = $index) {
+                <div class="material-item-row-improved">
+                  <div class="row-main-inputs">
+                    <div class="col-material-select">
+                      <label class="field-label-sub">Material <span class="required">*</span></label>
+                      <select class="field-select" [(ngModel)]="item.nombre">
+                        <option value="">Seleccionar material...</option>
+                        @for (mat of inventoryMaterials; track mat.id) {
+                          <option [value]="mat.nombre">{{ mat.nombre }} ({{ mat.unidad }})</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="col-material-qty">
+                      <label class="field-label-sub">Cantidad <span class="required">*</span></label>
+                      <input
+                        class="field-input"
+                        type="number"
+                        min="1"
+                        [(ngModel)]="item.cantidadSugerida"
+                        placeholder="1">
+                    </div>
+
+                    <div class="col-material-cost">
+                      <label class="field-label-sub">Costo Compra (del inventario)</label>
+                      <div class="read-only-cost-box">
+                        S/ {{ getMaterialCostoCompra(item.nombre) | number:'1.2-2' }}
+                      </div>
+                    </div>
+
+                    <div class="col-material-cost sale-cost">
+                      <label class="field-label-sub">Costo Venta (del inventario)</label>
+                      <div class="read-only-cost-box">
+                        S/ {{ getMaterialCostoVenta(item.nombre) | number:'1.2-2' }}
+                      </div>
+                    </div>
+
+                    <div class="col-material-delete">
+                      <label class="field-label-sub" style="opacity: 0; display: block; margin-bottom: 4px;">Eliminar</label>
+                      <button class="btn-eliminar-material-improved" type="button" (click)="eliminarMaterial(idx)">
+                        <svg viewBox="0 0 24 24" class="delete-icon" aria-hidden="true">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="row-subtotals">
+                    <span>Subtotal Compra: S/ {{ (getMaterialCostoCompra(item.nombre) * (item.cantidadSugerida || 0)) | number:'1.2-2' }}</span>
+                    <span class="subtotal-divider">|</span>
+                    <span>Subtotal Venta: S/ {{ (getMaterialCostoVenta(item.nombre) * (item.cantidadSugerida || 0)) | number:'1.2-2' }}</span>
+                    <span class="subtotal-divider">|</span>
+                    <span>Unidad: {{ getMaterialUnidad(item.nombre) || '---' }}</span>
+                  </div>
+                </div>
+              }
+
+              <!-- CARD RESUMEN DE COSTOS Y MARGEN -->
+              <div class="costos-resumen-card">
+                <div class="resumen-row">
+                  <div class="resumen-col">
+                    <span class="resumen-label">Costo Total de Compra</span>
+                    <span class="resumen-val purchase-val">S/ {{ calcularCostoTotalCompra() | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="resumen-col">
+                    <span class="resumen-label">Costo Total de Venta</span>
+                    <span class="resumen-val sale-val">S/ {{ calcularCostoTotalVenta() | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+                <div class="resumen-divider"></div>
+                <div class="resumen-footer">
+                  <span class="margen-label">Margen: </span>
+                  <span class="margen-val">
+                    S/ {{ calcularMargen() | number:'1.2-2' }} 
+                    <span class="margen-percent">({{ calcularMargenPorcentaje() | number:'1.1-1' }}%)</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="materiales-empty">
+              No hay materiales agregados. Haz clic en "Agregar Material" para comenzar.
+            </div>
+          }
+        </div>
+      }
+
+      <!-- FOOTER -->
+      @if (formTab === 'nueva' || (formTab === 'catalogo' && form.maquetaSeleccionada)) {
+        <div class="config-footer">
+          <button class="btn-guardar" type="button" (click)="guardar()" [disabled]="saving">
+            @if (saving) {
+              <span class="spinner"></span>
+              Guardando...
+            } @else {
+              <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              Guardar Configuración
+            }
+          </button>
+          <button class="btn-cancelar" type="button" (click)="cancelar()" [disabled]="saving">
+            <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cancelar
+          </button>
+        </div>
+      }
+
+    </div>
+  }
+
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• ANÃLISIS DE PRODUCTOS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <div class="analisis-section">
+
+    <div class="analisis-header">
+      <h3 class="analisis-title">Análisis de Productos</h3>
+      <p class="analisis-subtitle">Productos más solicitados y estadísticas de ventas</p>
+    </div>
+
+    <div class="analisis-stats-row">
+      @for (stat of analisisStats; track stat.id) {
+        <div class="analisis-stat-card">
+          <div class="analisis-stat-top">
+            <span class="analisis-stat-label">{{ stat.label }}</span>
+            <div class="analisis-stat-icon" [style.color]="stat.iconColor">
+              <svg viewBox="0 0 24 24" class="astat-icon" aria-hidden="true">
+
+                @switch (stat.icon) {
+
+                  @case ('bar-chart') {
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                  }
+
+                  @case ('trending-up') {
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    <polyline points="17 6 23 6 23 12"/>
+                  }
+
+                  @case ('star') {
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  }
+
+                  @case ('alert-circle') {
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  }
+
+                }
+              </svg>
+            </div>
+          </div>
+          <p class="analisis-stat-value" [style.color]="stat.valueColor">{{ stat.value }}</p>
+          @if (stat.subtext) {
+            <p class="analisis-stat-subtext">{{ stat.subtext }}</p>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- â”€â”€ PRODUCTOS MÁS SOLICITADOS â”€â”€ -->
+    @if (topProductos.length > 0) {
+      <div class="top-sol-panel">
+        <div class="top-sol-header-inline">
+          <svg viewBox="0 0 24 24" class="top-sol-icon" aria-hidden="true">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+          <span class="top-sol-title">Productos Más Solicitados</span>
+        </div>
+        <div class="top-sol-grid">
+          @for (prod of topProductos; track prod.productoId) {
+            <div class="top-sol-card">
+              <div class="top-sol-img-wrap">
+                <img class="top-sol-img" [src]="prod.imageUrl" [alt]="prod.titulo" loading="lazy">
+              </div>
+              <div class="top-sol-info">
+                <p class="top-sol-name">{{ prod.titulo }}</p>
+                <p class="top-sol-cat" [style.color]="getCategoriaColor(prod.categoriaNombre)">
+                  {{ prod.categoriaNombre }}
+                </p>
+                <div class="top-sol-badge">
+                  <span class="badge-number">{{ prod.totalSolicitudes }}</span>
+                  <span class="badge-label">solicitudes</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (topProductos.length === 0 && productosSinSolicitudes.length === 0) {
+      <div class="analisis-empty-card">
+        <div class="analisis-empty-icon-wrap">
+          <svg viewBox="0 0 24 24" class="analisis-empty-icon" aria-hidden="true">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <p class="analisis-empty-text">No hay solicitudes registradas aún</p>
+      </div>
+    }
+
+    <!-- â”€â”€ PRODUCTOS SIN SOLICITUDES â”€â”€ -->
+    @if (productosSinSolicitudes.length > 0) {
+      <div class="sin-sol-panel">
+
+        <div class="sin-sol-header">
+          <div class="sin-sol-title-row">
+            <svg viewBox="0 0 24 24" class="sin-sol-icon" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span class="sin-sol-title">
+              Productos Sin Solicitudes ({{ productosSinSolicitudes.length }})
+            </span>
+          </div>
+          <p class="sin-sol-subtitle">
+            Estos productos no han recibido ninguna solicitud. Considera promocionarlos o evaluar su demanda.
+          </p>
+        </div>
+
+        <div class="sin-sol-grid">
+          @for (producto of productosSinSolicitudes; track producto.id) {
+            <div class="sin-sol-card">
+              <img
+                class="sin-sol-img"
+                [src]="producto.imagenUrl"
+                [alt]="producto.nombre"
+                loading="lazy">
+              <p class="sin-sol-nombre">{{ producto.nombre }}</p>
+              <p class="sin-sol-cat" [style.color]="getCategoriaColor(producto.categoria)">
+                {{ producto.categoria }}
+              </p>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+  </div>
+
+</div>
+

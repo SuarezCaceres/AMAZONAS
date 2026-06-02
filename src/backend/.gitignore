@@ -1,9 +1,15 @@
+# ===================================================================
+# ARCHIVOS DE COMPILACIÓN Y CONFIGURACIÓN DE SPRING / MAVEN
+# ===================================================================
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# ===================================================================
+# ENTORNOS DE DESARROLLO (IDEs)
+# ===================================================================
 ### STS ###
 .apt_generated
 .classpath
@@ -32,7 +38,27 @@ build/
 ### VS Code ###
 .vscode/
 
-### Environment ###
+# ===================================================================
+# ARCHIVOS DE SISTEMA OPERATIVO (NUEVO)
+# ===================================================================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# ===================================================================
+# LOGS Y ARCHIVOS TEMPORALES (NUEVO)
+# ===================================================================
+*.log
+logs/
+*.tmp
+*.bak
+
+# ===================================================================
+# VARIABLES DE ENTORNO Y ARCHIVOS LOCALES SENSIBLES
+# ===================================================================
 .env
+.env.local
 application-dev.properties
 application-local.properties

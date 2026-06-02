@@ -1,48 +1,83 @@
 package com.amazonas.backend.modules.vendors.model;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
-import com.amazonas.backend.common.entity.BaseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.amazonas.backend.modules.auth.enums.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "vendors")
-public class Vendor extends BaseEntity {
+public class Vendor implements UserDetails {
 
     @Id
     private UUID id;
 
-    @Column(nullable = false, length = 255)
-    private String name;
+    @Column(nullable = false, length = 100)
+    private String nombre;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(
+            nullable = false,
+            columnDefinition = "user_role"
+    )
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
+    private Role role = Role.ADMIN; // Ajustado por defecto al valor de tu script SQL
 
     @Column(nullable = false)
-    private String phone;
+    private Boolean activo = true; // Mapea la columna 'activo' de tu script SQL
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "can_manage_materials")
-    private Boolean canManageMaterials = false;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
-    @Column(name = "can_create_budgets")
-    private Boolean canCreateBudgets = false;
+    // =========================
+    // JPA HOOKS
+    // =========================
 
-    @Column(name = "can_view_all_requests")
-    private Boolean canViewAllRequests = false;
+    @PrePersist
+    protected void onCreate() {
 
-    @Column(name = "last_login")
-    private LocalDateTime lastLogin;
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // =========================
+    // GETTERS & SETTERS
+    // =========================
 
     public UUID getId() {
         return id;
@@ -52,12 +87,12 @@ public class Vendor extends BaseEntity {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public String getEmail() {
@@ -68,59 +103,64 @@ public class Vendor extends BaseEntity {
         this.email = email;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    @Override
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getPhone() {
-        return phone;
+    public Role getRole() {
+        return role;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
-    public Boolean getIsActive() {
-        return isActive;
+    public Boolean getActivo() {
+        return activo;
     }
 
-    public void setIsActive(Boolean active) {
-        isActive = active;
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
     }
 
-    public Boolean getCanManageMaterials() {
-        return canManageMaterials;
+    // =========================
+    // SPRING SECURITY
+    // =========================
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(
+                new SimpleGrantedAuthority(role.name())
+        );
     }
 
-    public void setCanManageMaterials(Boolean canManageMaterials) {
-        this.canManageMaterials = canManageMaterials;
+    @Override
+    public String getUsername() {
+        return email;
     }
 
-    public Boolean getCanCreateBudgets() {
-        return canCreateBudgets;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public void setCanCreateBudgets(Boolean canCreateBudgets) {
-        this.canCreateBudgets = canCreateBudgets;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public Boolean getCanViewAllRequests() {
-        return canViewAllRequests;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public void setCanViewAllRequests(Boolean canViewAllRequests) {
-        this.canViewAllRequests = canViewAllRequests;
-    }
-
-    public LocalDateTime getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(LocalDateTime lastLogin) {
-        this.lastLogin = lastLogin;
+    @Override
+    public boolean isEnabled() {
+        return activo; // Controla la actividad según tu columna 'activo' boolean
     }
 }

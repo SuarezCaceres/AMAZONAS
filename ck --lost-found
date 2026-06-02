@@ -1,0 +1,59 @@
+[33m4d0ff71[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/nosotros-cliente[m[33m, [m[1;31morigin/feature/nosotros-cliente[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33m4d0ff71[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/nosotros-cliente[m[33m, [m[1;31morigin/feature/nosotros-cliente[m[33m)[m HEAD@{1}: checkout: moving from feature/buscador-cliente to feature/nosotros-cliente
+[33ma32b249[m[33m ([m[1;32mfeature/buscador-cliente[m[33m)[m HEAD@{2}: checkout: moving from feature/inicio-cliente to feature/buscador-cliente
+[33m57e17a7[m[33m ([m[1;31morigin/feature/inicio-cliente[m[33m, [m[1;32mfeature/inicio-cliente[m[33m)[m HEAD@{3}: checkout: moving from feature/nosotros-cliente to feature/inicio-cliente
+[33m4d0ff71[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/nosotros-cliente[m[33m, [m[1;31morigin/feature/nosotros-cliente[m[33m)[m HEAD@{4}: checkout: moving from feature/buscador-cliente to feature/nosotros-cliente
+[33ma32b249[m[33m ([m[1;32mfeature/buscador-cliente[m[33m)[m HEAD@{5}: checkout: moving from feature/nosotros-cliente to feature/buscador-cliente
+[33m4d0ff71[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/nosotros-cliente[m[33m, [m[1;31morigin/feature/nosotros-cliente[m[33m)[m HEAD@{6}: checkout: moving from feature/buscador-cliente to feature/nosotros-cliente
+[33ma32b249[m[33m ([m[1;32mfeature/buscador-cliente[m[33m)[m HEAD@{7}: merge feature/nosotros-cliente: Merge made by the 'ort' strategy.
+[33m57e17a7[m[33m ([m[1;31morigin/feature/inicio-cliente[m[33m, [m[1;32mfeature/inicio-cliente[m[33m)[m HEAD@{8}: merge feature/inicio-cliente: Fast-forward
+[33m1c48e80[m[33m ([m[1;31morigin/estructura/catalogo-cliente[m[33m)[m HEAD@{9}: checkout: moving from feature/nosotros-cliente to feature/buscador-cliente
+[33m4d0ff71[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/nosotros-cliente[m[33m, [m[1;31morigin/feature/nosotros-cliente[m[33m)[m HEAD@{10}: commit: implementación de la sección nosotros
+[33m5e03f5a[m HEAD@{11}: merge origin/estructura/catalogo-cliente: Merge made by the 'ort' strategy.
+[33m74892f0[m HEAD@{12}: checkout: moving from feature/inicio-cliente to feature/nosotros-cliente
+[33m57e17a7[m[33m ([m[1;31morigin/feature/inicio-cliente[m[33m, [m[1;32mfeature/inicio-cliente[m[33m)[m HEAD@{13}: checkout: moving from feature/buscador-cliente to feature/inicio-cliente
+[33m1c48e80[m[33m ([m[1;31morigin/estructura/catalogo-cliente[m[33m)[m HEAD@{14}: merge origin/estructura/catalogo-cliente: Fast-forward
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{15}: checkout: moving from feature/inicio-cliente to feature/buscador-cliente
+[33m57e17a7[m[33m ([m[1;31morigin/feature/inicio-cliente[m[33m, [m[1;32mfeature/inicio-cliente[m[33m)[m HEAD@{16}: merge origin/estructura/catalogo-cliente: Merge made by the 'ort' strategy.
+[33m74892f0[m HEAD@{17}: checkout: moving from feature/nosotros-cliente to feature/inicio-cliente
+[33m74892f0[m HEAD@{18}: merge feature/inicio-cliente: Fast-forward
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{19}: checkout: moving from feature/inicio-cliente to feature/nosotros-cliente
+[33m74892f0[m HEAD@{20}: checkout: moving from feature/nosotros-cliente to feature/inicio-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{21}: checkout: moving from feature/inicio-cliente to feature/nosotros-cliente
+[33m74892f0[m HEAD@{22}: commit: Termino de diseño de seccion inicio
+[33m34f9ada[m HEAD@{23}: merge origin/develop: Merge made by the 'ort' strategy.
+[33m86a9cec[m HEAD@{24}: commit: avance inicio y conexion de header con inicio y nosotros
+[33md046f55[m HEAD@{25}: merge origin/estructura/administrar-vendedor: Merge made by the 'ort' strategy.
+[33m7d12236[m HEAD@{26}: reset: moving to HEAD
+[33m7d12236[m HEAD@{27}: reset: moving to HEAD
+[33m7d12236[m HEAD@{28}: reset: moving to HEAD
+[33m7d12236[m HEAD@{29}: reset: moving to HEAD
+[33m7d12236[m HEAD@{30}: reset: moving to HEAD
+[33m7d12236[m HEAD@{31}: pull origin feature/inicio-cliente: Fast-forward
+[33m2af4905[m HEAD@{32}: reset: moving to HEAD
+[33m2af4905[m HEAD@{33}: reset: moving to HEAD
+[33m2af4905[m HEAD@{34}: checkout: moving from estructura/catalogo-cliente to feature/inicio-cliente
+[33mbe9a03d[m[33m ([m[1;32mestructura/catalogo-cliente[m[33m)[m HEAD@{35}: reset: moving to HEAD
+[33mbe9a03d[m[33m ([m[1;32mestructura/catalogo-cliente[m[33m)[m HEAD@{36}: checkout: moving from feature/inicio-cliente to estructura/catalogo-cliente
+[33m2af4905[m HEAD@{37}: reset: moving to HEAD
+[33m2af4905[m HEAD@{38}: commit: trayendo estructura del front
+[33m61a281f[m[33m ([m[1;31morigin/feature/carpetas-cliente[m[33m, [m[1;32mfeature/carpetas-cliente[m[33m)[m HEAD@{39}: pull origin feature/carpetas-cliente: Fast-forward
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{40}: checkout: moving from feature/carpetas-cliente to feature/inicio-cliente
+[33m61a281f[m[33m ([m[1;31morigin/feature/carpetas-cliente[m[33m, [m[1;32mfeature/carpetas-cliente[m[33m)[m HEAD@{41}: commit: estructura inicial frontend angular
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{42}: checkout: moving from feature/nosotros-cliente to feature/carpetas-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{43}: checkout: moving from feature/buscador-cliente to feature/nosotros-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{44}: checkout: moving from feature/inicio-cliente to feature/buscador-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{45}: checkout: moving from feature/estructura-cliente to feature/inicio-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{46}: checkout: moving from feature/inicio-cliente to feature/estructura-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{47}: checkout: moving from feature/carpetas-cliente to feature/inicio-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{48}: checkout: moving from feature/nosotros-cliente to feature/carpetas-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{49}: checkout: moving from develop to feature/nosotros-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{50}: checkout: moving from feature/buscador-cliente to develop
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{51}: checkout: moving from develop to feature/buscador-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{52}: checkout: moving from feature/inicio-cliente to develop
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{53}: checkout: moving from develop to feature/inicio-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{54}: checkout: moving from feature/carpetas-cliente to develop
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{55}: checkout: moving from feature/estructura-cliente to feature/carpetas-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{56}: checkout: moving from develop to feature/estructura-cliente
+[33mc9d334c[m[33m ([m[1;31morigin/feature/navbar-vendedor[m[33m, [m[1;31morigin/feature/buscador-cliente[m[33m, [m[1;31morigin/feature/auth-vendor-endpoints[m[33m, [m[1;32mfeature/estructura-cliente[m[33m, [m[1;32mdevelop[m[33m)[m HEAD@{57}: checkout: moving from main to develop
+[33m8d36ac6[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{58}: clone: from https://github.com/SuarezCaceres/AMAZONAS.git

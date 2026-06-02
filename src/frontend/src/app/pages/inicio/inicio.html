@@ -1,0 +1,301 @@
+<section class="hero">
+
+  <div class="hero-content">
+
+    <h1>Maquetas Educativas <br> Amazonas</h1>
+
+    <p>
+      Creamos modelos educativos de alta calidad con materiales sostenibles.
+      Comienza explorando nuestro catálogo o solicita una maqueta personalizada.
+    </p>
+
+    <!-- BUSCADOR -->
+    <app-buscador-inteligente (modelSelected)="modelSelected.emit($event)" (requestAccess)="requestAccess.emit($event)">
+    </app-buscador-inteligente>
+
+    <!-- TAGS -->
+    <div class="popular-searches">
+      <span class="material-icons">
+        trending_up
+      </span>
+      <span> Búsquedas populares:</span>
+
+      <div class="tags">
+
+        <button (click)="buscarTag('Sistema Solar')">
+          Sistema Solar
+        </button>
+
+        <button (click)="buscarTag('Célula Animal')">
+          Célula Animal
+        </button>
+
+        <button (click)="buscarTag('Ciencia')">
+          Maquetas de Ciencia
+        </button>
+
+        <button (click)="buscarTag('Inclusivas')">
+          Modelos Inclusivos
+        </button>
+
+        <button (click)="buscarTag('Arquitectura')">
+          Arquitectura
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- CARDS -->
+    <div class="hero-cards">
+
+      <div class="card green">
+
+        <div class="icon-circle">
+          <span class="material-icons">search</span>
+        </div>
+
+        <h3>Explorar Catálogo</h3>
+
+        <p>
+          Descubre nuestras maquetas educativas ya disponibles
+        </p>
+
+        <br>
+
+        <button class="catalog-link" type="button" (click)="catalogClicked.emit()">
+
+          Ver maquetas →
+
+        </button>
+
+      </div>
+
+      <div class="card purple">
+
+        <div class="icon-circle">
+          <span class="material-icons">build</span>
+        </div>
+
+        <h3>Maqueta Personalizada</h3>
+
+        <p>
+          Solicita una maqueta única diseñada para tus necesidades
+        </p>
+
+        <button class="catalog-link" type="button" (click)="requestAccess.emit('personalizar')">
+          Solicitar ahora →
+        </button>
+
+      </div>
+
+      <div class="card gray">
+
+        <div class="icon-circle">
+          <span class="material-icons">inventory_2</span>
+        </div>
+
+        <h3>Crea tu Cuenta</h3>
+
+        <p>
+          Regístrate para hacer seguimiento de tus solicitudes
+        </p>
+
+        <button class="btn-primary" type="button" (click)="isLoggedIn ? mostrarAvisoCuenta() : registerClicked.emit()">
+
+          Registrarse gratis
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- COMO FUNCIONA -->
+
+<section class="steps-section">
+
+  <h2>¿Cómo Funciona?</h2>
+
+  <p class="subtitle">
+    Es muy fácil obtener tu maqueta educativa. Sigue estos simples pasos:
+  </p>
+
+  <div class="steps-grid">
+
+    <div class="step-card">
+
+      <div class="number green-bg">1</div>
+
+      <div class="step-icon green-light">
+        <span class="material-icons">search</span>
+      </div>
+
+      <h3>Explora o Solicita</h3>
+
+      <p>
+        Busca en nuestro catálogo una maqueta lista,
+        o solicita una personalizada desde cero
+      </p>
+
+    </div>
+
+    <div class="step-card">
+
+      <div class="number blue-bg">2</div>
+
+      <div class="step-icon blue-light">
+        <span class="material-icons">chat</span>
+      </div>
+
+      <h3>Envía tu Solicitud</h3>
+
+      <p>
+        Crea tu cuenta gratis y completa el formulario con tus datos
+      </p>
+
+    </div>
+
+    <div class="step-card">
+
+      <div class="number purple-bg">3</div>
+
+      <div class="step-icon purple-light">
+        <span class="material-icons">build</span>
+      </div>
+
+      <h3>Recibe Presupuesto</h3>
+
+      <p>
+        Te enviamos un presupuesto detallado
+        y podrás chatear con nosotros
+      </p>
+
+    </div>
+
+    <div class="step-card">
+
+      <div class="number orange-bg">4</div>
+
+      <div class="step-icon yellow-light">
+        <span class="material-icons">task_alt</span>
+      </div>
+
+      <h3>Recibe tu Maqueta</h3>
+
+      <p>
+        Una vez confirmado el pago,
+        creamos tu maqueta y te la entregamos
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- IMAGEN -->
+
+<section class="banner-image">
+
+  <img src="https://live.staticflickr.com/3423/3309115143_5e215f3b3d_z.jpg" alt="Banner">
+
+</section>
+
+<!-- BENEFICIOS -->
+
+<section class="benefits">
+
+  <h2>¿Por Qué Elegirnos?</h2>
+
+  <p class="subtitle">
+    Somos un taller especializado en la creación de maquetas educativas.
+  </p>
+
+  <div class="benefits-grid">
+
+    <div class="benefit-card">
+
+      <span class="material-icons">eco</span>
+
+      <h3>Materiales Sostenibles</h3>
+
+      <p>
+        Utilizamos materiales reciclables y ecológicos.
+      </p>
+
+    </div>
+
+    <div class="benefit-card">
+
+      <span class="material-icons">groups</span>
+
+      <h3>Educación Inclusiva</h3>
+
+      <p>
+        Diseñamos modelos adaptados para estudiantes
+        con necesidades especiales.
+      </p>
+
+    </div>
+
+    <div class="benefit-card">
+
+      <span class="material-icons">favorite</span>
+
+      <h3>Hecho con Pasión</h3>
+
+      <p>
+        Cada maqueta es elaborada con dedicación
+        y atención al detalle.
+      </p>
+
+    </div>
+
+    <div class="benefit-card">
+
+      <span class="material-icons">auto_awesome</span>
+
+      <h3>Calidad Garantizada</h3>
+
+      <p>
+        Productos duraderos y de alta calidad.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- CTA FINAL -->
+
+<section class="cta-section">
+
+  <h2>¿Listo para transformar el aprendizaje?</h2>
+
+  <p>
+    Crea tu cuenta gratis y comienza a explorar nuestras maquetas educativas
+  </p>
+
+  <div class="cta-buttons">
+
+    <button class="catalog-link" type="button" (click)="catalogClicked.emit()">
+
+      Ver maquetas →
+
+    </button>
+
+    <button class="register-btn" type="button" (click)="isLoggedIn ? mostrarAvisoCuenta() : registerClicked.emit()">
+
+      Crear Cuenta Gratis
+
+    </button>
+
+  </div>
+
+</section>
