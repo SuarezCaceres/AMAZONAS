@@ -46,8 +46,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry
                 .addEndpoint("/ws")                        // Endpoint de conexión WebSocket
-                .setAllowedOriginPatterns("*")             // CORS (afinar en producción)
-                .withSockJS();                             // Fallback para browsers sin WebSocket nativo
+                .setAllowedOriginPatterns("*");            // CORS (afinar en producción)
     }
 
     @Override

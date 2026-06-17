@@ -11,9 +11,6 @@ import {
   CreateExtraRequest
 } from '../models/chat.model';
 import { Client, IFrame, IMessage } from '@stomp/stompjs';
-import * as SockJS_ from 'sockjs-client';
-
-const SockJS = (SockJS_ as any).default || SockJS_;
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
@@ -90,11 +87,16 @@ export class ChatService {
       return;
     }
 
-    // El endpoint base para SockJS es /ws en el backend de Spring Boot (normalmente en el puerto 8080)
-    const socketUrl = API_BASE_URL.replace('/api', '/ws');
+    // Convert API HTTP URL to WebSocket protocol (ws:// or wss://)
+    let brokerURL = API_BASE_URL.replace('/api', '/ws');
+    if (brokerURL.startsWith('https://')) {
+      brokerURL = brokerURL.replace('https://', 'wss://');
+    } else if (brokerURL.startsWith('http://')) {
+      brokerURL = brokerURL.replace('http://', 'ws://');
+    }
 
     this.stompClient = new Client({
-      webSocketFactory: () => new SockJS(socketUrl),
+      brokerURL: brokerURL,
       connectHeaders: {
         token: `Bearer ${token}`
       },
