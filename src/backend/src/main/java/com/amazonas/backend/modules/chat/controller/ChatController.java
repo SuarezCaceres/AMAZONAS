@@ -1,0 +1,161 @@
+package com.amazonas.backend.modules.chat.controller;
+
+import com.amazonas.backend.modules.chat.dto.*;
+import com.amazonas.backend.modules.chat.service.ChatService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Controlador del módulo de Chat y Negociación.
+ *
+ * Expone dos tipos de endpoints:
+ * 1. REST (@GetMapping, @PostMapping) — Para carga inicial de datos.
+ * 2. WebSocket (@MessageMapping) — Para mensajes en tiempo real via STOMP.
+ *
+ * Rutas REST base: /api/chat
+ * Rutas WebSocket: /app/chat/{roomId}/...  →  publica en /topic/room/{roomId}
+ */
+@RestController
+@RequestMapping("/api/chat")
+@RequiredArgsConstructor
+@Tag(name = "Chat y Negociación", description = "Módulo de comunicación y negociación entre cliente y vendedor")
+public class ChatController {
+
+    private final ChatService chatService;
+
+    // =========================================================================
+    // REST — SALAS
+    // =========================================================================
+
+    @Operation(summary = "Obtener o crear sala de chat de una solicitud")
+    @PostMapping("/rooms/request/{requestId}")
+    public ResponseEntity<ChatRoomResponse> getOrCreateRoom(
+            @PathVariable UUID requestId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.getOrCreateRoom(requestId, userDetails.getUsername()));
+    }
+
+    @Operation(summary = "Listar mis salas de chat (cliente o vendedor)")
+    @GetMapping("/rooms")
+    public ResponseEntity<List<ChatRoomResponse>> getMyRooms(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.getMyRooms(userDetails.getUsername()));
+    }
+
+    // =========================================================================
+    // REST — MENSAJES (Carga inicial del historial)
+    // =========================================================================
+
+    @Operation(summary = "Cargar historial de mensajes de una sala (últimos 30)")
+    @GetMapping("/rooms/{roomId}/messages")
+    public ResponseEntity<List<ChatMessageResponse>> getMessages(
+            @PathVariable UUID roomId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.getMessages(roomId, userDetails.getUsername()));
+    }
+
+    @Operation(summary = "Marcar mensajes como leídos")
+    @PatchMapping("/rooms/{roomId}/read")
+    public ResponseEntity<Void> markAsRead(
+            @PathVariable UUID roomId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        chatService.markAsRead(roomId, userDetails.getUsername());
+        return ResponseEntity.ok().build();
+    }
+
+    // =========================================================================
+    // REST — OFERTAS
+    // =========================================================================
+
+    @Operation(summary = "Proponer una nueva oferta de precio")
+    @PostMapping("/rooms/{roomId}/offers")
+    public ResponseEntity<ChatOfferResponse> createOffer(
+            @PathVariable UUID roomId,
+            @Valid @RequestBody CreateOfferRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.createOffer(roomId, request, userDetails.getUsername()));
+    }
+
+    @Operation(summary = "Aceptar una oferta de precio")
+    @PostMapping("/offers/{offerId}/accept")
+    public ResponseEntity<ChatOfferResponse> acceptOffer(
+            @PathVariable UUID offerId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.respondToOffer(offerId, true, userDetails.getUsername()));
+    }
+
+    @Operation(summary = "Rechazar una oferta de precio")
+    @PostMapping("/offers/{offerId}/reject")
+    public ResponseEntity<ChatOfferResponse> rejectOffer(
+            @PathVariable UUID offerId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.respondToOffer(offerId, false, userDetails.getUsername()));
+    }
+
+    // =========================================================================
+    // REST — EXTRAS
+    // =========================================================================
+
+    @Operation(summary = "Proponer un servicio extra (solo vendedor)")
+    @PostMapping("/rooms/{roomId}/extras")
+    public ResponseEntity<ChatRoomResponse> addExtra(
+            @PathVariable UUID roomId,
+            @Valid @RequestBody CreateExtraRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.addExtra(roomId, request, userDetails.getUsername()));
+    }
+
+    @Operation(summary = "Aceptar un extra propuesto")
+    @PostMapping("/extras/{extraId}/accept")
+    public ResponseEntity<ChatRoomResponse> acceptExtra(
+            @PathVariable UUID extraId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.respondToExtra(extraId, true, userDetails.getUsername()));
+    }
+
+    @Operation(summary = "Rechazar un extra propuesto")
+    @PostMapping("/extras/{extraId}/reject")
+    public ResponseEntity<ChatRoomResponse> rejectExtra(
+            @PathVariable UUID extraId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.respondToExtra(extraId, false, userDetails.getUsername()));
+    }
+
+    // =========================================================================
+    // WEBSOCKET — MENSAJES EN TIEMPO REAL
+    // El frontend envía a: /app/chat/{roomId}/send
+    // El servidor publica en: /topic/room/{roomId}
+    // =========================================================================
+
+    @MessageMapping("/chat/{roomId}/send")
+    public void handleWebSocketMessage(
+            @DestinationVariable UUID roomId,
+            @Payload SendMessageRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        // El servicio se encarga de sanitizar, persistir y publicar via SimpMessagingTemplate
+        chatService.sendMessage(roomId, request, userDetails.getUsername());
+    }
+}

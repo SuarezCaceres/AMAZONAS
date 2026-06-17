@@ -14,4 +14,7 @@ public interface VendorRepository extends JpaRepository<Vendor, UUID> {
     Optional<Vendor> findByEmail(String email);
     
     boolean existsByEmail(String email);
+
+    /** Obtiene el primer vendedor activo (usado para asignación automática en MVP) */
+    Optional<Vendor> findFirstByActivoTrue();
 }
