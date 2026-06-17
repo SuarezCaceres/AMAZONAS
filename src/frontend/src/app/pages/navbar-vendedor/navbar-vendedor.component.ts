@@ -6,6 +6,7 @@ import { GestionStockComponent } from './sections/gestion-stock/gestion-stock.co
 import { SolicitudesComponent } from './sections/solicitudes/solicitudes.component';
 import { MaterialesComponent } from './sections/materiales/materiales.component';
 import { PresupuestosComponent } from './sections/presupuestos/presupuestos.component';
+import { ChatComponent } from '../navbar-cliente/sections/chat/chat.component';
 
 export type VendedorTab =
   | 'dashboard'
@@ -14,7 +15,8 @@ export type VendedorTab =
   | 'solicitudes'
   | 'materiales'
   | 'presupuestos'
-  | 'pagos';
+  | 'pagos'
+  | 'chat';
 
 export interface NavItem {
   id: VendedorTab;
@@ -25,7 +27,7 @@ export interface NavItem {
 @Component({
   selector: 'app-navbar-vendedor',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, MaquetaComponent, GestionStockComponent, SolicitudesComponent, MaterialesComponent, PresupuestosComponent],
+  imports: [CommonModule, DashboardComponent, MaquetaComponent, GestionStockComponent, SolicitudesComponent, MaterialesComponent, PresupuestosComponent, ChatComponent],
   templateUrl: './navbar-vendedor.component.html',
   styleUrl: './navbar-vendedor.component.css',
 })
@@ -37,12 +39,14 @@ export class NavbarVendedorComponent {
   activeTab: VendedorTab = 'dashboard';
   mobileMenuOpen = false;
   solicitudIdParaPresupuesto: string | null = null;
+  solicitudIdParaChat: string | null = null;
 
   navItems: NavItem[] = [
     { id: 'dashboard',     label: 'Dashboard',        icon: 'grid'        },
     { id: 'maquetas',      label: 'Maquetas',          icon: 'layers'      },
     { id: 'gestion-stock', label: 'Gestión de Stock',  icon: 'box'         },
     { id: 'solicitudes',   label: 'Solicitudes',       icon: 'cart'        },
+    { id: 'chat',          label: 'Mensajes',          icon: 'message'     },
     { id: 'materiales',    label: 'Materiales',        icon: 'briefcase'   },
     { id: 'presupuestos',  label: 'Presupuestos',      icon: 'calculator'  },
     { id: 'pagos',         label: 'Pagos',             icon: 'dollar'      },
@@ -51,15 +55,24 @@ export class NavbarVendedorComponent {
   setTab(tab: VendedorTab): void {
     this.activeTab = tab;
     this.mobileMenuOpen = false;
-    // Clear solicitudId when navigating away from presupuestos
+    // Limpiar IDs de contexto al navegar a otras secciones
     if (tab !== 'presupuestos') {
       this.solicitudIdParaPresupuesto = null;
+    }
+    if (tab !== 'chat') {
+      this.solicitudIdParaChat = null;
     }
   }
 
   irAPresupuestoConSolicitud(solicitudId: string): void {
     this.solicitudIdParaPresupuesto = solicitudId;
     this.activeTab = 'presupuestos';
+    this.mobileMenuOpen = false;
+  }
+
+  irAlChatConSolicitud(solicitudId: string): void {
+    this.solicitudIdParaChat = solicitudId;
+    this.activeTab = 'chat';
     this.mobileMenuOpen = false;
   }
 

@@ -103,6 +103,10 @@
               <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
             }
 
+            @case ('message') {
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            }
+
           }
         </svg>
 
@@ -184,6 +188,9 @@
                 <line x1="12" y1="1" x2="12" y2="23"/>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               }
+              @case ('message') {
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              }
             }
           </svg>
 
@@ -226,7 +233,10 @@
       }
 
       @case ('solicitudes') {
-        <app-solicitudes (crearPresupuestoEvent)="irAPresupuestoConSolicitud($event)"></app-solicitudes>
+        <app-solicitudes
+          (crearPresupuestoEvent)="irAPresupuestoConSolicitud($event)"
+          (abrirChatEvent)="irAlChatConSolicitud($event)">
+        </app-solicitudes>
       }
 
       @case ('materiales') {
@@ -247,6 +257,13 @@
         <div class="placeholder-empty">
           <p>El módulo de <strong>Pagos</strong> se construirá en el siguiente paso.</p>
         </div>
+      }
+
+      @case ('chat') {
+        <app-chat
+          [autoSelectRequestId]="solicitudIdParaChat"
+          (closeChat)="setTab('dashboard')">
+        </app-chat>
       }
 
     }

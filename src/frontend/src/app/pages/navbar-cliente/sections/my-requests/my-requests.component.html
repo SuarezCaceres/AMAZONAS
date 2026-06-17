@@ -33,15 +33,23 @@
         <strong>Descripcion:</strong> {{ request.detail }}
       </p>
 
+      <small *ngIf="request.selectedMaterials?.length">
+        Materiales: {{ request.selectedMaterials?.join(', ') }}
+      </small>
+
       <div class="card-info">
         <span class="info-icon">&#9201;</span>
         <span>Estamos revisando tu solicitud. Pronto recibiras una respuesta.</span>
       </div>
 
-      <button class="btn-conversation" type="button">
-        <span class="chat-icon">&#128172;</span>
-        Ver Conversacion
-      </button>
+      <div class="card-actions" *ngIf="request.backendId">
+        <button class="btn-conversation btn-chat" type="button" (click)="onViewChat(request.backendId)">
+          <svg viewBox="0 0 24 24" class="btn-chat-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Ver conversación
+        </button>
+      </div>
     </article>
   </div>
 </section>

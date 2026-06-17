@@ -15,6 +15,7 @@ export interface SessionUser {
 
 export interface SavedRequest {
   id: number;
+  backendId?: string;
   mode: RequestMode;
   modelTitle: string;
   fullName: string;

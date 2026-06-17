@@ -13,11 +13,12 @@ import { AuthComponent } from './sections/auth/auth.component';
 import { RequestFormComponent, RequestMode, SavedRequest, SessionUser } from './sections/request-form/request-form.component';
 import { MyRequestsComponent } from './sections/my-requests/my-requests.component';
 import { ResetPasswordComponent } from './sections/reset-password/reset-password.component';
+import { ChatComponent } from './sections/chat/chat.component';
 
 import { MODELS, ModelItem } from '../data/model';
 import { AuthService } from '../../services/auth.service';
 
-type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests' | 'categories' | 'reset-password';
+type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests' | 'categories' | 'reset-password' | 'chat';
 type AuthView = 'login' | 'register';
 
 @Component({
@@ -35,7 +36,8 @@ type AuthView = 'login' | 'register';
     AuthComponent,
     RequestFormComponent,
     MyRequestsComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    ChatComponent
   ],
   templateUrl: './navbar-cliente.component.html',
   styleUrl: './navbar-cliente.component.css'
@@ -58,6 +60,7 @@ export class NavbarClienteComponent implements OnInit, OnDestroy {
   isStandaloneRequest = false;
   tokenToReset = '';
   preselectedCategory = '';
+  selectedRequestIdForChat = '';
 
   ngOnInit(): void {
     // Check for password reset token in URL query params
@@ -220,6 +223,12 @@ export class NavbarClienteComponent implements OnInit, OnDestroy {
 
   handleRequestSubmitted(_request: SavedRequest): void {
     this.page = 'requests';
+  }
+
+  handleViewChat(requestId: string): void {
+    this.selectedRequestIdForChat = requestId;
+    this.page = 'chat';
+    this.accessNotice = '';
   }
 
   logout(): void {

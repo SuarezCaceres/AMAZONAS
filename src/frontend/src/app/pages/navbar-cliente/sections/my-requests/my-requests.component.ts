@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, inject } from '@angular/core';
 import { SavedRequest, SessionUser } from '../request-form/request-form.component';
 import { PurchaseRequestService } from '../../../../services/purchase-request.service';
 
@@ -12,6 +12,7 @@ import { PurchaseRequestService } from '../../../../services/purchase-request.se
 })
 export class MyRequestsComponent implements OnChanges {
   @Input() user: SessionUser | null = null;
+  @Output() viewChat = new EventEmitter<string>();
 
   private readonly requestService = inject(PurchaseRequestService);
 
@@ -26,6 +27,7 @@ export class MyRequestsComponent implements OnChanges {
       next: (responses) => {
         this.requests = responses.map((res): SavedRequest => ({
           id: 0,
+          backendId: res.id,
           mode: res.isCustom ? 'personalizar' : 'comprar',
           modelTitle: res.productoNombre || 'Solicitud personalizada',
           fullName: res.clienteNombre,
@@ -50,5 +52,11 @@ export class MyRequestsComponent implements OnChanges {
 
   getTypeLabel(mode: SavedRequest['mode']): string {
     return mode === 'personalizar' ? 'Personalizacion' : 'Compra';
+  }
+
+  onViewChat(requestId?: string): void {
+    if (requestId) {
+      this.viewChat.emit(requestId);
+    }
   }
 }

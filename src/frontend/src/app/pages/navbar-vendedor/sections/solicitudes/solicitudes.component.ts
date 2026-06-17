@@ -26,6 +26,7 @@ interface Solicitud {
 export class SolicitudesComponent implements OnInit {
   
   @Output() crearPresupuestoEvent = new EventEmitter<string>();
+  @Output() abrirChatEvent = new EventEmitter<string>();
   
   private readonly requestService = inject(PurchaseRequestService);
   
@@ -141,7 +142,7 @@ export class SolicitudesComponent implements OnInit {
   }
 
   comunicarCliente(solicitud: Solicitud): void {
-    console.log('Comunicar con cliente:', solicitud.clienteNombre);
+    this.abrirChatEvent.emit(solicitud.id);
   }
 
   crearPresupuesto(solicitud: Solicitud): void {

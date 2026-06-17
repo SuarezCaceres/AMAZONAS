@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 
-type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests' | 'categories' | 'vendedor' | 'reset-password';
+type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests' | 'categories' | 'vendedor' | 'reset-password' | 'chat';
 
 @Component({
   selector: 'app-header',
