@@ -57,7 +57,7 @@ public class ChatMessage {
      *  - FILE:    { "fileUrl": "https://...", "fileName": "diseño.pdf" }
      *  - VOUCHER: { "voucherUrl": "https://...", "paymentMethod": "YAPE" }
      */
-    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "TEXT")
     private String metadata;
 
     /** Si el mensaje fue leído por el destinatario */
