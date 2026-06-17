@@ -947,3 +947,145 @@ ON CONFLICT (email) DO NOTHING;
 -- ADICION DE COLUMNA DE CARACTERISTICAS PARA PRODUCTOS
 -- ============================================================================
 ALTER TABLE products ADD COLUMN IF NOT EXISTS caracteristicas TEXT[];
+
+
+-- ============================================================================
+-- 8. MÓDULO DE CHAT Y NEGOCIACIÓN (WebSocket + STOMP)
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- 8.1 ENUMs del módulo de chat
+-- ----------------------------------------------------------------------------
+
+-- Estado de la sala de chat
+DO $$ BEGIN
+    CREATE TYPE chat_room_status AS ENUM (
+        'OPEN',        -- Negociación activa
+        'AGREED',      -- Precio acordado, pendiente de pago
+        'CLOSED',      -- Cerrado (pago completado o cancelado)
+        'ARCHIVED'     -- Archivado
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Tipo de mensaje en el chat
+DO $$ BEGIN
+    CREATE TYPE chat_message_type AS ENUM (
+        'TEXT',        -- Mensaje de texto simple
+        'OFFER',       -- Tarjeta de oferta de precio
+        'BUDGET',      -- Tarjeta de presupuesto enviado por vendedor
+        'FILE',        -- Archivo adjunto (imagen, pdf)
+        'VOUCHER',     -- Comprobante de pago del cliente
+        'SYSTEM'       -- Mensaje del sistema (ej: "Precio acordado")
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Estado de una oferta de precio
+DO $$ BEGIN
+    CREATE TYPE chat_offer_status AS ENUM (
+        'PENDING',     -- Esperando respuesta
+        'ACCEPTED',    -- Aceptada
+        'REJECTED',    -- Rechazada
+        'COUNTERED',   -- Contraofertada (se creó una nueva oferta)
+        'EXPIRED'      -- Expiró sin respuesta
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Quién envía en el chat
+DO $$ BEGIN
+    CREATE TYPE chat_sender_role AS ENUM ('CLIENT', 'VENDOR', 'SYSTEM');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- ----------------------------------------------------------------------------
+-- 8.2 SALAS DE CHAT (una por solicitud de compra)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chat_rooms (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    request_id      UUID NOT NULL UNIQUE REFERENCES purchase_requests(id) ON DELETE CASCADE,
+    client_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vendor_id       UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
+    status          chat_room_status NOT NULL DEFAULT 'OPEN',
+    agreed_price    NUMERIC(10,2),                -- Precio final acordado
+    last_message_at TIMESTAMPTZ,                  -- Para ordenar salas
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE OR REPLACE TRIGGER trg_chat_rooms_updated_at
+    BEFORE UPDATE ON chat_rooms
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ----------------------------------------------------------------------------
+-- 8.3 MENSAJES DEL CHAT
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    room_id         UUID NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+    sender_id       UUID NOT NULL,               -- ID del user o vendor
+    sender_role     chat_sender_role NOT NULL,
+    message_type    chat_message_type NOT NULL DEFAULT 'TEXT',
+    content         TEXT NOT NULL,               -- Texto sanitizado (OWASP)
+    metadata        JSONB,                       -- Datos extra según tipo (offer_id, file_url, etc.)
+    is_read         BOOLEAN NOT NULL DEFAULT FALSE,
+    sent_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ----------------------------------------------------------------------------
+-- 8.4 OFERTAS DE PRECIO (tarjetas interactivas de negociación)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chat_offers (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    room_id         UUID NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+    message_id      UUID REFERENCES chat_messages(id) ON DELETE SET NULL,
+    proposer_id     UUID NOT NULL,               -- Quien propone el precio
+    proposer_role   chat_sender_role NOT NULL,
+    proposed_price  NUMERIC(10,2) NOT NULL CHECK (proposed_price > 0),
+    note            TEXT,                        -- Nota opcional de la oferta
+    status          chat_offer_status NOT NULL DEFAULT 'PENDING',
+    responded_at    TIMESTAMPTZ,
+    expires_at      TIMESTAMPTZ,                 -- Opcional: fecha de expiración
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ----------------------------------------------------------------------------
+-- 8.5 EXTRAS DEL CHAT (servicios adicionales negociados)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS chat_extras (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    room_id         UUID NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+    nombre          VARCHAR(200) NOT NULL,
+    descripcion     TEXT,
+    precio          NUMERIC(10,2) NOT NULL CHECK (precio >= 0),
+    aceptado        BOOLEAN,                     -- NULL=pendiente, TRUE=aceptado, FALSE=rechazado
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE OR REPLACE TRIGGER trg_chat_extras_updated_at
+    BEFORE UPDATE ON chat_extras
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ----------------------------------------------------------------------------
+-- 8.6 ÍNDICES DEL MÓDULO DE CHAT
+-- ----------------------------------------------------------------------------
+
+-- Acceso rápido por solicitud (la más común)
+CREATE INDEX IF NOT EXISTS idx_chat_rooms_request  ON chat_rooms(request_id);
+CREATE INDEX IF NOT EXISTS idx_chat_rooms_client   ON chat_rooms(client_id);
+CREATE INDEX IF NOT EXISTS idx_chat_rooms_vendor   ON chat_rooms(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_chat_rooms_status   ON chat_rooms(status) WHERE status = 'OPEN';
+
+-- Mensajes: cursor-based pagination (sent_at DESC para historial)
+CREATE INDEX IF NOT EXISTS idx_chat_messages_room_sent ON chat_messages(room_id, sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_sender     ON chat_messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_unread     ON chat_messages(room_id, is_read) WHERE is_read = FALSE;
+
+-- Ofertas activas
+CREATE INDEX IF NOT EXISTS idx_chat_offers_room    ON chat_offers(room_id);
+CREATE INDEX IF NOT EXISTS idx_chat_offers_pending ON chat_offers(room_id, status) WHERE status = 'PENDING';
+
+-- Extras por sala
+CREATE INDEX IF NOT EXISTS idx_chat_extras_room    ON chat_extras(room_id);
