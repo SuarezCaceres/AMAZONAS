@@ -159,10 +159,12 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseRequestResponse> listarMisSolicitudes(String usuarioEmail) {
-        User usuario = userRepository.findByEmail(usuarioEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioEmail));
-        return purchaseRequestRepository.findByUsuarioOrderByCreatedAtDesc(usuario)
-                .stream().map(this::toResponse).collect(Collectors.toList());
+        // Si el email corresponde a un vendedor/admin (no existe en tabla users), retornar lista vacía
+        // en lugar de lanzar una excepción que produce HTTP 500.
+        return userRepository.findByEmail(usuarioEmail)
+                .map(usuario -> purchaseRequestRepository.findByUsuarioOrderByCreatedAtDesc(usuario)
+                        .stream().map(this::toResponse).collect(Collectors.toList()))
+                .orElse(List.of());
     }
 
     @Override
