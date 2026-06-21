@@ -14,6 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -153,9 +155,17 @@ public class ChatController {
     public void handleWebSocketMessage(
             @DestinationVariable UUID roomId,
             @Payload SendMessageRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
+            Principal principal
     ) {
         // El servicio se encarga de sanitizar, persistir y publicar via SimpMessagingTemplate
-        chatService.sendMessage(roomId, request, userDetails.getUsername());
+        // Principal es inyectado por Spring desde el handshake STOMP (no forma parte del payload JSON)
+        chatService.sendMessage(roomId, request, principal.getName());
+    }
+
+    @org.springframework.messaging.handler.annotation.MessageExceptionHandler
+    public void handleWebSocketException(Throwable exception) {
+        // Registrar error y silenciarlo para evitar que el broker de Spring cierre la conexion STOMP del cliente (regla de la spec STOMP)
+        System.err.println("Error procesando mensaje WebSocket (silenciado para conservar conexion): " + exception.getMessage());
+        exception.printStackTrace();
     }
 }

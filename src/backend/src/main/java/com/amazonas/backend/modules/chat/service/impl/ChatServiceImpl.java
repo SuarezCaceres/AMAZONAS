@@ -125,38 +125,76 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatMessageResponse sendMessage(UUID roomId, SendMessageRequest request, String currentEmail) {
         ChatRoom room = getRoomOrThrow(roomId);
-        validateRoomAccess(room, currentEmail);
+
+        // Resolver remitente de forma consolidada para evitar multiples consultas SELECT por email/id
+        UUID senderId;
+        ChatSenderRole senderRole;
+        String senderName;
+
+        Optional<User> userOpt = userRepository.findByEmail(currentEmail);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (!room.getClientId().equals(user.getId())) {
+                throw new AccessDeniedException("No tienes permisos para acceder a esta sala de chat.");
+            }
+            senderId = user.getId();
+            senderRole = ChatSenderRole.CLIENT;
+            senderName = user.getNombre();
+        } else {
+            Optional<Vendor> vendorOpt = vendorRepository.findByEmail(currentEmail);
+            if (vendorOpt.isPresent()) {
+                Vendor vendor = vendorOpt.get();
+                if (!room.getVendorId().equals(vendor.getId())) {
+                    throw new AccessDeniedException("No tienes permisos para acceder a esta sala de chat.");
+                }
+                senderId = vendor.getId();
+                senderRole = ChatSenderRole.VENDOR;
+                senderName = vendor.getNombre();
+            } else {
+                throw new EntityNotFoundException("Usuario no encontrado: " + currentEmail);
+            }
+        }
 
         if (room.getStatus() == ChatRoomStatus.CLOSED || room.getStatus() == ChatRoomStatus.ARCHIVED) {
             throw new IllegalStateException("Esta sala de chat está cerrada. No se pueden enviar más mensajes.");
         }
 
         // Sanitizar el contenido del mensaje (prevenir XSS)
-        String sanitizedContent = htmlSanitizer.sanitize(request.content());
-        if (sanitizedContent.isBlank()) {
+        String sanitizedContent = request.content() != null ? htmlSanitizer.sanitize(request.content()) : "";
+        ChatMessageType mType = request.messageType() != null ? request.messageType() : ChatMessageType.TEXT;
+        if (sanitizedContent.isBlank() && mType != ChatMessageType.FILE) {
             throw new IllegalArgumentException("El mensaje no puede estar vacío después de la sanitización.");
         }
 
-        // Determinar rol del remitente
-        ChatSenderRole senderRole = getSenderRole(currentEmail, room);
-        UUID senderId = getSenderId(currentEmail);
-
-        // Persistir mensaje
+        // Persistir mensaje con flush inmediato
         ChatMessage message = ChatMessage.builder()
                 .roomId(roomId)
                 .senderId(senderId)
                 .senderRole(senderRole)
-                .messageType(ChatMessageType.TEXT)
+                .messageType(mType)
                 .content(sanitizedContent)
+                .metadata(request.metadata())
                 .build();
 
-        message = chatMessageRepository.save(message);
+        message = chatMessageRepository.saveAndFlush(message);
 
-        // Actualizar last_message_at en la sala
+        // Actualizar sala con flush inmediato
         room.setLastMessageAt(OffsetDateTime.now());
-        chatRoomRepository.save(room);
+        chatRoomRepository.saveAndFlush(room);
 
-        ChatMessageResponse response = buildMessageResponse(message);
+        // Construir respuesta usando datos ya resueltos en memoria (evita consultas findById redundantes)
+        ChatMessageResponse response = new ChatMessageResponse(
+                message.getId(),
+                message.getRoomId(),
+                message.getSenderId(),
+                senderName != null ? senderName : (senderRole == ChatSenderRole.CLIENT ? "Cliente" : "Vendedor"),
+                message.getSenderRole(),
+                message.getMessageType(),
+                message.getContent(),
+                message.getMetadata(),
+                message.isRead(),
+                message.getSentAt()
+        );
 
         // Publicar en tiempo real vía WebSocket
         messagingTemplate.convertAndSend("/topic/room/" + roomId, response);
@@ -173,7 +211,9 @@ public class ChatServiceImpl implements ChatService {
         ChatRoom room = getRoomOrThrow(roomId);
         validateRoomAccess(room, currentEmail);
 
-        if (room.getStatus() != ChatRoomStatus.OPEN) {
+        // Compatibilidad: salas existentes en Neon pueden tener status OPEN o ACTIVE
+        boolean roomIsOpen = room.getStatus() == ChatRoomStatus.ACTIVE || room.getStatus() == ChatRoomStatus.OPEN;
+        if (!roomIsOpen) {
             throw new IllegalStateException("No se pueden crear ofertas en una sala que no está abierta.");
         }
 
@@ -182,7 +222,7 @@ public class ChatServiceImpl implements ChatService {
                 .ifPresent(existing -> {
                     existing.setStatus(ChatOfferStatus.COUNTERED);
                     existing.setRespondedAt(OffsetDateTime.now());
-                    chatOfferRepository.save(existing);
+                    chatOfferRepository.saveAndFlush(existing);
                 });
 
         ChatSenderRole senderRole = getSenderRole(currentEmail, room);
@@ -198,7 +238,7 @@ public class ChatServiceImpl implements ChatService {
                 .status(ChatOfferStatus.PENDING)
                 .build();
 
-        offer = chatOfferRepository.save(offer);
+        offer = chatOfferRepository.saveAndFlush(offer);
 
         // Crear mensaje de tipo OFFER en el chat para visualizarla
         String metadata = String.format(
@@ -217,15 +257,15 @@ public class ChatServiceImpl implements ChatService {
                 .metadata(metadata)
                 .build();
 
-        chatMessageRepository.save(offerMessage);
+        chatMessageRepository.saveAndFlush(offerMessage);
 
         // Vincular el mensaje a la oferta
         offer.setMessageId(offerMessage.getId());
-        offer = chatOfferRepository.save(offer);
+        offer = chatOfferRepository.saveAndFlush(offer);
 
         // Actualizar last_message_at
         room.setLastMessageAt(OffsetDateTime.now());
-        chatRoomRepository.save(room);
+        chatRoomRepository.saveAndFlush(room);
 
         ChatOfferResponse offerResponse = buildOfferResponse(offer, currentEmail);
 
@@ -256,13 +296,13 @@ public class ChatServiceImpl implements ChatService {
 
         offer.setStatus(accept ? ChatOfferStatus.ACCEPTED : ChatOfferStatus.REJECTED);
         offer.setRespondedAt(OffsetDateTime.now());
-        offer = chatOfferRepository.save(offer);
+        offer = chatOfferRepository.saveAndFlush(offer);
 
         if (accept) {
             // Registrar el precio acordado en la sala
             room.setAgreedPrice(offer.getProposedPrice());
             room.setStatus(ChatRoomStatus.AGREED);
-            chatRoomRepository.save(room);
+            chatRoomRepository.saveAndFlush(room);
 
             // Crear mensaje de sistema "Precio acordado"
             ChatMessage systemMessage = ChatMessage.builder()
@@ -272,7 +312,7 @@ public class ChatServiceImpl implements ChatService {
                     .messageType(ChatMessageType.SYSTEM)
                     .content("✅ Precio acordado: S/ " + offer.getProposedPrice() + ". ¡La negociación ha concluido exitosamente!")
                     .build();
-            chatMessageRepository.save(systemMessage);
+            chatMessageRepository.saveAndFlush(systemMessage);
             messagingTemplate.convertAndSend("/topic/room/" + room.getId(), buildMessageResponse(systemMessage));
         }
 
@@ -304,7 +344,7 @@ public class ChatServiceImpl implements ChatService {
                 .precio(request.precio())
                 .build();
 
-        chatExtraRepository.save(extra);
+        chatExtraRepository.saveAndFlush(extra);
 
         // Notificar al cliente del nuevo extra
         String extraMsg = String.format("📦 Servicio adicional propuesto: %s — S/ %.2f", extra.getNombre(), extra.getPrecio());
@@ -315,7 +355,7 @@ public class ChatServiceImpl implements ChatService {
                 .messageType(ChatMessageType.SYSTEM)
                 .content(extraMsg)
                 .build();
-        chatMessageRepository.save(infoMessage);
+        chatMessageRepository.saveAndFlush(infoMessage);
         messagingTemplate.convertAndSend("/topic/room/" + roomId, buildMessageResponse(infoMessage));
 
         return buildRoomResponse(room, currentEmail);
@@ -336,7 +376,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         extra.setAceptado(accept);
-        chatExtraRepository.save(extra);
+        chatExtraRepository.saveAndFlush(extra);
 
         String responseMsg = accept
                 ? "✅ El cliente aceptó el extra: " + extra.getNombre()
@@ -349,7 +389,7 @@ public class ChatServiceImpl implements ChatService {
                 .messageType(ChatMessageType.SYSTEM)
                 .content(responseMsg)
                 .build();
-        chatMessageRepository.save(infoMessage);
+        chatMessageRepository.saveAndFlush(infoMessage);
         messagingTemplate.convertAndSend("/topic/room/" + extra.getRoomId(), buildMessageResponse(infoMessage));
 
         return buildRoomResponse(room, currentEmail);
@@ -375,18 +415,21 @@ public class ChatServiceImpl implements ChatService {
     // =========================================================================
 
     private ChatRoom createRoomForRequest(PurchaseRequest request) {
-        // El vendedor asignado: obtenemos el primer vendor activo (en MVP hay un solo vendedor)
-        Vendor vendor = vendorRepository.findFirstByActivoTrue()
+        // El vendedor institucional es SIEMPRE Admin@gmail.com según regla de negocio.
+        // Como fallback se usa el primer vendedor activo si no se encuentra el correo.
+        Vendor vendor = vendorRepository.findByEmail("Admin@gmail.com")
+                .or(() -> vendorRepository.findByEmail("admin@gmail.com"))
+                .or(() -> vendorRepository.findFirstByActivoTrue())
                 .orElseThrow(() -> new EntityNotFoundException("No hay vendedor activo disponible."));
 
         ChatRoom room = ChatRoom.builder()
                 .requestId(request.getId())
                 .clientId(request.getUsuario().getId())
                 .vendorId(vendor.getId())
-                .status(ChatRoomStatus.OPEN)
+                .status(ChatRoomStatus.ACTIVE)
                 .build();
 
-        room = chatRoomRepository.save(room);
+        room = chatRoomRepository.saveAndFlush(room);
 
         // Mensaje de bienvenida del sistema
         ChatMessage welcome = ChatMessage.builder()
@@ -396,7 +439,7 @@ public class ChatServiceImpl implements ChatService {
                 .messageType(ChatMessageType.SYSTEM)
                 .content("👋 ¡Bienvenido al chat de negociación! Aquí podrás conversar con el vendedor sobre tu solicitud de \"" + request.getProductoNombre() + "\". Puedes hacer preguntas, negociar el precio y definir los detalles.")
                 .build();
-        chatMessageRepository.save(welcome);
+        chatMessageRepository.saveAndFlush(welcome);
 
         log.info("Sala de chat creada para solicitud: {} → sala: {}", request.getId(), room.getId());
         return room;

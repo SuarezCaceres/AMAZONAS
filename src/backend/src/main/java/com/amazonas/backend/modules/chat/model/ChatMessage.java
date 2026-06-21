@@ -57,7 +57,8 @@ public class ChatMessage {
      *  - FILE:    { "fileUrl": "https://...", "fileName": "diseño.pdf" }
      *  - VOUCHER: { "voucherUrl": "https://...", "paymentMethod": "YAPE" }
      */
-    @Column(columnDefinition = "TEXT")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private String metadata;
 
     /** Si el mensaje fue leído por el destinatario */

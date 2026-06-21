@@ -42,7 +42,7 @@ public class ChatRoom {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private ChatRoomStatus status = ChatRoomStatus.OPEN;
+    private ChatRoomStatus status = ChatRoomStatus.ACTIVE;
 
     /** Precio final acordado (se registra al aceptar una oferta) */
     @Column(name = "agreed_price", precision = 10, scale = 2)
