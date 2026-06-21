@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     sender_role     VARCHAR(50) NOT NULL,
     message_type    VARCHAR(50) NOT NULL DEFAULT 'TEXT',
     content         TEXT NOT NULL,
-    metadata        TEXT,
+    metadata        JSONB,
     is_read         BOOLEAN NOT NULL DEFAULT FALSE,
     sent_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
