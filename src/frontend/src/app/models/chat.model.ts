@@ -1,5 +1,6 @@
 export enum ChatRoomStatus {
   ACTIVE = 'ACTIVE',
+  OPEN = 'OPEN',       // Compatibilidad con registros legacy en Neon DB
   AGREED = 'AGREED',
   CLOSED = 'CLOSED'
 }
@@ -8,7 +9,9 @@ export enum ChatMessageType {
   TEXT = 'TEXT',
   OFFER = 'OFFER',
   SYSTEM = 'SYSTEM',
-  EXTRA = 'EXTRA'
+  EXTRA = 'EXTRA',
+  FILE = 'FILE',
+  VOUCHER = 'VOUCHER'
 }
 
 export enum ChatOfferStatus {

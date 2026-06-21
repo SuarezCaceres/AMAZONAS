@@ -138,13 +138,7 @@ export class ChatService {
 
   subscribeToRoom(roomId: string): void {
     if (!this.stompClient || !this.stompClient.connected) {
-      console.warn('STOMP client not connected. Delaying subscription.');
-      // Reintentar cuando se conecte
-      this.connectionStatus$.subscribe(connected => {
-        if (connected) {
-          this.subscribeToRoom(roomId);
-        }
-      });
+      console.warn('STOMP client not connected. The ChatComponent statusSub will handle re-subscription on reconnect.');
       return;
     }
 
@@ -189,7 +183,7 @@ export class ChatService {
     }
   }
 
-  sendMessage(roomId: string, content: string): void {
+  sendMessage(roomId: string, content: string, messageType: string = 'TEXT', metadata: string | null = null): void {
     if (!this.stompClient || !this.stompClient.connected) {
       console.error('Cannot send message: WebSocket is not connected');
       return;
@@ -197,7 +191,7 @@ export class ChatService {
 
     this.stompClient.publish({
       destination: `/app/chat/${roomId}/send`,
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content, messageType, metadata })
     });
   }
 

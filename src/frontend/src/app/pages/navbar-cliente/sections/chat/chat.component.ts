@@ -1,8 +1,10 @@
 import { Component, OnInit, OnDestroy, OnChanges, SimpleChanges, Input, Output, EventEmitter, inject, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ChatService } from '../../../../services/chat.service';
 import { AuthService } from '../../../../services/auth.service';
+import { FileService } from '../../../../services/file.service';
 import {
   ChatRoomResponse,
   ChatMessageResponse,
@@ -24,6 +26,8 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
 
   private readonly chatService = inject(ChatService);
   private readonly authService = inject(AuthService);
+  private readonly fileService = inject(FileService);
+  private readonly router = inject(Router);
 
   @Input() autoSelectRequestId?: string;
   @Output() closeChat = new EventEmitter<void>();
@@ -45,6 +49,18 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
 
   // Form inputs
   newMessageText: string = '';
+
+  // File Attachments State
+  selectedFile: File | null = null;
+  filePreviewUrl: string | null = null;
+  filePreviewName: string | null = null;
+  isImagePreview: boolean = false;
+  uploadingFile: boolean = false;
+
+  // Counter-offer State
+  isCounterOfferMode: boolean = false;
+  counterOfferPrice: number = 0;
+  counterOfferNote: string = '';
 
   // Offer Modal / Form
   showOfferForm: boolean = false;
@@ -118,7 +134,8 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['autoSelectRequestId'] && this.autoSelectRequestId) {
+    const change = changes['autoSelectRequestId'];
+    if (change && this.autoSelectRequestId && change.currentValue !== change.previousValue) {
       this.handleAutoSelect(this.autoSelectRequestId);
     }
   }
@@ -166,6 +183,11 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   }
 
   selectRoom(room: ChatRoomResponse): void {
+    // IMPORTANTE: Si ya estamos en esta sala, no hacer nada para evitar ráfagas de UNSUBSCRIBE/SUBSCRIBE
+    if (this.selectedRoom && this.selectedRoom.id === room.id) {
+      return;
+    }
+
     if (this.selectedRoom) {
       this.chatService.unsubscribeFromRoom(this.selectedRoom.id);
     }
@@ -213,14 +235,14 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
         const parsedMetadata = JSON.parse(latestOfferMsg.metadata);
         
         this.activeOffer = {
-          id: parsedMetadata.id,
+          id: parsedMetadata.offerId || parsedMetadata.id,
           roomId: latestOfferMsg.roomId,
           proposerId: latestOfferMsg.senderId,
           proposerName: latestOfferMsg.senderName,
           proposerRole: latestOfferMsg.senderRole,
           proposedPrice: parsedMetadata.proposedPrice,
           note: parsedMetadata.note,
-          status: parsedMetadata.status,
+          status: parsedMetadata.status || ChatOfferStatus.PENDING,
           respondedAt: parsedMetadata.respondedAt,
           createdAt: latestOfferMsg.sentAt
         };
@@ -248,13 +270,107 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     });
   }
 
-  sendMessage(): void {
-    if (!this.selectedRoom || !this.newMessageText.trim()) {
+  // Tipos MIME aceptados — deben estar sincronizados con el backend (CloudinaryServiceImpl)
+  private readonly ALLOWED_MIME_TYPES = new Set([
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain'
+  ]);
+
+  onFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo MIME contra la lista del backend
+    if (!this.ALLOWED_MIME_TYPES.has(file.type)) {
+      alert(`Tipo de archivo no permitido: ${file.type || 'desconocido'}.\nSe aceptan: imágenes (JPG, PNG, GIF, WEBP, SVG), PDF, Word (.doc/.docx) y texto plano.`);
+      event.target.value = '';
       return;
     }
 
+    // Límite de 5MB en el cliente
+    const maxSizeInBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      alert('El archivo supera el límite de 5MB permitido.');
+      event.target.value = '';
+      return;
+    }
+
+    this.selectedFile = file;
+    this.filePreviewName = file.name;
+
+    if (file.type.startsWith('image/')) {
+      // Imágenes: generar miniatura local con FileReader
+      this.isImagePreview = true;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.filePreviewUrl = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // PDF, Word, texto: mostrar ícono de documento (no miniatura)
+      this.isImagePreview = false;
+      this.filePreviewUrl = null;
+    }
+  }
+
+  removeAttachment(): void {
+    this.selectedFile = null;
+    this.filePreviewUrl = null;
+    this.filePreviewName = null;
+    this.isImagePreview = false;
+  }
+
+  sendMessage(): void {
+    if (!this.selectedRoom) return;
+
+    // Caso 1: Hay archivo adjunto
+    if (this.selectedFile) {
+      this.uploadingFile = true;
+      this.fileService.uploadImage(this.selectedFile).subscribe({
+        next: (res) => {
+          const fileName = this.filePreviewName || 'archivo';
+          const fileMetadata = JSON.stringify({
+            fileUrl: res.url,
+            fileName: fileName,
+            fileType: this.selectedFile?.type || 'application/octet-stream'
+          });
+
+          // Enviar por WebSocket con tipo FILE
+          this.chatService.sendMessage(
+            this.selectedRoom!.id,
+            this.newMessageText.trim() || `Archivo adjunto: ${fileName}`,
+            'FILE',
+            fileMetadata
+          );
+
+          this.removeAttachment();
+          this.newMessageText = '';
+          this.uploadingFile = false;
+        },
+        error: (err) => {
+          console.error('Error al subir el archivo', err);
+          alert('Hubo un error al subir el archivo. Inténtalo de nuevo.');
+          this.uploadingFile = false;
+        }
+      });
+      return;
+    }
+
+    // Caso 2: Solo texto
+    if (!this.newMessageText || !this.newMessageText.trim()) return;
     this.chatService.sendMessage(this.selectedRoom.id, this.newMessageText.trim());
     this.newMessageText = '';
+  }
+
+  goToCreateBudget(): void {
+    if (this.selectedRoom) {
+      this.router.navigate(['/admin/presupuestos/crear'], {
+        queryParams: { requestId: this.selectedRoom.requestId }
+      });
+    }
   }
 
   // Offer Proposals
@@ -281,6 +397,41 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
         this.loadMessages(this.selectedRoom!.id);
       },
       error: (err) => console.error('Error creating offer', err)
+    });
+  }
+
+  // Counter-offer triggers
+  startCounterOffer(offer: ChatOfferResponse): void {
+    this.isCounterOfferMode = true;
+    this.counterOfferPrice = offer.proposedPrice;
+    this.counterOfferNote = '';
+    
+    // Enfocar input si está en pantalla
+    setTimeout(() => {
+      const el = document.getElementById('counterOfferPriceInput');
+      if (el) el.focus();
+    }, 100);
+  }
+
+  cancelCounterOffer(): void {
+    this.isCounterOfferMode = false;
+    this.counterOfferPrice = 0;
+    this.counterOfferNote = '';
+  }
+
+  submitCounterOffer(): void {
+    if (!this.selectedRoom || this.counterOfferPrice <= 0) return;
+
+    this.chatService.createOffer(this.selectedRoom.id, {
+      proposedPrice: this.counterOfferPrice,
+      note: this.counterOfferNote
+    }).subscribe({
+      next: (offer) => {
+        this.activeOffer = offer;
+        this.cancelCounterOffer();
+        this.loadMessages(this.selectedRoom!.id);
+      },
+      error: (err) => console.error('Error creating counter-offer', err)
     });
   }
 

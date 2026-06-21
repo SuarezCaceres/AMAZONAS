@@ -1,4 +1,4 @@
-<div class="chat-container glassmorphism-theme">
+<div class="chat-container">
   <!-- ═════════════════════ COLUMNA 1: LISTA DE SALAS ═════════════════════ -->
   <aside class="rooms-sidebar">
     <div class="sidebar-header">
@@ -6,7 +6,7 @@
         <svg viewBox="0 0 24 24" class="logo-icon" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span>Negociación 3D</span>
+        <span>Salas de Negociación</span>
       </div>
       <button class="btn-close-chat" (click)="closeChat.emit()" title="Cerrar Chat">
         <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
@@ -19,8 +19,8 @@
     <div class="rooms-list">
       @if (rooms.length === 0) {
         <div class="empty-rooms">
-          <p>No tienes salas de chat activas.</p>
-          <small>Inicia una conversación desde una de tus solicitudes.</small>
+          <p>No tienes chats de negociación activos.</p>
+          <small>El chat se iniciará en cuanto crees una solicitud de compra de maqueta.</small>
         </div>
       }
 
@@ -62,31 +62,29 @@
       <div class="chat-empty-state">
         <div class="empty-state-visual">
           <svg viewBox="0 0 24 24" class="empty-icon" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M8 12h8"/>
-            <path d="M12 8v8"/>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
         </div>
-        <h2>Selecciona un chat</h2>
-        <p>Elige una conversación de la lista para negociar los detalles de tu maqueta 3D.</p>
+        <h2>Mensajes de Negociación</h2>
+        <p>Selecciona una conversación del panel lateral para coordinar los detalles con el vendedor.</p>
       </div>
     } @else {
       <!-- Cabecera del chat activo -->
       <header class="chat-header">
         <div class="header-room-info">
-          <h3>{{ selectedRoom.productName || 'Solicitud Personalizada' }}</h3>
+          <h3>{{ selectedRoom.productName || 'Solicitud de Maqueta' }}</h3>
           <p>
-            {{ currentUserRole === 'CLIENT' ? 'Vendedor: ' + selectedRoom.vendorName : 'Cliente: ' + selectedRoom.clientName }}
+            {{ currentUserRole === 'CLIENT' ? 'Vendedor asignado: ' + selectedRoom.vendorName : 'Cliente: ' + selectedRoom.clientName }}
           </p>
         </div>
         <div class="header-actions">
-          @if (currentUserRole === 'VENDOR' && selectedRoom.status === 'ACTIVE') {
-            <button class="btn-primary" (click)="openOfferModal()">
+          @if (currentUserRole === 'VENDOR' && (selectedRoom.status === 'ACTIVE' || selectedRoom.status === 'OPEN')) {
+            <button class="btn-primary" (click)="goToCreateBudget()">
               <svg viewBox="0 0 24 24" class="action-icon" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="1" x2="12" y2="23"/>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               </svg>
-              Proponer Oferta
+              Hacer Presupuesto
             </button>
             <button class="btn-secondary" (click)="openExtraModal()">
               <svg viewBox="0 0 24 24" class="action-icon" fill="none" stroke="currentColor" stroke-width="2">
@@ -95,7 +93,7 @@
               </svg>
               Servicio Extra
             </button>
-          } @else if (currentUserRole === 'CLIENT' && selectedRoom.status === 'ACTIVE') {
+          } @else if (currentUserRole === 'CLIENT' && (selectedRoom.status === 'ACTIVE' || selectedRoom.status === 'OPEN')) {
             <button class="btn-primary" (click)="openOfferModal()">
               <svg viewBox="0 0 24 24" class="action-icon" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="1" x2="12" y2="23"/>
@@ -115,7 +113,7 @@
               <span>{{ msg.content }}</span>
             </div>
           } @else {
-            <div class="message-row" [class.outgoing]="isMyMessage(msg)" [class.incoming]="!isMyMessage(msg)">
+            <div class="message-row" [class.outgoing]="isMyMessage(msg)" [class.incoming]="!isMyMessage(msg)" [class.role-client]="msg.senderRole === 'CLIENT'" [class.role-vendor]="msg.senderRole === 'VENDOR'">
               <div class="message-bubble">
                 <div class="message-sender-name">{{ msg.senderName }}</div>
                 
@@ -123,10 +121,36 @@
                   <p class="message-text">{{ msg.content }}</p>
                 } 
 
+                @else if (msg.messageType === 'FILE') {
+                  <!-- Archivo Adjunto -->
+                  @let fileData = parseMetadata(msg.metadata);
+                  <div class="file-message-attachment py-1">
+                    @if (fileData.fileType && fileData.fileType.startsWith('image/')) {
+                      <a [href]="fileData.fileUrl" target="_blank" class="block rounded overflow-hidden max-w-xs hover:opacity-90 transition-opacity">
+                        <img [src]="fileData.fileUrl" alt="Imagen adjunta" class="max-w-full max-h-60 object-contain bg-slate-50 border rounded-lg">
+                      </a>
+                    } @else {
+                      <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 text-red-500 shrink-0">
+                          <span class="material-icons">picture_as_pdf</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-semibold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
+                          <span class="text-xs text-slate-400">Descargar archivo</span>
+                        </div>
+                        <span class="material-icons text-slate-400">download</span>
+                      </a>
+                    }
+                    @if (msg.content && msg.content !== ('Archivo adjunto: ' + fileData.fileName)) {
+                      <p class="message-text mt-2 text-xs opacity-90">{{ msg.content }}</p>
+                    }
+                  </div>
+                }
+
                 @else if (msg.messageType === 'OFFER') {
-                  <!-- Tarjeta Interactiva de Oferta -->
+                  <!-- Tarjeta de Oferta de Precio -->
                   @let offerData = parseMetadata(msg.metadata);
-                  <div class="offer-card-embedded" [class]="offerData.status.toLowerCase()">
+                  <div class="offer-card-embedded" [class]="offerData?.status?.toLowerCase() || ''">
                     <div class="offer-card-header">
                       <svg viewBox="0 0 24 24" class="card-icon" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"/>
@@ -142,33 +166,33 @@
                       @if (offerData.note) {
                         <p class="offer-note">"{{ offerData.note }}"</p>
                       }
-                      <span class="offer-status-label" [class]="offerData.status.toLowerCase()">
-                        Estado: {{ offerData.status === 'PENDING' ? 'Pendiente' : offerData.status === 'ACCEPTED' ? 'Aceptada' : 'Rechazada' }}
+                      <span class="offer-status-label" [class]="offerData?.status?.toLowerCase() || 'pending'">
+                        Estado: {{ offerData.status === 'PENDING' ? 'Pendiente' : offerData.status === 'ACCEPTED' ? 'Aceptada' : offerData.status === 'REJECTED' ? 'Rechazada' : 'Sustituida' }}
                       </span>
                     </div>
 
                     <!-- Botones de Acción (Solo para el que RECIBE la oferta y si está PENDIENTE) -->
-                    @if (offerData.status === 'PENDING' && offerData.proposerRole !== currentUserRole && selectedRoom.status === 'ACTIVE') {
-                      <div class="offer-card-actions">
-                        <button class="btn-card-accept" (click)="respondToOffer(true)">Aceptar</button>
-                        <button class="btn-card-reject" (click)="respondToOffer(false)">Rechazar</button>
+                    @if (offerData.status === 'PENDING' && offerData.proposerRole !== currentUserRole && (selectedRoom.status === 'ACTIVE' || selectedRoom.status === 'OPEN')) {
+                      <div class="offer-card-actions flex flex-wrap gap-2 mt-3">
+                        <button class="btn-card-accept flex-1 text-center py-1.5 font-semibold text-xs rounded-lg transition-all" (click)="respondToOffer(true)">Aceptar</button>
+                        <button class="btn-card-reject flex-1 text-center py-1.5 font-semibold text-xs rounded-lg transition-all" (click)="respondToOffer(false)">Rechazar</button>
+                        <button class="flex-1 text-center py-1.5 px-3 bg-indigo-50 border border-indigo-200 text-indigo-700 font-semibold text-xs rounded-lg hover:bg-indigo-100 transition-all cursor-pointer" (click)="startCounterOffer(offerData)">Contraofertar</button>
                       </div>
                     }
                   </div>
                 }
 
                 @else if (msg.messageType === 'EXTRA') {
-                  <!-- Tarjeta Interactiva de Servicio Extra -->
+                  <!-- Tarjeta de Servicio Adicional -->
                   @let extraData = parseMetadata(msg.metadata);
-                  <div class="extra-card-embedded" [class]="extraData.status.toLowerCase()">
+                  <div class="extra-card-embedded" [class]="extraData?.status?.toLowerCase() || ''">
                     <div class="extra-card-header">
                       <svg viewBox="0 0 24 24" class="card-icon" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                         <line x1="9" y1="9" x2="15" y2="9"/>
                         <line x1="9" y1="13" x2="15" y2="13"/>
-                        <line x1="9" y1="17" x2="13" y2="17"/>
                       </svg>
-                      <span>Servicio Adicional</span>
+                      <span>Servicio Extra Adicional</span>
                     </div>
                     <div class="extra-card-body">
                       <h4>{{ extraData.title }}</h4>
@@ -178,15 +202,15 @@
                       <div class="extra-price-tag">
                         +{{ extraData.price | currency:'USD':'symbol':'1.2-2' }}
                       </div>
-                      <span class="extra-status-label" [class]="extraData.status.toLowerCase()">
+                      <span class="extra-status-label" [class]="extraData?.status?.toLowerCase() || 'pending'">
                         Estado: {{ extraData.status === 'PENDING' ? 'Pendiente' : extraData.status === 'ACCEPTED' ? 'Aceptado' : 'Rechazado' }}
                       </span>
                     </div>
 
                     <!-- Botones de Acción (Solo para el cliente y si está PENDIENTE) -->
-                    @if (extraData.status === 'PENDING' && currentUserRole === 'CLIENT' && selectedRoom.status === 'ACTIVE') {
+                    @if (extraData.status === 'PENDING' && currentUserRole === 'CLIENT' && (selectedRoom.status === 'ACTIVE' || selectedRoom.status === 'OPEN')) {
                       <div class="extra-card-actions">
-                        <button class="btn-card-accept" (click)="respondToExtra(extraData.id, true)">Agregar</button>
+                        <button class="btn-card-accept" (click)="respondToExtra(extraData.id, true)">Aceptar</button>
                         <button class="btn-card-reject" (click)="respondToExtra(extraData.id, false)">Rechazar</button>
                       </div>
                     }
@@ -202,22 +226,117 @@
 
       <!-- Barra de entrada de mensajes -->
       <footer class="chat-input-area">
-        @if (selectedRoom.status !== 'ACTIVE') {
+        @if (selectedRoom.status !== 'ACTIVE' && selectedRoom.status !== 'OPEN') {
           <div class="room-inactive-notice">
-            Esta conversación ha sido cerrada. El precio final ha sido acordado.
+            Esta conversación ha sido cerrada. El precio final ha sido acordado en el presupuesto.
           </div>
         } @else {
-          <form (submit)="sendMessage(); $event.preventDefault();" class="message-form">
+          <!-- Indicador de carga de archivo -->
+          @if (uploadingFile) {
+            <div class="flex items-center justify-center gap-3 p-3 bg-slate-50 border-t text-sm text-slate-600">
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+              <span>Subiendo archivo adjunto... por favor espera.</span>
+            </div>
+          }
+
+          <!-- Vista previa del archivo seleccionado -->
+          @if (selectedFile && !uploadingFile) {
+            <div class="flex items-center justify-between p-3 bg-slate-50 border-b border-slate-200">
+              <div class="flex items-center gap-3">
+                @if (isImagePreview) {
+                  <img [src]="filePreviewUrl" class="w-10 h-10 object-cover rounded border bg-white">
+                } @else {
+                  <div class="flex items-center justify-center w-10 h-10 rounded bg-red-50 text-red-500 border">
+                    <span class="material-icons text-xl">description</span>
+                  </div>
+                }
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-slate-700 truncate max-w-[200px] m-0">{{ filePreviewName }}</p>
+                  <span class="text-[10px] text-slate-400">{{ (selectedFile.size / 1024) | number:'1.0-0' }} KB</span>
+                </div>
+              </div>
+              <button type="button" (click)="removeAttachment()" class="text-slate-400 hover:text-red-500 transition-colors p-1">
+                <span class="material-icons text-lg">close</span>
+              </button>
+            </div>
+          }
+
+          <!-- Banner y Formulario Flotante de Contraoferta -->
+          @if (isCounterOfferMode) {
+            <div class="p-3 bg-indigo-50 border-b border-indigo-100 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-indigo-800 flex items-center gap-1">
+                  <span class="material-icons text-sm">local_offer</span>
+                  Modo Contraoferta
+                </span>
+                <button type="button" (click)="cancelCounterOffer()" class="text-indigo-400 hover:text-indigo-600 transition-colors">
+                  <span class="material-icons text-sm">close</span>
+                </button>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="flex-1 flex items-center gap-2 bg-white rounded-lg border border-indigo-200 px-3 py-1.5">
+                  <span class="text-xs font-medium text-slate-500">$</span>
+                  <input 
+                    type="number" 
+                    id="counterOfferPriceInput"
+                    placeholder="Monto" 
+                    [(ngModel)]="counterOfferPrice" 
+                    class="w-full bg-transparent text-sm font-semibold focus:outline-none border-none p-0"
+                    min="1">
+                </div>
+                <div class="flex-[2] bg-white rounded-lg border border-indigo-200 px-3 py-1.5">
+                  <input 
+                    type="text" 
+                    placeholder="Nota de la contraoferta..." 
+                    [(ngModel)]="counterOfferNote" 
+                    class="w-full bg-transparent text-sm focus:outline-none border-none p-0"
+                    maxlength="150">
+                </div>
+                <button 
+                  type="button" 
+                  (click)="submitCounterOffer()" 
+                  [disabled]="counterOfferPrice <= 0"
+                  class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition-colors shrink-0 shadow-sm cursor-pointer">
+                  Enviar Contraoferta
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Formulario Principal de Entrada -->
+          <form (submit)="sendMessage(); $event.preventDefault();" class="message-form flex items-center gap-2 p-3 bg-white border-t">
+            <!-- Selector Oculto de Archivos -->
+            <input 
+              type="file" 
+              #fileInput 
+              (change)="onFileSelected($event)" 
+              class="hidden" 
+              accept="image/*,.pdf,.doc,.docx,.txt,.zip">
+            
+            <button 
+              type="button" 
+              (click)="fileInput.click()" 
+              [disabled]="uploadingFile"
+              class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-all shrink-0 cursor-pointer"
+              title="Adjuntar maqueta, PDF o imagen">
+              <span class="material-icons text-xl">attach_file</span>
+            </button>
+
             <input 
               type="text" 
-              placeholder="Escribe un mensaje..." 
+              placeholder="Escribe un mensaje aquí..." 
               [(ngModel)]="newMessageText" 
               name="messageText"
               autocomplete="off"
+              [disabled]="uploadingFile"
+              class="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
               maxlength="500">
             
-            <button type="submit" class="btn-send-msg" [disabled]="!newMessageText.trim()">
-              <svg viewBox="0 0 24 24" class="send-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <button 
+              type="submit" 
+              class="btn-send-msg shrink-0 p-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:bg-slate-200 text-white rounded-full transition-all cursor-pointer" 
+              [disabled]="(!newMessageText.trim() && !selectedFile) || uploadingFile">
+              <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5">
                 <line x1="22" y1="2" x2="11" y2="13"/>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
@@ -232,7 +351,7 @@
   @if (selectedRoom) {
     <aside class="details-sidebar">
       <div class="sidebar-header">
-        <span>Detalles del Presupuesto</span>
+        <span>Presupuesto Estimado</span>
       </div>
 
       <div class="details-body">
@@ -240,15 +359,15 @@
           <div class="summary-row">
             <span class="label">Precio Base Acordado</span>
             <span class="value price">
-              {{ selectedRoom.agreedPrice ? (selectedRoom.agreedPrice | currency:'USD':'symbol':'1.2-2') : 'No definido' }}
+              {{ selectedRoom.agreedPrice ? (selectedRoom.agreedPrice | currency:'USD':'symbol':'1.2-2') : 'Pendiente de acuerdo' }}
             </span>
           </div>
           
           <div class="extras-section">
-            <span class="section-subtitle">Servicios Adicionales Aceptados</span>
+            <span class="section-subtitle">Servicios Extras Aceptados</span>
             @if (extras.length === 0) {
               <div class="empty-extras">
-                No hay servicios extras aprobados.
+                No hay servicios extras aprobados en esta sala.
               </div>
             } @else {
               <ul class="extras-list">
@@ -265,7 +384,7 @@
           <hr class="summary-divider">
 
           <div class="summary-row total-row">
-            <span class="label">Presupuesto Estimado</span>
+            <span class="label">Total Estimado</span>
             <span class="value total-price">
               {{ getTotalBudget() | currency:'USD':'symbol':'1.2-2' }}
             </span>
@@ -276,15 +395,15 @@
           <h4>Detalles de la Solicitud</h4>
           <dl class="request-details-list">
             <div>
-              <dt>Modelo</dt>
-              <dd>{{ selectedRoom.productName || 'Personalizada' }}</dd>
+              <dt>Modelo Solicitado</dt>
+              <dd>{{ selectedRoom.productName || 'Diseño Personalizado' }}</dd>
             </div>
             <div>
-              <dt>Creada el</dt>
+              <dt>Fecha de Solicitud</dt>
               <dd>{{ selectedRoom.createdAt | date:'mediumDate' }}</dd>
             </div>
             <div>
-              <dt>ID de Solicitud</dt>
+              <dt>Código de Referencia</dt>
               <dd class="code-id">{{ selectedRoom.requestId }}</dd>
             </div>
           </dl>
@@ -297,7 +416,7 @@
 <!-- ═════════════════════ MODAL: OFERTA DE PRECIO ═════════════════════ -->
 @if (showOfferForm) {
   <div class="modal-backdrop">
-    <div class="modal-card glass-modal">
+    <div class="modal-card">
       <header class="modal-header">
         <h3>{{ currentUserRole === 'VENDOR' ? 'Proponer Oferta de Precio' : 'Proponer Contraoferta' }}</h3>
         <button class="btn-modal-close" (click)="closeOfferModal()">✕</button>
@@ -305,7 +424,7 @@
 
       <div class="modal-body">
         <div class="form-group">
-          <label for="price">Precio Propuesto ($)</label>
+          <label for="price">Monto Propuesto ($)</label>
           <input 
             type="number" 
             id="price" 
@@ -315,11 +434,11 @@
         </div>
 
         <div class="form-group">
-          <label for="note">Nota explicativa (opcional)</label>
+          <label for="note">Nota Explicativa (opcional)</label>
           <textarea 
             id="note" 
             [(ngModel)]="offerNote" 
-            placeholder="Justifica el precio, incluye detalles de materiales, complejidad, etc."
+            placeholder="Describe las condiciones o detalles que justifican esta propuesta de precio..."
             maxlength="200"></textarea>
         </div>
       </div>
@@ -335,7 +454,7 @@
 <!-- ═════════════════════ MODAL: SERVICIO EXTRA ═════════════════════ -->
 @if (showExtraForm) {
   <div class="modal-backdrop">
-    <div class="modal-card glass-modal">
+    <div class="modal-card">
       <header class="modal-header">
         <h3>Proponer Servicio Extra</h3>
         <button class="btn-modal-close" (click)="closeExtraModal()">✕</button>
@@ -348,21 +467,21 @@
             type="text" 
             id="extraTitle" 
             [(ngModel)]="extraTitle" 
-            placeholder="Ej. Envío Express en Caja de Madera, Pintado Personalizado..."
+            placeholder="Ej. Pintura a mano, Base de madera grabada, Envío express..."
             maxlength="100">
         </div>
 
         <div class="form-group">
-          <label for="extraDesc">Descripción (opcional)</label>
+          <label for="extraDesc">Detalles del Servicio (opcional)</label>
           <textarea 
             id="extraDesc" 
             [(ngModel)]="extraDescription" 
-            placeholder="Detalles sobre este servicio adicional..."
+            placeholder="Describe lo que incluye este servicio adicional..."
             maxlength="200"></textarea>
         </div>
 
         <div class="form-group">
-          <label for="extraPrice">Precio Adicional ($)</label>
+          <label for="extraPrice">Costo Adicional ($)</label>
           <input 
             type="number" 
             id="extraPrice" 
