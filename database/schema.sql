@@ -249,6 +249,10 @@ CREATE TABLE IF NOT EXISTS purchase_requests (
     tipo_evento VARCHAR(100),
     cantidad_personas INTEGER CHECK (cantidad_personas > 0),
 
+    -- Grabaciones y Archivos
+    grabaciones_urls TEXT,
+    archivos_urls TEXT,
+
     -- Timestamps
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

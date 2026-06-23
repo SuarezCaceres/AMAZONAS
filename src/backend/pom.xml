@@ -127,6 +127,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 			<version>20240325.1</version>
 		</dependency>
 
+		<!-- Redis Starter for Caching and Session Management -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
 	</dependencies>
 <build>
 <plugins>
