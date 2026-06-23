@@ -3,7 +3,8 @@ package com.amazonas.backend.modules.materials.dto;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public class MaterialResponse {
+public class MaterialResponse implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
     private UUID id;
     private String nombre;
     private String unidad;

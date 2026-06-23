@@ -22,6 +22,7 @@ import com.amazonas.backend.modules.requests.repository.PurchaseRequestRepositor
 import com.amazonas.backend.modules.requests.service.PurchaseRequestService;
 import com.amazonas.backend.modules.users.model.User;
 import com.amazonas.backend.modules.users.repository.UserRepository;
+import com.amazonas.backend.modules.vendors.repository.VendorRepository;
 
 @Service
 @Transactional
@@ -31,16 +32,19 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     private final ProductRepository productRepository;
     private final MaterialRepository materialRepository;
     private final UserRepository userRepository;
+    private final VendorRepository vendorRepository;
 
     public PurchaseRequestServiceImpl(
             PurchaseRequestRepository purchaseRequestRepository,
             ProductRepository productRepository,
             MaterialRepository materialRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            VendorRepository vendorRepository) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.productRepository = productRepository;
         this.materialRepository = materialRepository;
         this.userRepository = userRepository;
+        this.vendorRepository = vendorRepository;
     }
 
     // ─────────────────────────────────────────────────────────
@@ -56,7 +60,18 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         solicitud.setUsuario(usuario);
         solicitud.setClienteNombre(req.getClienteNombre());
         solicitud.setClienteEmail(req.getClienteEmail());
-        solicitud.setClienteTelefono(req.getClienteTelefono());
+
+        // Validar número telefónico (caracteres numéricos, longitud 9 para Perú)
+        String telefonoOriginal = req.getClienteTelefono();
+        String telefonoLimpio = telefonoOriginal != null ? telefonoOriginal.replaceAll("\\D", "") : "";
+        if (telefonoLimpio.length() == 11 && telefonoLimpio.startsWith("51")) {
+            telefonoLimpio = telefonoLimpio.substring(2);
+        }
+        if (!telefonoLimpio.matches("^[0-9]{9}$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El número telefónico debe contener exactamente 9 dígitos numéricos.");
+        }
+        solicitud.setClienteTelefono(telefonoLimpio);
+
         solicitud.setMensaje(req.getMensaje());
         solicitud.setIsKit(Boolean.TRUE.equals(req.getIsKit()));
         solicitud.setIsCustom(Boolean.TRUE.equals(req.getIsCustom()));
@@ -210,6 +225,8 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         resp.setDescripcionPersonalizacion(solicitud.getDescripcionPersonalizacion());
         resp.setIsCustom(solicitud.getIsCustom());
         resp.setClienteNombre(solicitud.getClienteNombre());
+        resp.setClienteEmail(solicitud.getClienteEmail());
+        resp.setClienteTelefono(solicitud.getClienteTelefono());
         resp.setCreatedAt(solicitud.getCreatedAt());
 
         // Get materials from the associated product
@@ -332,6 +349,40 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             return pfr;
         }).collect(Collectors.toList()));
 
+        // Mapear grabaciones y archivos
+        if (s.getGrabacionesUrls() != null && !s.getGrabacionesUrls().isBlank()) {
+            resp.setGrabacionesUrls(List.of(s.getGrabacionesUrls().split(",")));
+        } else {
+            resp.setGrabacionesUrls(List.of());
+        }
+        if (s.getArchivosUrls() != null && !s.getArchivosUrls().isBlank()) {
+            resp.setArchivosUrls(List.of(s.getArchivosUrls().split(",")));
+        } else {
+            resp.setArchivosUrls(List.of());
+        }
+
         return resp;
+    }
+
+    @Override
+    public PurchaseRequestResponse actualizarArchivos(UUID id, RequestFilesUpdateRequest req, String usuarioEmail) {
+        PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
+
+        // Validar acceso: creador de la solicitud o admin
+        boolean isAdmin = userRepository.findByEmail(usuarioEmail).isEmpty() && vendorRepository.findByEmail(usuarioEmail).isPresent();
+        if (!isAdmin && !solicitud.getUsuario().getEmail().equals(usuarioEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para actualizar esta solicitud.");
+        }
+
+        if (req.getGrabacionesUrls() != null) {
+            solicitud.setGrabacionesUrls(String.join(",", req.getGrabacionesUrls()));
+        }
+        if (req.getArchivosUrls() != null) {
+            solicitud.setArchivosUrls(String.join(",", req.getArchivosUrls()));
+        }
+
+        PurchaseRequest saved = purchaseRequestRepository.save(solicitud);
+        return toResponse(saved);
     }
 }

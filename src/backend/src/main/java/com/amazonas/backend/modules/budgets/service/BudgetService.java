@@ -1,5 +1,6 @@
 package com.amazonas.backend.modules.budgets.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.amazonas.backend.modules.budgets.dto.BudgetRequest;
@@ -15,4 +16,7 @@ public interface BudgetService {
 
     /** [Admin] Modifica un presupuesto existente */
     BudgetResponse actualizar(UUID budgetId, BudgetRequest request);
+
+    /** [Admin] Retorna la lista de todos los presupuestos históricos */
+    List<BudgetResponse> obtenerTodos();
 }

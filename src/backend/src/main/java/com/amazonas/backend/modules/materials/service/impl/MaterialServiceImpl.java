@@ -14,8 +14,9 @@ import com.amazonas.backend.modules.materials.model.MaterialCategory;
 import com.amazonas.backend.modules.materials.repository.MaterialCategoryRepository;
 import com.amazonas.backend.modules.materials.repository.MaterialRepository;
 import com.amazonas.backend.modules.materials.service.MaterialService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "materials", key = "'all'")
     public List<MaterialResponse> getAllMaterials() {
         return materialRepository.findAll().stream()
                 .map(this::mapToResponse)
@@ -34,6 +36,7 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "materials", key = "#id")
     public MaterialResponse getMaterialById(UUID id) {
         Material material = materialRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Material no encontrado"));
@@ -42,6 +45,7 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "materials", allEntries = true)
     public MaterialResponse createMaterial(MaterialRequest request) {
         if (materialRepository.findByNombreIgnoreCase(request.getNombre()).isPresent()) {
             throw new RuntimeException("Ya existe un material con el nombre: " + request.getNombre());
@@ -60,6 +64,7 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "materials", allEntries = true)
     public MaterialResponse updateMaterial(UUID id, MaterialRequest request) {
         Material material = materialRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Material no encontrado"));
@@ -83,6 +88,7 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "materials", allEntries = true)
     public void deleteMaterial(UUID id) {
         if (!materialRepository.existsById(id)) {
             throw new RuntimeException("Material no encontrado");

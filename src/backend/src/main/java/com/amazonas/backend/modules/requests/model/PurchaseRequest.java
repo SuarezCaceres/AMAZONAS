@@ -78,6 +78,12 @@ public class PurchaseRequest {
     @Column(name = "cantidad_personas")
     private Integer cantidadPersonas;
 
+    @Column(name = "grabaciones_urls", columnDefinition = "TEXT")
+    private String grabacionesUrls;
+
+    @Column(name = "archivos_urls", columnDefinition = "TEXT")
+    private String archivosUrls;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -252,6 +258,22 @@ public class PurchaseRequest {
 
     public void setCantidadPersonas(Integer cantidadPersonas) {
         this.cantidadPersonas = cantidadPersonas;
+    }
+
+    public String getGrabacionesUrls() {
+        return grabacionesUrls;
+    }
+
+    public void setGrabacionesUrls(String grabacionesUrls) {
+        this.grabacionesUrls = grabacionesUrls;
+    }
+
+    public String getArchivosUrls() {
+        return archivosUrls;
+    }
+
+    public void setArchivosUrls(String archivosUrls) {
+        this.archivosUrls = archivosUrls;
     }
 
     public LocalDateTime getCreatedAt() {

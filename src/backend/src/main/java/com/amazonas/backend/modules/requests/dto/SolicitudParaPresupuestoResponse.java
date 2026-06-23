@@ -12,6 +12,8 @@ public class SolicitudParaPresupuestoResponse {
     private String descripcionPersonalizacion;
     private Boolean isCustom;
     private String clienteNombre;
+    private String clienteEmail;
+    private String clienteTelefono;
     private LocalDateTime createdAt;
     
     private List<MaterialPresupuestoDTO> materialesProducto;
@@ -41,6 +43,12 @@ public class SolicitudParaPresupuestoResponse {
 
     public String getClienteNombre() { return clienteNombre; }
     public void setClienteNombre(String clienteNombre) { this.clienteNombre = clienteNombre; }
+
+    public String getClienteEmail() { return clienteEmail; }
+    public void setClienteEmail(String clienteEmail) { this.clienteEmail = clienteEmail; }
+
+    public String getClienteTelefono() { return clienteTelefono; }
+    public void setClienteTelefono(String clienteTelefono) { this.clienteTelefono = clienteTelefono; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

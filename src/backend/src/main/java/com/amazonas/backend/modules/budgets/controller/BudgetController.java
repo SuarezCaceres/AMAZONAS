@@ -8,7 +8,13 @@ import org.springframework.web.bind.annotation.*;
 
 import com.amazonas.backend.modules.budgets.dto.BudgetRequest;
 import com.amazonas.backend.modules.budgets.dto.BudgetResponse;
+import com.amazonas.backend.modules.budgets.dto.BudgetVendorResponse;
+import com.amazonas.backend.modules.budgets.dto.BudgetClientResponse;
 import com.amazonas.backend.modules.budgets.service.BudgetService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Controlador de Presupuestos
@@ -29,16 +35,65 @@ public class BudgetController {
         this.budgetService = budgetService;
     }
 
-    // ─── Endpoints para Clientes ───────────────────────────────
+    // ─── Endpoints para Clientes y Vendedores ───────────────────
 
     /**
      * GET /api/budgets/by-request/{solicitudId}
      * Retorna el presupuesto asociado a una solicitud de compra.
-     * Accesible para el cliente y el vendedor.
+     * Accesible para el cliente y el vendedor, aplicando filtrado por rol.
      */
     @GetMapping("/api/budgets/by-request/{solicitudId}")
-    public ResponseEntity<BudgetResponse> obtenerPorSolicitud(@PathVariable UUID solicitudId) {
-        return ResponseEntity.ok(budgetService.obtenerPorSolicitudId(solicitudId));
+    public ResponseEntity<?> obtenerPorSolicitud(
+            @PathVariable UUID solicitudId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        BudgetResponse response = budgetService.obtenerPorSolicitudId(solicitudId);
+        
+        boolean isVendor = userDetails.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+                
+        if (isVendor) {
+            BudgetVendorResponse vendorResponse = new BudgetVendorResponse(
+                response.getId(),
+                response.getSolicitudId(),
+                response.getNombre(),
+                response.getDescripcion(),
+                response.getCodigoReferencia(),
+                response.getEstado(),
+                response.getManoDeObra(),
+                response.getMargenGanancia(),
+                response.getCostoMateriales(),
+                response.getSubtotal(),
+                response.getGanancia(),
+                response.getTotal(),
+                response.getAdelantoRequerido(),
+                response.getAdelantoPorcentaje(),
+                response.getAdelantoMonto(),
+                response.getItems(),
+                response.getServicioExplicacion()
+            );
+            return ResponseEntity.ok(vendorResponse);
+        } else {
+            List<String> materialesIncluidos = response.getItems().stream()
+                    .map(item -> item.getMaterialNombre() + " (" + item.getCantidad() + ")")
+                    .collect(Collectors.toList());
+                    
+            BudgetClientResponse clientResponse = new BudgetClientResponse(
+                response.getId(),
+                response.getSolicitudId(),
+                response.getNombre(),
+                response.getDescripcion(),
+                response.getCodigoReferencia(),
+                response.getEstado(),
+                response.getTotal(),
+                response.getAdelantoRequerido(),
+                response.getAdelantoPorcentaje(),
+                response.getAdelantoMonto(),
+                materialesIncluidos,
+                response.getServicioExplicacion()
+            );
+            return ResponseEntity.ok(clientResponse);
+        }
     }
 
     // ─── Endpoints para Administradores/Vendedores ─────────────
@@ -63,5 +118,14 @@ public class BudgetController {
             @PathVariable UUID id,
             @RequestBody BudgetRequest request) {
         return ResponseEntity.ok(budgetService.actualizar(id, request));
+    }
+
+    /**
+     * GET /api/admin/budgets
+     * Retorna la lista de todos los presupuestos históricos guardados.
+     */
+    @GetMapping("/api/admin/budgets")
+    public ResponseEntity<List<BudgetResponse>> listarTodos() {
+        return ResponseEntity.ok(budgetService.obtenerTodos());
     }
 }

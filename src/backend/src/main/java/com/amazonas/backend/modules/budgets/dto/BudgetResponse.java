@@ -11,6 +11,8 @@ public class BudgetResponse {
     private UUID solicitudId;
     private String nombre;
     private String descripcion;
+    private String codigoReferencia;
+    private String estado;
     private BigDecimal manoDeObra;
     private Integer margenGanancia;
     private Boolean adelantoRequerido;
@@ -81,4 +83,10 @@ public class BudgetResponse {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getCodigoReferencia() { return codigoReferencia; }
+    public void setCodigoReferencia(String codigoReferencia) { this.codigoReferencia = codigoReferencia; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 }

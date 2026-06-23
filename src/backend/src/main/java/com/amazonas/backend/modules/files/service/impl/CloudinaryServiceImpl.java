@@ -33,8 +33,22 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             // Microsoft Word
             "application/msword",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            // PowerPoint
+            "application/vnd.ms-powerpoint",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             // Texto plano
-            "text/plain"
+            "text/plain",
+            // Videos
+            "video/mp4",
+            "video/mpeg",
+            "video/quicktime",
+            "video/webm",
+            "video/x-msvideo",
+            "video/ogg",
+            // Comprimidos
+            "application/zip",
+            "application/x-zip-compressed",
+            "application/x-rar-compressed"
     );
 
     @Override

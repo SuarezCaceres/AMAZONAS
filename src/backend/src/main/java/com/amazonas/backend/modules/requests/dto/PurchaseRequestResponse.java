@@ -45,6 +45,10 @@ public class PurchaseRequestResponse {
     // Indica si ya tiene presupuesto
     private Boolean tienePresupuesto;
 
+    // Grabaciones y Archivos
+    private List<String> grabacionesUrls;
+    private List<String> archivosUrls;
+
     // Timestamps
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -112,6 +116,12 @@ public class PurchaseRequestResponse {
 
     public Boolean getTienePresupuesto() { return tienePresupuesto; }
     public void setTienePresupuesto(Boolean tienePresupuesto) { this.tienePresupuesto = tienePresupuesto; }
+
+    public List<String> getGrabacionesUrls() { return grabacionesUrls; }
+    public void setGrabacionesUrls(List<String> grabacionesUrls) { this.grabacionesUrls = grabacionesUrls; }
+
+    public List<String> getArchivosUrls() { return archivosUrls; }
+    public void setArchivosUrls(List<String> archivosUrls) { this.archivosUrls = archivosUrls; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

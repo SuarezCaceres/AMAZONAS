@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.amazonas.backend.modules.requests.model.PurchaseRequest;
+import com.amazonas.backend.modules.vendors.model.Vendor;
 
 import jakarta.persistence.*;
 
@@ -22,11 +23,21 @@ public class Budget {
     @JoinColumn(name = "solicitud_id", nullable = false, unique = true)
     private PurchaseRequest solicitud;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creador_id")
+    private Vendor creador;
+
     @Column(nullable = false, length = 200)
     private String nombre;
 
     @Column(columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "codigo_referencia", nullable = false, unique = true, length = 30)
+    private String codigoReferencia;
+
+    @Column(name = "estado", nullable = false, length = 30)
+    private String estado = "PENDIENTE"; // PENDIENTE, ENVIADO, ACEPTADO, RECHAZADO, EN_PRODUCCION
 
     @Column(name = "mano_de_obra", nullable = false, precision = 10, scale = 2)
     private BigDecimal manoDeObra = BigDecimal.ZERO;
@@ -60,6 +71,10 @@ public class Budget {
     protected void onCreate() {
         if (this.id == null) {
             this.id = UUID.randomUUID();
+        }
+        if (this.codigoReferencia == null) {
+            int randomNum = (int) (Math.random() * 1000);
+            this.codigoReferencia = String.format("PR-2026-%03d", randomNum);
         }
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
@@ -217,5 +232,29 @@ public class Budget {
 
     public void setServicioExplicacion(BudgetExplanationService servicioExplicacion) {
         this.servicioExplicacion = servicioExplicacion;
+    }
+
+    public Vendor getCreador() {
+        return creador;
+    }
+
+    public void setCreador(Vendor creador) {
+        this.creador = creador;
+    }
+
+    public String getCodigoReferencia() {
+        return codigoReferencia;
+    }
+
+    public void setCodigoReferencia(String codigoReferencia) {
+        this.codigoReferencia = codigoReferencia;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 }
