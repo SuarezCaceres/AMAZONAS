@@ -56,6 +56,7 @@ public class ChatServiceImpl implements ChatService {
     private final VendorRepository vendorRepository;
     private final HtmlSanitizerService htmlSanitizer;
     private final SimpMessagingTemplate messagingTemplate;
+    private final com.amazonas.backend.modules.chat.listener.WebSocketSessionListener sessionListener;
 
     // =========================================================================
     // SALA DE CHAT
@@ -81,7 +82,7 @@ public class ChatServiceImpl implements ChatService {
     @Transactional(readOnly = true)
     public List<ChatRoomResponse> getMyRooms(String currentEmail) {
         // Determinar si es cliente o vendedor
-        Optional<User> userOpt = userRepository.findByEmail(currentEmail);
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(currentEmail);
         if (userOpt.isPresent()) {
             return chatRoomRepository
                     .findByClientIdOrderByLastMessageAtDesc(userOpt.get().getId())
@@ -90,7 +91,7 @@ public class ChatServiceImpl implements ChatService {
                     .collect(Collectors.toList());
         }
 
-        Optional<Vendor> vendorOpt = vendorRepository.findByEmail(currentEmail);
+        Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(currentEmail);
         if (vendorOpt.isPresent()) {
             return chatRoomRepository
                     .findByVendorIdOrderByLastMessageAtDesc(vendorOpt.get().getId())
@@ -115,10 +116,12 @@ public class ChatServiceImpl implements ChatService {
         List<ChatMessage> messages = chatMessageRepository
                 .findByRoomIdOrderBySentAtDesc(roomId, PageRequest.of(0, PAGE_SIZE));
 
+        ChatSenderRole requesterRole = getSenderRole(currentEmail, room);
+
         // Devolver en orden cronológico (más antiguo primero)
         return messages.stream()
                 .sorted((a, b) -> a.getSentAt().compareTo(b.getSentAt()))
-                .map(this::buildMessageResponse)
+                .map(msg -> buildMessageResponseForRole(msg, requesterRole))
                 .collect(Collectors.toList());
     }
 
@@ -131,7 +134,7 @@ public class ChatServiceImpl implements ChatService {
         ChatSenderRole senderRole;
         String senderName;
 
-        Optional<User> userOpt = userRepository.findByEmail(currentEmail);
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(currentEmail);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (!room.getClientId().equals(user.getId())) {
@@ -141,7 +144,7 @@ public class ChatServiceImpl implements ChatService {
             senderRole = ChatSenderRole.CLIENT;
             senderName = user.getNombre();
         } else {
-            Optional<Vendor> vendorOpt = vendorRepository.findByEmail(currentEmail);
+            Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(currentEmail);
             if (vendorOpt.isPresent()) {
                 Vendor vendor = vendorOpt.get();
                 if (!room.getVendorId().equals(vendor.getId())) {
@@ -182,7 +185,24 @@ public class ChatServiceImpl implements ChatService {
         room.setLastMessageAt(OffsetDateTime.now());
         chatRoomRepository.saveAndFlush(room);
 
-        // Construir respuesta usando datos ya resueltos en memoria (evita consultas findById redundantes)
+        // Construir respuesta filtrada para el broadcast (seguro para clientes)
+        ChatMessageResponse broadcastResponse = new ChatMessageResponse(
+                message.getId(),
+                message.getRoomId(),
+                message.getSenderId(),
+                senderName != null ? senderName : (senderRole == ChatSenderRole.CLIENT ? "Cliente" : "Vendedor"),
+                message.getSenderRole(),
+                message.getMessageType(),
+                message.getContent(),
+                mType == ChatMessageType.BUDGET ? filterBudgetMetadataForClient(message.getMetadata()) : message.getMetadata(),
+                message.isRead(),
+                message.getSentAt()
+        );
+
+        // Publicar en tiempo real vía WebSocket
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, broadcastResponse);
+
+        // Retornar la respuesta original sin filtrar
         ChatMessageResponse response = new ChatMessageResponse(
                 message.getId(),
                 message.getRoomId(),
@@ -195,9 +215,6 @@ public class ChatServiceImpl implements ChatService {
                 message.isRead(),
                 message.getSentAt()
         );
-
-        // Publicar en tiempo real vía WebSocket
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, response);
 
         return response;
     }
@@ -410,6 +427,40 @@ public class ChatServiceImpl implements ChatService {
         chatMessageRepository.markAllAsRead(roomId, oppositeRole);
     }
 
+    @Override
+    public boolean isUserActive(String email) {
+        return sessionListener.isUserActive(email);
+    }
+
+    @Override
+    public ChatRoomResponse acceptBudget(UUID roomId, Double totalAmount, String currentEmail) {
+        ChatRoom room = getRoomOrThrow(roomId);
+        validateRoomAccess(room, currentEmail);
+
+        User client = userRepository.findById(room.getClientId())
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado para esta sala."));
+        if (!client.getEmail().equalsIgnoreCase(currentEmail)) {
+            throw new AccessDeniedException("Solo el cliente puede aceptar el presupuesto.");
+        }
+
+        room.setAgreedPrice(java.math.BigDecimal.valueOf(totalAmount));
+        room.setStatus(ChatRoomStatus.AGREED);
+        chatRoomRepository.saveAndFlush(room);
+
+        ChatMessage systemMessage = ChatMessage.builder()
+                .roomId(room.getId())
+                .senderId(getSenderId(currentEmail))
+                .senderRole(ChatSenderRole.SYSTEM)
+                .messageType(ChatMessageType.SYSTEM)
+                .content("✅ He aceptado el presupuesto oficial de S/ " + String.format(java.util.Locale.US, "%.2f", totalAmount) + ". ¡La negociación ha concluido exitosamente!")
+                .build();
+        chatMessageRepository.saveAndFlush(systemMessage);
+
+        messagingTemplate.convertAndSend("/topic/room/" + room.getId(), buildMessageResponse(systemMessage));
+
+        return buildRoomResponse(room, currentEmail);
+    }
+
     // =========================================================================
     // HELPERS PRIVADOS
     // =========================================================================
@@ -446,17 +497,17 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private void validateRoomAccess(ChatRoom room, String currentEmail) {
-        Optional<User> userOpt = userRepository.findByEmail(currentEmail);
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(currentEmail);
         if (userOpt.isPresent() && room.getClientId().equals(userOpt.get().getId())) return;
 
-        Optional<Vendor> vendorOpt = vendorRepository.findByEmail(currentEmail);
+        Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(currentEmail);
         if (vendorOpt.isPresent() && room.getVendorId().equals(vendorOpt.get().getId())) return;
 
         throw new AccessDeniedException("No tienes permisos para acceder a esta sala de chat.");
     }
 
     private ChatSenderRole getSenderRole(String email, ChatRoom room) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(email);
         if (userOpt.isPresent() && room.getClientId().equals(userOpt.get().getId())) {
             return ChatSenderRole.CLIENT;
         }
@@ -464,10 +515,10 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private UUID getSenderId(String email) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(email);
         if (userOpt.isPresent()) return userOpt.get().getId();
 
-        Optional<Vendor> vendorOpt = vendorRepository.findByEmail(email);
+        Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(email);
         if (vendorOpt.isPresent()) return vendorOpt.get().getId();
 
         throw new EntityNotFoundException("Usuario no encontrado: " + email);
@@ -518,7 +569,15 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private ChatMessageResponse buildMessageResponse(ChatMessage message) {
+        return buildMessageResponseForRole(message, ChatSenderRole.VENDOR);
+    }
+
+    private ChatMessageResponse buildMessageResponseForRole(ChatMessage message, ChatSenderRole requesterRole) {
         String senderName = resolveSenderName(message.getSenderId(), message.getSenderRole());
+        String metadata = message.getMetadata();
+        if (message.getMessageType() == ChatMessageType.BUDGET && requesterRole == ChatSenderRole.CLIENT) {
+            metadata = filterBudgetMetadataForClient(metadata);
+        }
         return new ChatMessageResponse(
                 message.getId(),
                 message.getRoomId(),
@@ -527,10 +586,40 @@ public class ChatServiceImpl implements ChatService {
                 message.getSenderRole(),
                 message.getMessageType(),
                 message.getContent(),
-                message.getMetadata(),
+                metadata,
                 message.isRead(),
                 message.getSentAt()
         );
+    }
+
+    private String filterBudgetMetadataForClient(String metadata) {
+        if (metadata == null || metadata.isBlank()) {
+            return metadata;
+        }
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(metadata);
+            if (root.isObject()) {
+                com.fasterxml.jackson.databind.node.ObjectNode node = (com.fasterxml.jackson.databind.node.ObjectNode) root;
+                node.remove("manoDeObra");
+                node.remove("margenGanancia");
+                
+                com.fasterxml.jackson.databind.JsonNode materialesNode = node.get("materiales");
+                if (materialesNode != null && materialesNode.isArray()) {
+                    for (com.fasterxml.jackson.databind.JsonNode mat : (com.fasterxml.jackson.databind.node.ArrayNode) materialesNode) {
+                        if (mat.isObject()) {
+                            com.fasterxml.jackson.databind.node.ObjectNode matNode = (com.fasterxml.jackson.databind.node.ObjectNode) mat;
+                            matNode.remove("precioUnitario");
+                            matNode.remove("subtotal");
+                        }
+                    }
+                }
+                return mapper.writeValueAsString(node);
+            }
+        } catch (Exception e) {
+            log.error("Error filtering budget metadata for client", e);
+        }
+        return metadata;
     }
 
     private ChatOfferResponse buildOfferResponse(ChatOffer offer, String currentEmail) {

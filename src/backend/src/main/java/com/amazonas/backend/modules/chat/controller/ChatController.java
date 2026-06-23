@@ -58,6 +58,16 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getMyRooms(userDetails.getUsername()));
     }
 
+    @Operation(summary = "Aceptar presupuesto para una sala de chat")
+    @PostMapping("/rooms/{roomId}/accept-budget")
+    public ResponseEntity<ChatRoomResponse> acceptBudget(
+            @PathVariable UUID roomId,
+            @RequestParam Double totalAmount,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(chatService.acceptBudget(roomId, totalAmount, userDetails.getUsername()));
+    }
+
     // =========================================================================
     // REST — MENSAJES (Carga inicial del historial)
     // =========================================================================
@@ -79,6 +89,14 @@ public class ChatController {
     ) {
         chatService.markAsRead(roomId, userDetails.getUsername());
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Verificar si un usuario está en línea")
+    @GetMapping("/users/{email}/online")
+    public ResponseEntity<Boolean> isUserOnline(
+            @PathVariable String email
+    ) {
+        return ResponseEntity.ok(chatService.isUserActive(email));
     }
 
     // =========================================================================

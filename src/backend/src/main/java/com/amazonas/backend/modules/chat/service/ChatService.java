@@ -70,4 +70,15 @@ public interface ChatService {
      * Marca todos los mensajes de una sala como leídos para el usuario actual.
      */
     void markAsRead(UUID roomId, String currentEmail);
+
+    /**
+     * Verifica si un usuario está en línea usando las sesiones WebSocket en Redis.
+     */
+    boolean isUserActive(String email);
+
+    /**
+     * Permite al cliente aceptar el presupuesto propuesto para la sala de chat.
+     * Actualiza el estado a AGREED y registra el monto final acordado.
+     */
+    ChatRoomResponse acceptBudget(UUID roomId, Double totalAmount, String currentEmail);
 }

@@ -25,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // BUSCAR USER
         // =========================
 
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailIgnoreCase(email)
                 .map(user -> (UserDetails) user)
 
                 // =========================
@@ -34,7 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 // =========================
 
                 .orElseGet(() ->
-                        vendorRepository.findByEmail(email)
+                        vendorRepository.findByEmailIgnoreCase(email)
                                 .map(vendor -> (UserDetails) vendor)
 
                                 // =========================
