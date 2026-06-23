@@ -2,12 +2,14 @@ export enum ChatRoomStatus {
   ACTIVE = 'ACTIVE',
   OPEN = 'OPEN',       // Compatibilidad con registros legacy en Neon DB
   AGREED = 'AGREED',
-  CLOSED = 'CLOSED'
+  CLOSED = 'CLOSED',
+  ARCHIVED = 'ARCHIVED'
 }
 
 export enum ChatMessageType {
   TEXT = 'TEXT',
   OFFER = 'OFFER',
+  BUDGET = 'BUDGET',
   SYSTEM = 'SYSTEM',
   EXTRA = 'EXTRA',
   FILE = 'FILE',
@@ -51,6 +53,7 @@ export interface ChatMessageResponse {
   metadata: string; // JSON String
   isRead: boolean;
   sentAt: string;
+  status?: 'SENDING' | 'SENT' | 'FAILED';
 }
 
 export interface ChatOfferResponse {

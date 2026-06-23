@@ -101,6 +101,8 @@ export interface PurchaseRequestResponse {
   materialesPersonales?: KitPersonalMaterialResponse[];
   materialesPreferidos?: RequestPreferredMaterialResponse[];
   tienePresupuesto: boolean;
+  grabacionesUrls?: string[];
+  archivosUrls?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -128,6 +130,8 @@ export interface SolicitudParaPresupuestoResponse {
   descripcionPersonalizacion?: string;
   isCustom: boolean;
   clienteNombre: string;
+  clienteEmail: string;
+  clienteTelefono?: string;
   createdAt: string;
   materialesProducto: MaterialPresupuestoDTO[];
   materialesPreferidos: MaterialSolicitadoDTO[];

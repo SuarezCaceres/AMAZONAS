@@ -1,3 +1,5 @@
+/* ═══════════════════════ LISTA DE SOLICITUDES ═══════════════════════ */
+
 .solicitudes-page {
   padding: 24px 32px 40px;
 }
@@ -54,22 +56,11 @@
   font-weight: 700;
 }
 
-.stat-value.pending {
-  color: #f59e0b;
-}
+.stat-value.pending  { color: #f59e0b; }
+.stat-value.processing { color: #3b82f6; }
+.stat-value.completed  { color: #10b981; }
 
-.stat-value.processing {
-  color: #3b82f6;
-}
-
-.stat-value.completed {
-  color: #10b981;
-}
-
-.stat-icon {
-  font-size: 28px;
-  color: #9ca3af;
-}
+.stat-icon { font-size: 28px; color: #9ca3af; }
 
 .stat-badge {
   display: flex;
@@ -82,20 +73,9 @@
   font-weight: 600;
 }
 
-.stat-badge.pending {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.stat-badge.processing {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.stat-badge.completed {
-  background: #d1fae5;
-  color: #059669;
-}
+.stat-badge.pending    { background: #fef3c7; color: #d97706; }
+.stat-badge.processing { background: #dbeafe; color: #2563eb; }
+.stat-badge.completed  { background: #d1fae5; color: #059669; }
 
 .filters-section {
   display: flex;
@@ -115,10 +95,7 @@
   background: #ffffff;
 }
 
-.search-box .search-icon {
-  color: #9ca3af;
-  font-size: 16px;
-}
+.search-box .search-icon { color: #9ca3af; font-size: 16px; }
 
 .search-box input {
   flex: 1;
@@ -128,9 +105,7 @@
   color: #374151;
 }
 
-.search-box input::placeholder {
-  color: #9ca3af;
-}
+.search-box input::placeholder { color: #9ca3af; }
 
 .filter-tabs {
   display: flex;
@@ -150,15 +125,8 @@
   transition: all 0.2s ease;
 }
 
-.filter-tabs button:hover {
-  background: #f9fafb;
-}
-
-.filter-tabs button.active {
-  background: #059669;
-  border-color: #059669;
-  color: #ffffff;
-}
+.filter-tabs button:hover   { background: #f9fafb; }
+.filter-tabs button.active  { background: #059669; border-color: #059669; color: #ffffff; }
 
 .expand-controls {
   display: flex;
@@ -182,13 +150,7 @@
   transition: background 0.2s ease;
 }
 
-.expand-controls button:hover {
-  background: #f3f4f6;
-}
-
-.expand-controls button span {
-  font-size: 12px;
-}
+.expand-controls button:hover { background: #f3f4f6; }
 
 .solicitudes-list {
   display: flex;
@@ -204,9 +166,7 @@
   transition: box-shadow 0.2s ease;
 }
 
-.solicitud-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
+.solicitud-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
 .card-header {
   display: flex;
@@ -217,46 +177,16 @@
   user-select: none;
 }
 
-.card-header h2 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 16px;
-  font-weight: 600;
-}
+.card-header h2 { margin: 0; color: #1f2937; font-size: 16px; font-weight: 600; }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.header-right  { display: flex; align-items: center; gap: 12px; }
 
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-}
+.status-badge { padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.status-badge.pendiente  { background: #fef3c7; color: #d97706; }
+.status-badge.procesando { background: #dbeafe; color: #2563eb; }
+.status-badge.completado { background: #d1fae5; color: #059669; }
 
-.status-badge.pendiente {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.status-badge.procesando {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.status-badge.completado {
-  background: #d1fae5;
-  color: #059669;
-}
-
-.expand-icon {
-  color: #9ca3af;
-  font-size: 14px;
-  font-weight: bold;
-}
+.expand-icon { color: #9ca3af; font-size: 14px; font-weight: bold; }
 
 .card-content {
   padding: 0 20px 20px;
@@ -271,36 +201,14 @@
   padding: 16px 0;
 }
 
-.contact-info {
-  border-top: 1px solid #f3f4f6;
-}
+.contact-info { border-top: 1px solid #f3f4f6; }
 
-.info-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.info-icon {
-  color: #9ca3af;
-  font-size: 14px;
-}
-
-.info-label {
-  color: #6b7280;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.info-value {
-  color: #1f2937;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.info-value.email {
-  color: #2563eb;
-}
+.info-row { display: flex; align-items: center; gap: 8px; }
+.info-row.full-width { width: 100%; }
+.info-icon  { color: #9ca3af; font-size: 14px; }
+.info-label { color: #6b7280; font-size: 13px; font-weight: 500; }
+.info-value { color: #1f2937; font-size: 13px; font-weight: 500; }
+.info-value.email { color: #2563eb; }
 
 .card-actions {
   display: flex;
@@ -325,28 +233,10 @@
   transition: background 0.2s ease;
 }
 
-.btn-communicate {
-  background: #059669;
-  color: #ffffff;
-}
-
-.btn-communicate:hover {
-  background: #047857;
-}
-
-.btn-budget {
-  background: #3b82f6;
-  color: #ffffff;
-}
-
-.btn-budget:hover {
-  background: #2563eb;
-}
-
-.btn-communicate span,
-.btn-budget span {
-  font-size: 16px;
-}
+.btn-communicate { background: #059669; color: #ffffff; }
+.btn-communicate:hover { background: #047857; }
+.btn-budget { background: #0f766e; color: #ffffff; }
+.btn-budget:hover { background: #0d5f58; }
 
 .empty-state {
   padding: 40px;
@@ -356,36 +246,33 @@
   border-radius: 10px;
 }
 
-@media (max-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.loading-state {
+  padding: 40px;
+  text-align: center;
+  color: #9ca3af;
 }
 
-@media (max-width: 768px) {
-  .solicitudes-page {
-    padding: 20px 16px;
-  }
+/* ═══════════════════════ VISTA CHAT CUSTOM SCROLLBARS ═══════════════════════ */
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
-  .filter-tabs {
-    flex-wrap: wrap;
-  }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .filter-tabs button {
-    flex: 1 1 calc(50% - 4px);
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 20px;
+}
 
-  .card-actions {
-    flex-direction: column;
-  }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
 
-  .client-info,
-  .contact-info {
-    flex-direction: column;
-    gap: 12px;
-  }
+:host {
+  display: block;
+  height: 100%;
 }

@@ -1,168 +1,227 @@
 <section class="presupuestos-page">
+
+  <!-- ══════════════════ HEADER ══════════════════ -->
   <header class="page-header">
     <div class="header-info">
-      <h1>Calculadora de Presupuestos</h1>
-      <p>Calcula el costo de producción de tus maquetas</p>
+      <div class="header-title-row">
+        <h1>Calculadora de Presupuestos</h1>
+        @if (modoEdicion) {
+          <span class="mode-badge editing">Editando</span>
+        } @else if (presupuestoGuardado) {
+          <span class="mode-badge saved">Guardado</span>
+        }
+      </div>
+      <p>{{ modoEdicion ? 'Modifica el presupuesto y notifica al cliente sobre los cambios' : 'Calcula el costo de producción de tus maquetas' }}</p>
     </div>
-    <button class="btn-nuevo" (click)="nuevoPresupuesto()">
-      <span>+</span> Nuevo Presupuesto
-    </button>
+    <div class="header-actions" style="display: flex; gap: 8px;">
+      @if (solicitudId) {
+        <button class="btn-cancelar" style="background-color: #f1f5f9; color: #475569; border-color: #cbd5e1;" (click)="volverEvent.emit()">
+          <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Volver al Chat
+        </button>
+      }
+      @if (presupuestoGuardado && !modoEdicion) {
+        <button class="btn-cancelar" (click)="nuevoPresupuesto()">
+          <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Cancelar Presupuesto
+        </button>
+      }
+      <button class="btn-nuevo" (click)="nuevoPresupuesto()">
+        <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nuevo Presupuesto
+      </button>
+    </div>
+
   </header>
 
   <div class="content-grid">
+
+    <!-- ══════════════════ COLUMNA FORMULARIO ══════════════════ -->
     <div class="form-column">
-      
+
+      <!-- Maqueta solicitada -->
+      @if (nombreProyecto) {
+        <div class="form-card solicitud-card">
+          <div class="solicitud-header">
+            <svg viewBox="0 0 24 24" class="card-icon green" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            <span class="solicitud-header-label">Maqueta Solicitada</span>
+          </div>
+          <h2 class="solicitud-nombre">{{ nombreProyecto }}</h2>
+          @if (descripcion) {
+            <p class="solicitud-desc"><strong>Mensaje del cliente:</strong> {{ descripcion }}</p>
+          }
+        </div>
+      }
+
+      <!-- Info cliente -->
+      @if (clienteEmail) {
+        <div class="form-card cliente-info-card">
+          <div class="cliente-info-header">
+            <svg viewBox="0 0 24 24" class="card-icon blue" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <span class="cliente-info-label">Información del Cliente</span>
+          </div>
+          <div class="cliente-datos">
+            <div class="dato-item">
+              <span class="dato-label">Cliente:</span>
+              <span class="dato-val">{{ clienteNombre }}</span>
+            </div>
+            <div class="dato-item">
+              <span class="dato-label">Email:</span>
+              <span class="dato-val link">{{ clienteEmail }}</span>
+            </div>
+            <div class="dato-item">
+              <span class="dato-label">Teléfono:</span>
+              <span class="dato-val link">{{ clienteTelefono || 'No registrado' }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Materiales requeridos -->
       <div class="form-card">
-        <h2 class="card-title">Información del Presupuesto</h2>
-        
-        <div class="form-group">
-          <label for="nombreProyecto">Nombre del Proyecto *</label>
-          <input 
-            type="text" 
-            id="nombreProyecto"
-            placeholder="Ej: Maqueta Sistema Solar - Cliente Juan"
-            [(ngModel)]="nombreProyecto"
-          >
+        <div class="card-header-row">
+          <h2 class="card-title green">Materiales Requeridos</h2>
+          @if (materialesAgregados.length > 0) {
+            <span class="badge-count">{{ materialesAgregados.length }} material{{ materialesAgregados.length !== 1 ? 'es' : '' }}</span>
+          }
         </div>
 
-        <div class="form-group">
-          <label for="descripcion">Descripción</label>
-          <textarea 
-            id="descripcion"
-            placeholder="Detalles del proyecto..."
-            rows="4"
-            [(ngModel)]="descripcion"
-          ></textarea>
-        </div>
-      </div>
-
-      <div class="form-card">
-        <h2 class="card-title green">Materiales Requeridos</h2>
-        
-        <div class="custom-notice" *ngIf="isCustom">
-          <span class="notice-icon">🎨</span>
-          <span>Maqueta personalizada - Puedes agregar materiales adicionales</span>
-        </div>
-        
-        <div class="material-selector">
-          <select [(ngModel)]="materialSeleccionado">
-            <option value="">Seleccionar material...</option>
-            <option *ngFor="let mat of materialesDisponibles" [value]="mat.nombre">
-              {{ mat.nombre }} - S/ {{ mat.precio.toFixed(2) }}
-            </option>
-          </select>
-          <input 
-            type="number" 
-            min="1" 
-            [(ngModel)]="cantidadMaterial"
-            class="cantidad-input"
-          >
-          <button class="btn-add" (click)="agregarMaterial()">+</button>
+        <div class="material-selector" style="position: relative; display: flex; gap: 8px; align-items: center;">
+          <div style="position: relative; flex: 1;">
+            <input 
+              type="text" 
+              placeholder="Buscar material real en inventario..." 
+              [(ngModel)]="busquedaMaterial" 
+              (focus)="mostrarDropdown = true; filtrarMateriales()"
+              (input)="filtrarMateriales()"
+              (blur)="onBlurAutocomplete()"
+              style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 13px;"
+            >
+            @if (mostrarDropdown && materialesFiltrados.length > 0) {
+              <ul style="position: absolute; top: 105%; left: 0; right: 0; max-height: 180px; overflow-y: auto; background: white; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 500; margin: 0; padding: 0; list-style: none; text-align: left;">
+                @for (mat of materialesFiltrados; track mat.nombre) {
+                  <li 
+                    (mousedown)="seleccionarMaterial(mat)"
+                    style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 12px; transition: background 0.15s;"
+                    onmouseover="this.style.backgroundColor='#f1f5f9'"
+                    onmouseout="this.style.backgroundColor='transparent'">
+                    <span style="font-weight: 600; color: #1e293b;">{{ mat.nombre }}</span> — <span style="font-weight: 550; color: #0d9488;">S/ {{ mat.precio.toFixed(2) }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+          <input type="number" min="1" [(ngModel)]="cantidadMaterial" class="cantidad-input" style="width: 70px; height: 40px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+          <button class="btn-add" (click)="agregarMaterialDesdeAutocomplete()" style="height: 40px; padding: 0 16px; background: #0f766e; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">+</button>
         </div>
 
-        <div class="materiales-lista" [class.loading]="isLoading">
+
+        <div class="materiales-lista">
           <div class="empty-materiales" *ngIf="materialesAgregados.length === 0 && !isLoading">
             No hay materiales agregados
           </div>
-          <div class="loading-materiales" *ngIf="isLoading">
-            Cargando materiales...
-          </div>
-          
-          <div class="material-item" *ngFor="let mat of materialesAgregados" [class.from-product]="mat.esDelProducto" [class.from-solicited]="mat.esSolicitado">
-            <div class="material-info">
-              <span class="material-nombre">
-                {{ mat.nombre }}
-                <span class="material-badge" *ngIf="mat.esDelProducto">Del producto</span>
-                <span class="material-badge solicitado" *ngIf="mat.esSolicitado">Solicitado</span>
-                <span class="material-badge extra" *ngIf="!mat.esDelProducto && !mat.esSolicitado">Extra</span>
-              </span>
-              <span class="material-detalle">{{ mat.cantidad }} x S/ {{ mat.precioUnitario.toFixed(2) }}</span>
+          <div class="loading-materiales" *ngIf="isLoading">Cargando materiales...</div>
+
+          @if (materialesAgregados.length > 0) {
+            <div class="materiales-table-header">
+              <span>Material</span>
+              <span>Cantidad</span>
+              <span>Costo Unit.</span>
+              <span>Subtotal</span>
+              <span></span>
             </div>
-            <div class="material-actions">
-              <span class="material-total">S/ {{ (mat.cantidad * mat.precioUnitario).toFixed(2) }}</span>
-              <button class="btn-remove" (click)="eliminarMaterial(mat.id)" *ngIf="!mat.esDelProducto">×</button>
-            </div>
+          }
+
+          <div class="material-item" *ngFor="let mat of materialesAgregados"
+            [class.from-product]="mat.esDelProducto"
+            [class.from-solicited]="mat.esSolicitado">
+            <span class="material-nombre">
+              {{ mat.nombre }}
+              <span class="material-badge" *ngIf="mat.esDelProducto">Del producto</span>
+              <span class="material-badge solicitado" *ngIf="mat.esSolicitado">Solicitado</span>
+              <span class="material-badge extra" *ngIf="!mat.esDelProducto && !mat.esSolicitado">Extra</span>
+            </span>
+            <span class="mat-col">{{ mat.cantidad }}</span>
+            <span class="mat-col">S/ {{ (mat.precioUnitario || 0).toFixed(2) }}</span>
+            <span class="mat-col bold">S/ {{ (mat.cantidad * (mat.precioUnitario || 0)).toFixed(2) }}</span>
+            <button class="btn-remove" (click)="eliminarMaterial(mat.id)" *ngIf="!mat.esDelProducto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="remove-icon">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14H6L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+              </svg>
+            </button>
+            <span *ngIf="mat.esDelProducto"></span>
           </div>
         </div>
       </div>
 
-      <!-- Client's Requested Materials Section - Separate card below Materiales Requeridos -->
+      <!-- Materiales solicitados por el cliente -->
       <div class="form-card client-request-card" *ngIf="materialesSolicitados.length > 0 || materialesDeseados">
         <h2 class="card-title purple">📦 Materiales Solicitados por el Cliente</h2>
-        
         <div class="client-materials-notice">
           <span class="notice-icon">💡</span>
-          <span>Estos son los materiales que el cliente ha solicitado. Haz clic en "Agregar" para incluirlos en el presupuesto.</span>
+          <span>Haz clic en "Agregar" para incluirlos en el presupuesto.</span>
         </div>
-
-        <!-- Selected materials from list -->
         <div class="solicited-materials" *ngIf="materialesSolicitados.length > 0">
-          <h3 class="subsection-title">Materiales Extras Seleccionados</h3>
           <div class="solicited-item" *ngFor="let mat of materialesSolicitados" [class.added]="mat.agregado">
             <div class="solicited-info">
               <span class="solicited-nombre">{{ mat.nombre }}</span>
-              <span class="solicited-precio" *ngIf="mat.costoVenta">
-                S/ {{ mat.costoVenta.toFixed(2) }} / {{ mat.unidad || 'unidad' }}
-              </span>
-              <span class="solicited-precio no-price" *ngIf="!mat.costoVenta">
-                Sin precio en inventario
-              </span>
+              <span class="solicited-precio" *ngIf="mat.costoVenta">S/ {{ mat.costoVenta.toFixed(2) }} / {{ mat.unidad || 'unidad' }}</span>
+              <span class="solicited-precio no-price" *ngIf="!mat.costoVenta">Sin precio en inventario</span>
             </div>
-            <button 
-              class="btn-agregar-solicitado" 
-              (click)="agregarMaterialSolicitado(mat)"
-              [disabled]="mat.agregado"
-            >
+            <button class="btn-agregar-solicitado" (click)="agregarMaterialSolicitado(mat)" [disabled]="mat.agregado">
               {{ mat.agregado ? '✓ Agregado' : '+ Agregar' }}
             </button>
           </div>
         </div>
-
-        <!-- Free text materials -->
         <div class="desired-materials" *ngIf="materialesDeseados">
           <h3 class="subsection-title">Otros Materiales Específicos</h3>
           <div class="desired-text">
             <span class="desired-icon">📝</span>
             <p>{{ materialesDeseados }}</p>
           </div>
-          <small class="desired-hint">El cliente escribió estos materiales manualmente. Búscalos en tu inventario y agrégalos usando el selector de arriba.</small>
         </div>
       </div>
 
+      <!-- Costos adicionales -->
       <div class="form-card">
         <h2 class="card-title">Costos Adicionales</h2>
-        
-        <div class="form-group">
-          <label for="manoObra">Mano de Obra (S/)</label>
-          <input 
-            type="number" 
-            id="manoObra"
-            min="0"
-            [(ngModel)]="manoDeObra"
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="margen">Margen de Ganancia (%)</label>
-          <input 
-            type="number" 
-            id="margen"
-            min="0"
-            max="100"
-            [(ngModel)]="margenGanancia"
-          >
+        <div class="form-row">
+          <div class="form-group">
+            <label for="manoObra">Mano de Obra (S/)</label>
+            <input type="number" id="manoObra" min="0" [(ngModel)]="manoDeObra">
+          </div>
+          <div class="form-group">
+            <label for="margen">Margen de Ganancia (%)</label>
+            <input type="number" id="margen" min="0" max="100" [(ngModel)]="margenGanancia">
+          </div>
         </div>
       </div>
 
+      <!-- Adelanto -->
       <div class="form-card">
         <div class="adelanto-header">
           <h2 class="card-title">Adelanto</h2>
-          <label class="checkbox-label">
-            <input type="checkbox" [(ngModel)]="requiereAdelanto">
+          <label class="toggle-label">
+            <input type="checkbox" [(ngModel)]="requiereAdelanto" class="toggle-input">
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
             Requiere adelanto
           </label>
         </div>
-
         <div class="adelanto-content" *ngIf="requiereAdelanto">
           <div class="adelanto-warning">
             <span class="warning-icon">⚠</span>
@@ -171,19 +230,11 @@
               <p>El cliente deberá confirmar el pago del adelanto antes de iniciar la fabricación.</p>
             </div>
           </div>
-
           <div class="form-group">
             <label for="porcentaje">Porcentaje del Adelanto (%)</label>
-            <input 
-              type="number" 
-              id="porcentaje"
-              min="0"
-              max="100"
-              [(ngModel)]="porcentajeAdelanto"
-            >
+            <input type="number" id="porcentaje" min="0" max="100" [(ngModel)]="porcentajeAdelanto">
             <small>Porcentaje del total que se solicita como adelanto (típicamente 50%)</small>
           </div>
-
           <div class="adelanto-monto">
             <div class="monto-label">
               <span>Monto del Adelanto:</span>
@@ -194,50 +245,54 @@
         </div>
       </div>
 
-      <!-- Servicio de Explicación Section -->
-      <div class="form-card explicacion-card" *ngIf="solicitarExplicacion">
-        <h2 class="card-title orange">🎓 Servicio de Explicación</h2>
-        
-        <div class="explicacion-info">
-          <div class="explicacion-row">
-            <span class="explicacion-label">Modelo:</span>
-            <span class="explicacion-value">{{ tipoEvento || 'No especificado' }}</span>
-          </div>
-          <div class="explicacion-row">
-            <span class="explicacion-label">Personas:</span>
-            <span class="explicacion-value">{{ cantidadPersonas }}</span>
-          </div>
+      <!-- Explicación -->
+      <div class="form-card explicacion-card">
+        <div class="explicacion-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 class="card-title orange" style="margin-bottom: 0;">🎓 Servicio de Explicación</h2>
+          <label class="toggle-label">
+            <input type="checkbox" [(ngModel)]="solicitarExplicacion" (change)="toggleExplicacion()" class="toggle-input">
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
+            Incluir servicio
+          </label>
         </div>
 
-        <div class="form-group">
-          <label for="duracion">Duración (minutos)</label>
-          <input 
-            type="number" 
-            id="duracion"
-            min="15"
-            step="15"
-            [(ngModel)]="duracionExplicacion"
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="precioExplicacion">Precio del Servicio (S/)</label>
-          <input 
-            type="number" 
-            id="precioExplicacion"
-            min="0"
-            [(ngModel)]="precioExplicacion"
-          >
-          <small>{{ explicacionLabel }}</small>
+        <div class="explicacion-content" *ngIf="solicitarExplicacion">
+          <div class="explicacion-info" *ngIf="tipoEvento">
+            <div class="explicacion-row">
+              <span class="explicacion-label">Modelo Solicitado:</span>
+              <span class="explicacion-value">{{ tipoEvento || 'No especificado' }}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="personas">Cantidad de Personas *</label>
+            <input type="number" id="personas" min="1" [(ngModel)]="cantidadPersonas" (change)="validarPersonas()">
+          </div>
+          <div class="form-group">
+            <label for="duracion">Duración (minutos) *</label>
+            <input type="number" id="duracion" min="15" step="15" [(ngModel)]="duracionExplicacion" (change)="validarDuracion()">
+          </div>
+          <div class="form-group">
+            <label for="precioExp">Precio del Servicio (S/)</label>
+            <input type="number" id="precioExp" min="0" [(ngModel)]="precioExplicacion">
+            <small>{{ explicacionLabel }}</small>
+          </div>
         </div>
       </div>
 
     </div>
 
+    <!-- ══════════════════ COLUMNA RESUMEN ══════════════════ -->
     <div class="summary-column">
       <div class="summary-card">
         <h2 class="summary-title">
-          <span class="summary-icon">📋</span>
+          <svg viewBox="0 0 24 24" class="summary-title-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="2" width="18" height="20" rx="2"/>
+            <line x1="8" y1="7" x2="16" y2="7"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+            <line x1="8" y1="17" x2="12" y2="17"/>
+          </svg>
           Resumen del Presupuesto
         </h2>
 
@@ -245,46 +300,279 @@
           <span>Materiales:</span>
           <span>S/ {{ totalMateriales.toFixed(2) }}</span>
         </div>
-
         <div class="summary-row">
           <span>Mano de Obra:</span>
-          <span>S/ {{ manoDeObra.toFixed(2) }}</span>
+          <span>S/ {{ (manoDeObra || 0).toFixed(2) }}</span>
         </div>
-
         <div class="summary-row" *ngIf="solicitarExplicacion">
           <span>Servicio Explicación:</span>
-          <span>S/ {{ precioExplicacion.toFixed(2) }}</span>
+          <span>S/ {{ (precioExplicacion || 0).toFixed(2) }}</span>
         </div>
-
         <div class="summary-divider"></div>
-
         <div class="summary-row">
           <span>Subtotal:</span>
           <span>S/ {{ subtotal.toFixed(2) }}</span>
         </div>
-
         <div class="summary-row ganancia">
-          <span>Ganancia ({{ margenGanancia }}%):</span>
+          <span>Ganancia ({{ margenGanancia || 0 }}%):</span>
           <span>+ S/ {{ ganancia.toFixed(2) }}</span>
         </div>
-
         <div class="summary-total">
           <span>TOTAL:</span>
           <span class="total-value">S/ {{ total.toFixed(2) }}</span>
         </div>
 
-        <div class="adelanto-section" *ngIf="requiereAdelanto">
-          <div class="adelanto-row">
-            <span>Adelanto Requerido:</span>
-            <span class="adelanto-value">S/ {{ montoAdelanto.toFixed(2) }}</span>
+        @if (requiereAdelanto) {
+          <div class="adelanto-section">
+            <div class="adelanto-row">
+              <span>Adelanto Requerido:</span>
+              <span class="adelanto-value">S/ {{ montoAdelanto.toFixed(2) }}</span>
+            </div>
+            <small class="adelanto-note">{{ porcentajeAdelanto }}% del total • Requerido para iniciar fabricación</small>
           </div>
-          <small class="adelanto-note">{{ porcentajeAdelanto }}% del total • Requerido para iniciar fabricación</small>
-        </div>
+        }
 
-        <button class="btn-guardar" (click)="guardarPresupuesto()">
-          <span>💾</span> Guardar Presupuesto
-        </button>
+        <div class="summary-actions">
+          @if (!presupuestoGuardado) {
+            <button class="btn-guardar" (click)="guardarPresupuesto()" [disabled]="guardando">
+              @if (guardando) {
+                <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Guardando...
+              } @else {
+                <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Guardar Presupuesto
+              }
+            </button>
+            <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando">
+              @if (enviando) {
+                <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Enviando...
+              } @else {
+                <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                Guardar y Enviar al Cliente
+              }
+            </button>
+            <small class="summary-hint">Guardando presupuesto nuevo</small>
+          } @else if (modoEdicion) {
+            <button class="btn-guardar" (click)="guardarPresupuesto()" [disabled]="guardando">
+              <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+              </svg>
+              Actualizar Presupuesto
+            </button>
+            <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando">
+              @if (enviando) {
+                <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Enviando...
+              } @else {
+                <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                Actualizar y Notificar Cliente
+              }
+            </button>
+            <small class="summary-hint">Editando presupuesto existente</small>
+          } @else {
+            <!-- Presupuesto guardado, modo visualización -->
+            <div class="saved-banner">
+              <svg viewBox="0 0 24 24" class="saved-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <div>
+                <span class="saved-label">Presupuesto guardado</span>
+                <span class="saved-total">Total: S/ {{ total.toFixed(2) }}</span>
+              </div>
+            </div>
+            <button class="btn-editar" (click)="activarEdicion()">
+              <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Editar Presupuesto
+            </button>
+            <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando">
+              <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Reenviar Presupuesto al Cliente
+            </button>
+            @if (requiereAdelanto) {
+              <button class="btn-adelanto-action" (click)="abrirModalAdelanto()">
+                <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+                Enviar Adelanto
+              </button>
+            }
+          }
+        </div>
       </div>
     </div>
+
+  </div>
+
+  <!-- ══════════════════ HISTORIAL DE PRESUPUESTOS ══════════════════ -->
+  <div class="form-card history-card" style="margin-top: 24px;">
+    <div class="history-header" (click)="mostrarHistorial = !mostrarHistorial" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+      <h2 class="card-title purple" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
+        <span>📋</span> Historial de Presupuestos Guardados
+      </h2>
+      <span class="expand-icon" style="font-size: 14px; font-weight: bold; color: #9ca3af;">{{ mostrarHistorial ? '&#8963;' : '&#8964;' }}</span>
+    </div>
+
+    @if (mostrarHistorial) {
+      <div class="history-content" style="margin-top: 16px;">
+        @if (historialPresupuestos.length === 0) {
+          <p class="text-xs text-slate-400 py-3 text-center">No hay presupuestos guardados en el historial.</p>
+        } @else {
+          <div class="history-list-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            @for (h of historialPresupuestos; track h.id) {
+              <div class="history-item-card" style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background-color: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <span style="font-size: 10px; font-weight: bold; font-family: monospace; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase;">#{{ h.codigoReferencia || h.id.substring(0, 8) }}</span>
+                    <span style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px;" [style.background-color]="h.adelantoRequerido ? '#fef3c7' : '#e2e8f0'" [style.color]="h.adelantoRequerido ? '#d97706' : '#475569'">
+                      {{ h.adelantoRequerido ? 'Adelanto ' + h.adelantoPorcentaje + '%' : 'Completo' }}
+                    </span>
+                  </div>
+                  <h4 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 6px 0 2px 0;">{{ h.nombre }}</h4>
+                  <p style="font-size: 11px; color: #64748b; margin: 0;">Cliente: {{ h.clienteNombre || h.clienteEmail }}</p>
+                  <p style="font-size: 12px; font-weight: 800; color: #0f766e; margin-top: 6px; margin-bottom: 0;">Total: S/ {{ h.totalAmount | number:'1.2-2' }}</p>
+                </div>
+                <button type="button" (click)="cargarPresupuestoDesdeHistorial(h)" class="w-full text-center py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer border-none" style="margin-top: 4px;">
+                  Cargar y Editar
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
   </div>
 </section>
+
+
+<!-- ══════════════════ MODAL ADELANTO ══════════════════ -->
+@if (showAdelantoModal) {
+  <div class="modal-backdrop" (click)="cerrarModalAdelanto()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h3>Información de Adelanto</h3>
+        <button class="modal-close" (click)="cerrarModalAdelanto()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="close-icon">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- QR -->
+        <div class="qr-container">
+          <img [src]="qrDataUrl" alt="Código QR de pago" class="qr-image">
+        </div>
+
+        <!-- Vendedor -->
+        <div class="adelanto-info-row">
+          <div class="adelanto-info-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="adelanto-info-content">
+            <span class="adelanto-info-label">Nombre del Vendedor</span>
+            <span class="adelanto-info-value bold">{{ vendedorNombre }}</span>
+          </div>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="adelanto-info-row copyable" (click)="copiarAlPortapapeles(vendedorTelefono)">
+          <div class="adelanto-info-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.41 2 2 0 0 1 3.59 2.23h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/>
+            </svg>
+          </div>
+          <div class="adelanto-info-content">
+            <span class="adelanto-info-label">Número de Teléfono</span>
+            <span class="adelanto-info-value">{{ vendedorTelefono }}</span>
+          </div>
+          <div class="copy-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Monto adelanto -->
+        <div class="adelanto-info-row adelanto-monto-row copyable" (click)="copiarAlPortapapeles(montoAdelanto.toFixed(2))">
+          <div class="adelanto-info-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="adelanto-info-content">
+            <span class="adelanto-info-label">Monto de Adelanto</span>
+            <span class="adelanto-monto-valor">S/ {{ montoAdelanto.toFixed(2) }}</span>
+          </div>
+          <div class="copy-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copy-icon">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </div>
+        </div>
+
+        @if (copiado) {
+          <div class="copiado-toast">✓ Copiado al portapapeles</div>
+        }
+
+        <!-- Instrucciones -->
+        <div class="instrucciones-card">
+          <span class="instrucciones-title">Instrucciones:</span>
+          <ol class="instrucciones-list">
+            <li>Comparte este código QR con el cliente (por chat o impreso)</li>
+            <li>El cliente escanea el QR para ver los datos de pago</li>
+            <li>El cliente realiza la transferencia al número mostrado</li>
+            <li>El cliente envía el comprobante de pago por el chat</li>
+            <li>Descarga el comprobante y súbelo como evidencia en Gestión de Pagos</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-cerrar" (click)="cerrarModalAdelanto()">Cerrar</button>
+        <button class="btn-modal-imprimir" (click)="imprimirQR()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Imprimir QR
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

@@ -32,6 +32,9 @@ export class ChatService {
   private readonly roomUpdateSubject = new Subject<ChatRoomResponse>();
   readonly roomUpdates$ = this.roomUpdateSubject.asObservable();
 
+  private readonly receiptSubject = new Subject<string>();
+  readonly receipts$ = this.receiptSubject.asObservable();
+
   private activeSubscriptions: { [key: string]: any } = {};
 
   // =========================================================================
@@ -54,6 +57,10 @@ export class ChatService {
     return this.http.patch<void>(`${this.REST_URL}/rooms/${roomId}/read`, {});
   }
 
+  acceptBudget(roomId: string, totalAmount: number): Observable<ChatRoomResponse> {
+    return this.http.post<ChatRoomResponse>(`${this.REST_URL}/rooms/${roomId}/accept-budget?totalAmount=${totalAmount}`, {});
+  }
+
   createOffer(roomId: string, request: CreateOfferRequest): Observable<ChatOfferResponse> {
     return this.http.post<ChatOfferResponse>(`${this.REST_URL}/rooms/${roomId}/offers`, request);
   }
@@ -71,6 +78,11 @@ export class ChatService {
     const action = accept ? 'accept' : 'reject';
     return this.http.post<ChatRoomResponse>(`${this.REST_URL}/extras/${extraId}/${action}`, {});
   }
+
+  registerPayment(request: any): Observable<any> {
+    return this.http.post<any>(`${API_BASE_URL}/payments`, request);
+  }
+
 
   // =========================================================================
   // WEBSOCKET STOMP METHODS
@@ -183,15 +195,26 @@ export class ChatService {
     }
   }
 
-  sendMessage(roomId: string, content: string, messageType: string = 'TEXT', metadata: string | null = null): void {
+  sendMessage(roomId: string, content: string, messageType: string = 'TEXT', metadata: string | null = null, clientMsgId?: string): void {
     if (!this.stompClient || !this.stompClient.connected) {
       console.error('Cannot send message: WebSocket is not connected');
       return;
     }
 
+    const headers: Record<string, string> = {};
+    if (clientMsgId) {
+      headers['receipt'] = clientMsgId;
+      
+      this.stompClient.watchForReceipt(clientMsgId, () => {
+        console.log(`STOMP Receipt acknowledged by broker: ${clientMsgId}`);
+        this.receiptSubject.next(clientMsgId);
+      });
+    }
+
     this.stompClient.publish({
       destination: `/app/chat/${roomId}/send`,
-      body: JSON.stringify({ content, messageType, metadata })
+      body: JSON.stringify({ content, messageType, metadata }),
+      headers: headers
     });
   }
 

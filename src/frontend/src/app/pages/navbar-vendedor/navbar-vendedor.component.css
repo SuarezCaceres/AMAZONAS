@@ -2,10 +2,12 @@
    SHELL
 ═══════════════════════════════════════════════════════════════ */
 .vendedor-shell {
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   background: #f0f4f8;
+  overflow: hidden;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -154,9 +156,27 @@
 ═══════════════════════════════════════════════════════════════ */
 .tab-content {
   flex: 1;
-  padding: 28px 32px;
-  overflow-y: auto;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Cuando NO está en chat-active, el contenido con padding y scroll propio */
+.tab-content:not(.chat-active) > * {
+  flex: 1;
+  min-height: 0;
+}
+
+.tab-content.chat-active {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+
 
 /* Section header */
 .section-header {
@@ -493,7 +513,7 @@
   }
 
   .tab-content {
-    padding: 20px 16px;
+    padding: 0;
   }
 
   .section-title {

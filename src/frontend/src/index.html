@@ -16,11 +16,48 @@
 
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <!-- Google Font: Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Inter, Outfit, Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN (para soporte instantáneo de maquetación) -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Configuration for Tailwind matching the mockup design system -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            outfit: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            amazonas: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            },
+            client: {
+              bg: '#f8fafc',
+              text: '#334155',
+            },
+            seller: {
+              bg: '#f0fdfa',
+              border: '#ccfbf1',
+              text: '#115e59',
+            }
+          },
+          boxShadow: {
+            premium: '0 10px 30px -10px rgba(15, 118, 110, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02)',
+            glow: '0 0 20px rgba(20, 184, 166, 0.15)',
+          }
+        }
+      }
+    }
+  </script>
 </head>
 <body>
   <app-root></app-root>

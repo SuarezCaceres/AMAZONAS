@@ -202,6 +202,24 @@ export class RequestFormComponent {
   }
 
   submitRequest(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    // Validar teléfono del cliente (Perú: 9 dígitos numéricos)
+    const rawPhone = this.form.phone || '';
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 11 && cleanPhone.startsWith('51')) {
+      cleanPhone = cleanPhone.substring(2);
+    }
+
+    if (!/^[0-9]{9}$/.test(cleanPhone)) {
+      this.errorMessage = 'El número telefónico debe contener exactamente 9 dígitos numéricos (ej: 999888777).';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    this.form.phone = cleanPhone;
+
     const request: SavedRequest = {
       id: Date.now(),
       mode: this.mode,

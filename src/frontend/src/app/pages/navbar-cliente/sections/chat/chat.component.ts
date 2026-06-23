@@ -5,15 +5,17 @@ import { Router } from '@angular/router';
 import { ChatService } from '../../../../services/chat.service';
 import { AuthService } from '../../../../services/auth.service';
 import { FileService } from '../../../../services/file.service';
+import { PurchaseRequestService } from '../../../../services/purchase-request.service';
 import {
   ChatRoomResponse,
   ChatMessageResponse,
   ChatOfferResponse,
   ChatMessageType,
   ChatSenderRole,
-  ChatOfferStatus
+  ChatOfferStatus,
+  ChatRoomStatus
 } from '../../../../models/chat.model';
-import { Subscription } from 'rxjs';
+import { Subscription, lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-chat',
@@ -27,7 +29,9 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   private readonly chatService = inject(ChatService);
   private readonly authService = inject(AuthService);
   private readonly fileService = inject(FileService);
+  private readonly purchaseRequestService = inject(PurchaseRequestService);
   private readonly router = inject(Router);
+
 
   @Input() autoSelectRequestId?: string;
   @Output() closeChat = new EventEmitter<void>();
@@ -41,20 +45,19 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   rooms: ChatRoomResponse[] = [];
   selectedRoom: ChatRoomResponse | null = null;
   messages: ChatMessageResponse[] = [];
+  isSidebarOpen: boolean = true;
 
   // Websocket subscriptions
   private statusSub?: Subscription;
   private messageSub?: Subscription;
   private offerSub?: Subscription;
+  private receiptSub?: Subscription;
 
   // Form inputs
   newMessageText: string = '';
 
   // File Attachments State
-  selectedFile: File | null = null;
-  filePreviewUrl: string | null = null;
-  filePreviewName: string | null = null;
-  isImagePreview: boolean = false;
+  preloadedFiles: { file: File, previewUrl: string | null, isImage: boolean }[] = [];
   uploadingFile: boolean = false;
 
   // Counter-offer State
@@ -84,8 +87,12 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   ngOnInit(): void {
     this.currentUserEmail = localStorage.getItem('auth_email') || '';
     this.currentUserName = localStorage.getItem('auth_nombre') || '';
-    const rawRole = this.authService.getUserRole();
-    this.currentUserRole = rawRole === 'ADMIN' ? ChatSenderRole.VENDOR : ChatSenderRole.CLIENT;
+    // Forzar rol CLIENTE en la sección de cliente para corregir identidad del emisor
+    this.currentUserRole = ChatSenderRole.CLIENT;
+
+    // Bloquear el scroll de la página principal
+    document.body.style.overflow = 'hidden';
+
 
     // Connect to WebSocket STOMP
     this.chatService.connect();
@@ -100,22 +107,60 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     // Listen to real-time messages
     this.messageSub = this.chatService.messages$.subscribe(msg => {
       if (this.selectedRoom && msg.roomId === this.selectedRoom.id) {
-        // Add message if not already present
-        if (!this.messages.some(m => m.id === msg.id)) {
-          this.messages.push(msg);
-          this.shouldScrollToBottom = true;
-          
-          // Mark as read REST
-          this.chatService.markAsRead(this.selectedRoom.id).subscribe();
-          
-          // If message is of type OFFER, load/update active offer
-          if (msg.messageType === ChatMessageType.OFFER) {
-            this.refreshActiveOffer();
-          }
-
-          // Update room list preview
-          this.loadRoomsList();
+        // Try to match with an existing temporary message first
+        let tempIndex = -1;
+        if (msg.metadata) {
+          try {
+            const meta = JSON.parse(msg.metadata);
+            if (meta.clientMsgId) {
+              tempIndex = this.messages.findIndex(m => m.id === meta.clientMsgId);
+            }
+          } catch (e) {}
         }
+
+        if (tempIndex === -1) {
+          // Fallback match: same sender, same content, sent within 10 seconds of each other
+          tempIndex = this.messages.findIndex(m =>
+            (m.status === 'SENDING' || m.status === 'SENT') &&
+            m.senderRole === msg.senderRole &&
+            m.content === msg.content &&
+            Math.abs(new Date(m.sentAt).getTime() - new Date(msg.sentAt).getTime()) < 10000
+          );
+        }
+
+        if (tempIndex !== -1) {
+          // Replace temporary message with official database message, retaining status SENT
+          this.messages[tempIndex] = { ...msg, status: 'SENT' };
+        } else {
+          // Add message if not already present
+          if (!this.messages.some(m => m.id === msg.id)) {
+            this.messages.push(msg);
+            this.shouldScrollToBottom = true;
+          }
+        }
+
+        // Mark as read REST
+        this.chatService.markAsRead(this.selectedRoom.id).subscribe();
+        
+        // If message is of type OFFER, load/update active offer
+        if (msg.messageType === ChatMessageType.OFFER) {
+          this.refreshActiveOffer();
+        }
+
+        if (msg.messageType === ChatMessageType.SYSTEM) {
+          this.reloadRoomInfo();
+        }
+
+        // Update room list preview
+        this.loadRoomsList();
+      }
+    });
+
+    // Listen to STOMP receipts for message delivery confirmation
+    this.receiptSub = this.chatService.receipts$.subscribe(receiptId => {
+      const msg = this.messages.find(m => m.id === receiptId);
+      if (msg && msg.status === 'SENDING') {
+        msg.status = 'SENT';
       }
     });
 
@@ -144,7 +189,10 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     this.statusSub?.unsubscribe();
     this.messageSub?.unsubscribe();
     this.offerSub?.unsubscribe();
+    this.receiptSub?.unsubscribe();
     this.chatService.disconnect();
+    // Restaurar el scroll de la página principal
+    document.body.style.overflow = '';
   }
 
   ngAfterViewChecked(): void {
@@ -155,12 +203,17 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   }
 
   scrollToBottom(): void {
-    try {
-      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
-    } catch (err) {
-      // Ignore
-    }
+    setTimeout(() => {
+      try {
+        if (this.scrollContainer && this.scrollContainer.nativeElement) {
+          this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+        }
+      } catch (err) {
+        // Ignore
+      }
+    }, 50);
   }
+
 
   loadRoomsList(): void {
     this.chatService.getMyRooms().subscribe({
@@ -193,6 +246,7 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     }
 
     this.selectedRoom = room;
+    this.isSidebarOpen = false;
     this.messages = [];
     this.activeOffer = null;
     this.extras = [];
@@ -276,93 +330,211 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain'
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'text/plain',
+    'video/mp4', 'video/mpeg', 'video/quicktime', 'video/webm', 'video/x-msvideo', 'video/ogg',
+    'application/zip', 'application/x-zip-compressed', 'application/x-rar-compressed'
   ]);
 
-  onFileSelected(event: any): void {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validar tipo MIME contra la lista del backend
-    if (!this.ALLOWED_MIME_TYPES.has(file.type)) {
-      alert(`Tipo de archivo no permitido: ${file.type || 'desconocido'}.\nSe aceptan: imágenes (JPG, PNG, GIF, WEBP, SVG), PDF, Word (.doc/.docx) y texto plano.`);
-      event.target.value = '';
-      return;
-    }
-
-    // Límite de 5MB en el cliente
-    const maxSizeInBytes = 5 * 1024 * 1024;
-    if (file.size > maxSizeInBytes) {
-      alert('El archivo supera el límite de 5MB permitido.');
-      event.target.value = '';
-      return;
-    }
-
-    this.selectedFile = file;
-    this.filePreviewName = file.name;
-
-    if (file.type.startsWith('image/')) {
-      // Imágenes: generar miniatura local con FileReader
-      this.isImagePreview = true;
+  addPreloadedFile(file: File): void {
+    const isImage = file.type.startsWith('image/');
+    if (isImage) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        this.filePreviewUrl = e.target?.result as string;
+        this.preloadedFiles.push({
+          file: file,
+          previewUrl: e.target?.result as string,
+          isImage: true
+        });
       };
       reader.readAsDataURL(file);
     } else {
-      // PDF, Word, texto: mostrar ícono de documento (no miniatura)
-      this.isImagePreview = false;
-      this.filePreviewUrl = null;
+      this.preloadedFiles.push({
+        file: file,
+        previewUrl: null,
+        isImage: false
+      });
     }
   }
 
-  removeAttachment(): void {
-    this.selectedFile = null;
-    this.filePreviewUrl = null;
-    this.filePreviewName = null;
-    this.isImagePreview = false;
+  onFileSelected(event: any): void {
+    const filesList = event.target.files;
+    if (!filesList || filesList.length === 0) return;
+
+    for (let i = 0; i < filesList.length; i++) {
+      const file = filesList[i];
+
+      // Validar tipo MIME contra la lista del backend
+      if (!this.ALLOWED_MIME_TYPES.has(file.type)) {
+        alert(`Tipo de archivo no permitido: ${file.type || 'desconocido'}.\nSe aceptan: imágenes (JPG, PNG, GIF, WEBP, SVG), PDF, Word (.doc/.docx) y texto plano.`);
+        continue;
+      }
+
+      // Límite de 5MB en el cliente
+      const maxSizeInBytes = 5 * 1024 * 1024;
+      if (file.size > maxSizeInBytes) {
+        alert(`El archivo "${file.name}" supera el límite de 5MB permitido.`);
+        continue;
+      }
+
+      this.addPreloadedFile(file);
+    }
+    event.target.value = ''; // Reset input
+  }
+
+  removePreloadedFile(index: number): void {
+    this.preloadedFiles.splice(index, 1);
+  }
+
+  clearPreloadedFiles(): void {
+    this.preloadedFiles = [];
+  }
+
+  async enviarComprobanteDefinitivo(): Promise<void> {
+    if (!this.selectedRoom || this.preloadedFiles.length === 0) return;
+
+    this.uploadingFile = true;
+    const uploadedUrls: string[] = [];
+
+    try {
+      // 1. Subir secuencialmente a Cloudinary
+      for (const item of this.preloadedFiles) {
+        const response = await lastValueFrom(this.fileService.uploadImage(item.file));
+        uploadedUrls.push(response.url);
+      }
+
+      // 2. Obtener el PurchaseRequest actual del backend para no sobreescribir otros archivos
+      const currentReq = await lastValueFrom(this.purchaseRequestService.obtenerPorId(this.selectedRoom.requestId));
+      
+      const grabacionesUrls = currentReq.grabacionesUrls ? [...currentReq.grabacionesUrls] : [];
+      const archivosUrls = currentReq.archivosUrls ? [...currentReq.archivosUrls] : [];
+
+      // Categorizar nuevos archivos por tipo (audio/video vs otros)
+      this.preloadedFiles.forEach((item, index) => {
+        const url = uploadedUrls[index];
+        const type = item.file.type.toLowerCase();
+        if (type.startsWith('audio/') || type.startsWith('video/')) {
+          grabacionesUrls.push(url);
+        } else {
+          archivosUrls.push(url);
+        }
+      });
+
+      // 3. Actualizar la base de datos mediante el endpoint PUT
+      await lastValueFrom(
+        this.purchaseRequestService.actualizarArchivos(this.selectedRoom.requestId, {
+          grabacionesUrls,
+          archivosUrls
+        })
+      );
+
+      // 4. Enviar un mensaje WebSocket de tipo VOUCHER para notificar al vendedor formalmente para cada archivo
+      this.preloadedFiles.forEach((item, index) => {
+        const url = uploadedUrls[index];
+        const clientMsgId = `voucher-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        const metadata = JSON.stringify({
+          fileUrl: url,
+          fileName: item.file.name,
+          fileType: item.file.type,
+          clientMsgId: clientMsgId
+        });
+
+        this.chatService.sendMessage(
+          this.selectedRoom!.id,
+          `Comprobante de pago definitivo: ${item.file.name}`,
+          'VOUCHER',
+          metadata,
+          clientMsgId
+        );
+      });
+
+      // 5. Limpiar archivos pre-cargados y apagar loading
+      this.clearPreloadedFiles();
+      this.uploadingFile = false;
+      this.showPaymentPanel = false;
+      alert('¡Comprobante(s) definitivo(s) enviado(s) y guardado(s) exitosamente!');
+    } catch (error) {
+      console.error('Error al subir/guardar comprobante definitivo', error);
+      alert('Hubo un error al guardar y enviar el comprobante. Por favor, inténtalo de nuevo.');
+      this.uploadingFile = false;
+    }
   }
 
   sendMessage(): void {
     if (!this.selectedRoom) return;
 
-    // Caso 1: Hay archivo adjunto
-    if (this.selectedFile) {
-      this.uploadingFile = true;
-      this.fileService.uploadImage(this.selectedFile).subscribe({
-        next: (res) => {
-          const fileName = this.filePreviewName || 'archivo';
-          const fileMetadata = JSON.stringify({
-            fileUrl: res.url,
-            fileName: fileName,
-            fileType: this.selectedFile?.type || 'application/octet-stream'
-          });
+    const text = this.newMessageText.trim();
+    if (!text) return;
 
-          // Enviar por WebSocket con tipo FILE
-          this.chatService.sendMessage(
-            this.selectedRoom!.id,
-            this.newMessageText.trim() || `Archivo adjunto: ${fileName}`,
-            'FILE',
-            fileMetadata
-          );
+    const clientMsgId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-          this.removeAttachment();
-          this.newMessageText = '';
-          this.uploadingFile = false;
-        },
-        error: (err) => {
-          console.error('Error al subir el archivo', err);
-          alert('Hubo un error al subir el archivo. Inténtalo de nuevo.');
-          this.uploadingFile = false;
-        }
-      });
-      return;
-    }
-
-    // Caso 2: Solo texto
-    if (!this.newMessageText || !this.newMessageText.trim()) return;
-    this.chatService.sendMessage(this.selectedRoom.id, this.newMessageText.trim());
+    // Add local temporary message
+    const tempMsg: ChatMessageResponse = {
+      id: clientMsgId,
+      roomId: this.selectedRoom.id,
+      senderId: this.currentUserEmail,
+      senderName: this.currentUserName,
+      senderRole: this.currentUserRole,
+      messageType: ChatMessageType.TEXT,
+      content: text,
+      metadata: JSON.stringify({ clientMsgId }),
+      isRead: false,
+      sentAt: new Date().toISOString(),
+      status: 'SENDING'
+    };
+    this.messages.push(tempMsg);
+    this.shouldScrollToBottom = true;
     this.newMessageText = '';
+
+    // Setup timeout for failure
+    setTimeout(() => {
+      const found = this.messages.find(m => m.id === clientMsgId);
+      if (found && found.status === 'SENDING') {
+        found.status = 'FAILED';
+      }
+    }, 8000);
+
+    this.chatService.sendMessage(
+      this.selectedRoom.id,
+      text,
+      'TEXT',
+      JSON.stringify({ clientMsgId }),
+      clientMsgId
+    );
+  }
+
+
+  retryMessage(msg: ChatMessageResponse): void {
+    if (!this.selectedRoom) return;
+
+    msg.status = 'SENDING';
+    msg.sentAt = new Date().toISOString();
+
+    setTimeout(() => {
+      if (msg.status === 'SENDING') {
+        msg.status = 'FAILED';
+      }
+    }, 8000);
+
+    const clientMsgId = msg.id;
+    let metadata = msg.metadata;
+
+    try {
+      const metaObj = metadata ? JSON.parse(metadata) : {};
+      metaObj.clientMsgId = clientMsgId;
+      metadata = JSON.stringify(metaObj);
+      msg.metadata = metadata;
+    } catch (e) {}
+
+    this.chatService.sendMessage(
+      this.selectedRoom.id,
+      msg.content,
+      msg.messageType,
+      metadata,
+      clientMsgId
+    );
   }
 
   goToCreateBudget(): void {
@@ -500,9 +672,13 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   // Helpers
   isMyMessage(msg: ChatMessageResponse): boolean {
     if (msg.senderRole === ChatSenderRole.SYSTEM) return false;
-    
-    // Check role to align
-    return msg.senderRole === this.currentUserRole;
+    // Comparación principal: el mensaje fue enviado por alguien con rol CLIENT.
+    // Como este componente es exclusivamente de la vista del cliente, cualquier
+    // mensaje con senderRole === CLIENT siempre es del usuario actual.
+    // Esto resuelve el bug donde el nombre "admin" aparecía en mensajes propios
+    // porque se comparaba el rol global del contexto de seguridad y no el rol
+    // real del remitente en la sala de chat.
+    return msg.senderRole === ChatSenderRole.CLIENT;
   }
 
   parseMetadata(metaStr: string): any {
@@ -518,5 +694,110 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     let base = this.selectedRoom.agreedPrice || 0;
     let extrasSum = this.extras.reduce((sum, item) => sum + (item.price || 0), 0);
     return base + extrasSum;
+  }
+
+  showPaymentPanel: boolean = false;
+
+  reloadRoomInfo(): void {
+    if (this.selectedRoom) {
+      this.chatService.getOrCreateRoom(this.selectedRoom.requestId).subscribe({
+        next: (updatedRoom) => {
+          this.selectedRoom = updatedRoom;
+        },
+        error: (err) => console.error('Error reloading room details', err)
+      });
+    }
+  }
+
+  aceptarPresupuestoYProcederAlPago(totalAmount: number): void {
+    if (!this.selectedRoom) return;
+
+    this.chatService.acceptBudget(this.selectedRoom.id, totalAmount).subscribe({
+      next: (updatedRoom) => {
+        this.selectedRoom = updatedRoom;
+        this.loadRoomsList();
+        this.showPaymentPanel = true;
+      },
+      error: (err) => {
+        console.error('Error al aceptar presupuesto y proceder al pago:', err);
+        alert('Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.');
+      }
+    });
+  }
+
+  aceptarPresupuestoDesdeCard(totalAmount: number): void {
+    if (!this.selectedRoom) return;
+
+    this.chatService.acceptBudget(this.selectedRoom.id, totalAmount).subscribe({
+      next: (updatedRoom) => {
+        this.selectedRoom = updatedRoom;
+        this.loadRoomsList();
+        alert('Has aceptado el presupuesto. El vendedor iniciará la producción tras confirmar el pago del adelanto.');
+      },
+      error: (err) => {
+        console.error('Error al aceptar presupuesto:', err);
+        alert('Hubo un error al aceptar el presupuesto. Por favor, inténtalo de nuevo.');
+      }
+    });
+  }
+
+  hasOfferOrBudget(): boolean {
+    return this.messages.some(m => m.messageType === 'OFFER' || m.messageType === 'BUDGET');
+  }
+
+  solicitarCambiosDesdeCard(): void {
+    const notas = prompt('Describe las observaciones o cambios que solicitas para el presupuesto:');
+    if (notas && notas.trim() && this.selectedRoom) {
+      const msg = `✍ Observaciones sobre el presupuesto:\n"${notas.trim()}"`;
+      this.chatService.sendMessage(this.selectedRoom.id, msg, ChatMessageType.TEXT);
+    }
+  }
+
+  isDragging: boolean = false;
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+
+        if (!this.ALLOWED_MIME_TYPES.has(file.type)) {
+          alert(`Tipo de archivo no permitido: ${file.name}.\nSe aceptan: imágenes, PDF, Word y texto plano.`);
+          continue;
+        }
+
+        const maxSizeInBytes = 5 * 1024 * 1024;
+        if (file.size > maxSizeInBytes) {
+          alert(`El archivo "${file.name}" supera el límite de 5MB.`);
+          continue;
+        }
+
+        this.addPreloadedFile(file);
+      }
+    }
+  }
+
+  copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      alert(`¡Copiado al portapapeles: "${text}"!`);
+    }).catch(err => {
+      console.error('Error al copiar al portapapeles:', err);
+    });
   }
 }

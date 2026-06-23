@@ -49,6 +49,8 @@ export interface BudgetResponse {
   solicitudId: string;
   nombre: string;
   descripcion?: string;
+  codigoReferencia?: string;
+  estado?: string;
   manoDeObra: number;
   margenGanancia: number;
   adelantoRequerido: boolean;

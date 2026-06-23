@@ -61,4 +61,10 @@ export class PurchaseRequestService {
       `${this.API_URL}/admin/purchase-requests/${id}/para-presupuesto`
     );
   }
+
+  actualizarArchivos(id: string, files: { grabacionesUrls: string[], archivosUrls: string[] }): Observable<PurchaseRequestResponse> {
+    return this.http.put<PurchaseRequestResponse>(
+      `${this.API_URL}/purchase-requests/${id}/files`, files
+    );
+  }
 }

@@ -213,7 +213,7 @@
   </aside>
 
   <!-- ══════════════════════════════════ CONTENT ═══════════════════════════════════ -->
-  <main class="tab-content">
+  <main class="tab-content" [class.chat-active]="isChatActivo">
 
     @switch (activeTab) {
 
@@ -234,8 +234,11 @@
 
       @case ('solicitudes') {
         <app-solicitudes
+          [inicialSolicitudId]="solicitudIdParaChat"
+          (chatIniciado)="solicitudIdParaChat = null"
+          (chatActivoEvent)="setChatActivo($event)"
           (crearPresupuestoEvent)="irAPresupuestoConSolicitud($event)"
-          (abrirChatEvent)="irAlChatConSolicitud($event)">
+          (navegarAPagosEvent)="navegarAPagos($event)">
         </app-solicitudes>
       }
 
@@ -244,7 +247,10 @@
       }
 
       @case ('presupuestos') {
-        <app-presupuestos [solicitudId]="solicitudIdParaPresupuesto"></app-presupuestos>
+        <app-presupuestos 
+          [solicitudId]="solicitudIdParaPresupuesto"
+          (volverEvent)="volverAlChat()">
+        </app-presupuestos>
       }
 
       @case ('pagos') {
@@ -259,15 +265,9 @@
         </div>
       }
 
-      @case ('chat') {
-        <app-chat
-          [autoSelectRequestId]="solicitudIdParaChat"
-          (closeChat)="setTab('dashboard')">
-        </app-chat>
-      }
-
     }
 
   </main>
+
 
 </div>

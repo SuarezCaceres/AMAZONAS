@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectorRef, inject } from '@angular/core';
 import { DashboardComponent } from './sections/dashboard/dashboard.component';
 import { MaquetaComponent } from './sections/maqueta/maqueta.component';
 import { GestionStockComponent } from './sections/gestion-stock/gestion-stock.component';
 import { SolicitudesComponent } from './sections/solicitudes/solicitudes.component';
 import { MaterialesComponent } from './sections/materiales/materiales.component';
 import { PresupuestosComponent } from './sections/presupuestos/presupuestos.component';
-import { ChatComponent } from '../navbar-cliente/sections/chat/chat.component';
 
 export type VendedorTab =
   | 'dashboard'
@@ -15,8 +14,7 @@ export type VendedorTab =
   | 'solicitudes'
   | 'materiales'
   | 'presupuestos'
-  | 'pagos'
-  | 'chat';
+  | 'pagos';
 
 export interface NavItem {
   id: VendedorTab;
@@ -27,7 +25,7 @@ export interface NavItem {
 @Component({
   selector: 'app-navbar-vendedor',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, MaquetaComponent, GestionStockComponent, SolicitudesComponent, MaterialesComponent, PresupuestosComponent, ChatComponent],
+  imports: [CommonModule, DashboardComponent, MaquetaComponent, GestionStockComponent, SolicitudesComponent, MaterialesComponent, PresupuestosComponent],
   templateUrl: './navbar-vendedor.component.html',
   styleUrl: './navbar-vendedor.component.css',
 })
@@ -40,13 +38,13 @@ export class NavbarVendedorComponent {
   mobileMenuOpen = false;
   solicitudIdParaPresupuesto: string | null = null;
   solicitudIdParaChat: string | null = null;
+  isChatActivo = false;
 
   navItems: NavItem[] = [
     { id: 'dashboard',     label: 'Dashboard',        icon: 'grid'        },
     { id: 'maquetas',      label: 'Maquetas',          icon: 'layers'      },
     { id: 'gestion-stock', label: 'Gestión de Stock',  icon: 'box'         },
     { id: 'solicitudes',   label: 'Solicitudes',       icon: 'cart'        },
-    { id: 'chat',          label: 'Mensajes',          icon: 'message'     },
     { id: 'materiales',    label: 'Materiales',        icon: 'briefcase'   },
     { id: 'presupuestos',  label: 'Presupuestos',      icon: 'calculator'  },
     { id: 'pagos',         label: 'Pagos',             icon: 'dollar'      },
@@ -55,25 +53,36 @@ export class NavbarVendedorComponent {
   setTab(tab: VendedorTab): void {
     this.activeTab = tab;
     this.mobileMenuOpen = false;
-    // Limpiar IDs de contexto al navegar a otras secciones
     if (tab !== 'presupuestos') {
       this.solicitudIdParaPresupuesto = null;
     }
-    if (tab !== 'chat') {
+    if (tab !== 'solicitudes') {
       this.solicitudIdParaChat = null;
+      this.isChatActivo = false;
     }
   }
 
   irAPresupuestoConSolicitud(solicitudId: string): void {
     this.solicitudIdParaPresupuesto = solicitudId;
+    this.solicitudIdParaChat = solicitudId; // Guardar context para el retorno
     this.activeTab = 'presupuestos';
     this.mobileMenuOpen = false;
   }
 
-  irAlChatConSolicitud(solicitudId: string): void {
-    this.solicitudIdParaChat = solicitudId;
-    this.activeTab = 'chat';
-    this.mobileMenuOpen = false;
+  volverAlChat(): void {
+    this.activeTab = 'solicitudes';
+    this.solicitudIdParaChat = this.solicitudIdParaPresupuesto;
+  }
+
+  navegarAPagos(solicitudId: string): void {
+    this.activeTab = 'pagos';
+  }
+
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  setChatActivo(active: boolean): void {
+    this.isChatActivo = active;
+    this.cdr.detectChanges();
   }
 
   toggleMobileMenu(): void {
@@ -84,3 +93,4 @@ export class NavbarVendedorComponent {
     return this.navItems.find(item => item.id === this.activeTab)?.label ?? '';
   }
 }
+

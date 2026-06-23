@@ -28,7 +28,7 @@
 
 <app-chat *ngIf="page === 'chat'" [autoSelectRequestId]="selectedRequestIdForChat" (closeChat)="showRequests()"></app-chat>
 
-<app-footer *ngIf="page !== 'auth' && page !== 'reset-password'"
+<app-footer *ngIf="page !== 'auth' && page !== 'reset-password' && page !== 'chat'"
   (catalogClicked)="showCatalog()" (loginClicked)="showLogin()"></app-footer>
 
 <app-reset-password *ngIf="page === 'reset-password'" [token]="tokenToReset"
