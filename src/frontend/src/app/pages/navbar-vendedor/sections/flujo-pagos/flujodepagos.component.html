@@ -7,7 +7,7 @@
         </div>
         <div class="cash-pill">
             <span>Ventas del dia</span>
-            <strong>S/ {{ dailyTotal | number: '1.2-2' }}</strong>
+            <strong>S/ {{ dailyStats.ventasTotales | number: '1.2-2' }}</strong>
         </div>
     </header>
 
@@ -209,15 +209,15 @@
                 <footer class="daily-indicators">
                     <div>
                         <span>Ventas totales</span>
-                        <strong>S/ {{ dailyTotal | number: '1.2-2' }}</strong>
+                        <strong>S/ {{ dailyStats.ventasTotales | number: '1.2-2' }}</strong>
                     </div>
                     <div>
                         <span>Met. online</span>
-                        <strong>{{ onlineCount }} reg</strong>
+                        <strong>{{ dailyStats.metodoOnlineCount }} reg</strong>
                     </div>
                     <div>
                         <span>Met. fisico</span>
-                        <strong>{{ physicalCount }} reg</strong>
+                        <strong>{{ dailyStats.metodoFisicoCount }} reg</strong>
                     </div>
                 </footer>
             </section>

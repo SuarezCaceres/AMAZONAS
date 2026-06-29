@@ -103,10 +103,16 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
 
     pendingBalances: PendingBalance[] = [];
     transactions: Transaction[] = [];
+    dailyStats = {
+        ventasTotales: 0,
+        metodoOnlineCount: 0,
+        metodoFisicoCount: 0
+    };
 
     ngOnInit(): void {
         this.loadTransactions();
         this.loadPendingBalances();
+        this.loadDailyStats();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -186,6 +192,17 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
         });
     }
 
+    loadDailyStats(): void {
+        this.chatService.getDailyStats().subscribe({
+            next: (stats) => {
+                if (stats) {
+                    this.dailyStats = stats;
+                }
+            },
+            error: (err) => console.error('Error al cargar estadísticas diarias:', err)
+        });
+    }
+
     get filteredTransactions(): Transaction[] {
         const query = this.searchTerm.trim().toLowerCase();
 
@@ -198,17 +215,7 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
         });
     }
 
-    get dailyTotal(): number {
-        return this.transactions.reduce((total, transaction) => total + transaction.amount, 0);
-    }
 
-    get onlineCount(): number {
-        return this.transactions.filter((transaction) => transaction.method === 'Online').length;
-    }
-
-    get physicalCount(): number {
-        return this.transactions.filter((transaction) => transaction.method === 'Fisico').length;
-    }
 
     openReceipt(transaction: Transaction): void {
         this.selectedReceipt = transaction;
@@ -300,6 +307,7 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                 // Recargar datos reales
                 this.loadTransactions();
                 this.loadPendingBalances();
+                this.loadDailyStats();
             },
             error: (err) => {
                 console.error('Error al registrar pago en backend:', err);

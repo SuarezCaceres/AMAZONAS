@@ -8,7 +8,7 @@ import { API_BASE_URL } from '../config/api.config';
 })
 export class FileService {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = `${API_BASE_URL}/admin/files`;
+  private readonly API_URL = `${API_BASE_URL}/files`;
 
   /**
    * Sube un archivo de imagen al servidor backend, el cual lo almacenará en Cloudinary.

@@ -27,7 +27,9 @@
 
 <app-my-requests *ngIf="page === 'requests'" [user]="currentUser" (viewChat)="handleViewChat($event)"></app-my-requests>
 
-<app-footer *ngIf="page !== 'auth' && page !== 'reset-password'" (catalogClicked)="showCatalog()"
+<app-chat *ngIf="page === 'chat'" [autoSelectRequestId]="selectedRequestIdForChat" (closeChat)="showRequests()"></app-chat>
+
+<app-footer *ngIf="page !== 'auth' && page !== 'reset-password' && page !== 'chat'" (catalogClicked)="showCatalog()"
   (loginClicked)="showLogin()"></app-footer>
 
 <app-reset-password *ngIf="page === 'reset-password'" [token]="tokenToReset"

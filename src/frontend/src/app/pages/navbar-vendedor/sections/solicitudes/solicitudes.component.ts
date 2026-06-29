@@ -649,6 +649,30 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
       console.error('Error parsing voucher message metadata', e);
     }
 
+    // 1. Mostrar el prompt interactivo al vendedor
+    let codigoInput = prompt("Ingrese el Número de Operación de Yape (8 dígitos):");
+
+    // 2. Si el usuario presiona "Cancelar", interrumpimos el flujo por completo
+    if (codigoInput === null) {
+      alert("Operación cancelada. No se registró ningún pago.");
+      return; 
+    }
+
+    // 3. Limpiar espacios en blanco al inicio y al final (evita trampas con la barra espaciadora)
+    codigoInput = codigoInput.trim();
+
+    // 4. DEFINIR REGLA ESTRICTA DE YAPE: Solo permite exactamente 8 números enteros
+    const regexYape = /^\d{8}$/;
+
+    // 5. Validar la entrada contra el trolleo (ej: "noquieronada")
+    if (codigoInput === "" || !regexYape.test(codigoInput)) {
+      alert("❌ Error: El código de operación ingresado no es válido.\nDebe contener exactamente 8 números enteros (Ej: 13274907).");
+      return; // Detiene el método aquí. No se envía nada al backend.
+    }
+
+    // 6. Si pasó la validación exitosamente:
+    const codigoOperacionValidado = codigoInput;
+
     const total = this.room.agreedPrice || 375.70;
     const half = total / 2;
 
@@ -661,9 +685,9 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
       metodoPago: 'ONLINE', // Yape
       tipoAbono: 'ADELANTO', // Adelanto
       tipoMaqueta: this.solicitudActiva?.isCustom ? 'PERSONALIZADA' : 'PREDETERMINADA',
-      materiales: this.solicitudActiva?.materialesDeseados || 'Madera Balsa, PLA, Acrilico',
+      materials: this.solicitudActiva?.materialesDeseados || 'Madera Balsa, PLA, Acrilico',
       fechaTransaccion: new Date().toISOString(),
-      codigoOperacion: parsedMeta.fileName || `YAPE-OPE-${Date.now()}`
+      codigoOperacion: codigoOperacionValidado
     };
 
     this.chatService.registerPayment(payload).subscribe({
@@ -678,7 +702,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
         alert(`¡Pago verificado y registrado exitosamente!\nMonto de adelanto: S/ ${half.toFixed(2)}`);
       },
       error: (err) => {
-        console.error('Error al registrar pago desde chat:', err);
+        console.error("Error al guardar en el servidor", err);
         alert('Hubo un error al registrar el pago. Por favor, asegúrate de que el cliente esté registrado en la base de datos.');
       }
     });
@@ -706,7 +730,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
       method: 'Online (Yape / Transferencia)',
       kind: 'Adelanto (50%)',
       date: new Date().toISOString().substring(0, 16), // Format: yyyy-MM-ddTHH:mm
-      operation: parsedMeta.fileName || `YAPE-OPE-${Date.now()}`,
+      operation: '', // Dejar en blanco para que el vendedor ingrese el código real en el formulario
       inventory: true,
       roomId: this.room.id,
       solicitudId: this.room.requestId,
@@ -715,5 +739,40 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     };
 
     this.navegarAPagosEvent.emit(paymentData);
+  }
+
+  isImageFile(fileType?: string): boolean {
+    if (!fileType) return false;
+    return fileType.toLowerCase().startsWith('image/');
+  }
+
+  getFileIcon(fileType?: string): string {
+    if (!fileType) return 'insert_drive_file';
+    const type = fileType.toLowerCase();
+    if (type === 'application/pdf') {
+      return 'picture_as_pdf';
+    }
+    if (
+      type === 'application/msword' ||
+      type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      return 'description';
+    }
+    return 'insert_drive_file';
+  }
+
+  getFileIconColorClass(fileType?: string): string {
+    if (!fileType) return 'text-slate-400';
+    const type = fileType.toLowerCase();
+    if (type === 'application/pdf') {
+      return 'text-red-500';
+    }
+    if (
+      type === 'application/msword' ||
+      type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      return 'text-blue-500';
+    }
+    return 'text-slate-400';
   }
 }

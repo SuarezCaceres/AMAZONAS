@@ -353,7 +353,7 @@
                             </a>
                           } @else {
                             <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
-                              <span class="material-icons text-red-500" style="font-size: 20px;">description</span>
+                              <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 20px;">{{ getFileIcon(fileData.fileType) }}</span>
                               <div class="flex-1 min-w-0 text-left">
                                 <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
                                 <span class="text-[9px] text-slate-400 block mt-0.5">Descargar archivo</span>
@@ -570,7 +570,7 @@
                         @if (item.isImage) {
                           <img [src]="item.previewUrl" class="w-5 h-5 object-cover rounded border">
                         } @else {
-                          <span class="material-icons text-red-500 text-xs">description</span>
+                          <span class="material-icons text-xs" [class]="getFileIconColorClass(item.file.type)">{{ getFileIcon(item.file.type) }}</span>
                         }
                         <span class="text-[10px] text-slate-700 truncate max-w-[100px]" [title]="item.file.name">{{ item.file.name }}</span>
                         <button type="button" (click)="removePreloadedFile(idx)" class="text-slate-400 hover:text-red-500 p-0.5 hover:bg-slate-100 rounded cursor-pointer border-none flex">
@@ -729,7 +729,7 @@
                     @for (fileItem of preloadedFiles; track fileItem.file.name; let fIdx = $index) {
                       <div class="flex items-center justify-between bg-white border border-slate-150 p-1.5 rounded shadow-sm text-[10px]">
                         <div class="flex items-center gap-1.5 truncate">
-                          <span class="material-icons text-teal-600 text-xs">{{ fileItem.isImage ? 'image' : 'description' }}</span>
+                          <span class="material-icons text-xs" [class]="fileItem.isImage ? 'text-teal-600' : getFileIconColorClass(fileItem.file.type)">{{ fileItem.isImage ? 'image' : getFileIcon(fileItem.file.type) }}</span>
                           <span class="truncate max-w-[120px] font-semibold text-slate-700" [title]="fileItem.file.name">{{ fileItem.file.name }}</span>
                         </div>
                         <button (click)="removePreloadedFile(fIdx)" class="text-slate-400 hover:text-red-500 border-none bg-transparent cursor-pointer p-0 flex">

@@ -73,36 +73,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional(readOnly = true)
     public java.util.List<com.amazonas.backend.modules.payments.dto.PaymentTransactionResponse> getAllTransactions() {
-        log.info("Obteniendo todas las transacciones de pago");
-        return paymentRepository.findAll().stream()
-                .map(transaction -> {
-                    String clientName = "Cliente Desconocido";
-                    String clientEmail = "desconocido@correo.com";
-                    try {
-                        User user = userRepository.findById(transaction.getClientId()).orElse(null);
-                        if (user != null) {
-                            clientName = user.getNombre();
-                            clientEmail = user.getEmail();
-                        }
-                    } catch (Exception e) {
-                        log.error("Error al buscar usuario para ID: {}", transaction.getClientId(), e);
-                    }
-                    return new com.amazonas.backend.modules.payments.dto.PaymentTransactionResponse(
-                            transaction.getId(),
-                            transaction.getClientId(),
-                            clientName,
-                            clientEmail,
-                            transaction.getRoomId(),
-                            transaction.getMonto(),
-                            transaction.getMetodoPago(),
-                            transaction.getTipoAbono(),
-                            transaction.getTipoMaqueta(),
-                            transaction.getMateriales(),
-                            transaction.getFechaTransaccion(),
-                            transaction.getCodigoOperacion()
-                    );
-                })
-                .sorted((t1, t2) -> t2.fechaTransaccion().compareTo(t1.fechaTransaccion()))
-                .toList();
+        log.info("Obteniendo todas las transacciones de pago con información del cliente");
+        return paymentRepository.findAllTransactionsWithClientInfo();
     }
 }

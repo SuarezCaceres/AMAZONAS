@@ -610,11 +610,16 @@ export class PresupuestosComponent implements OnChanges, OnInit {
         });
 
         // Conectar WS y esperar conexión para enviar
-        const sub = this.chatService.connectionStatus$.subscribe(connected => {
+        let sub: any;
+        sub = this.chatService.connectionStatus$.subscribe(connected => {
           if (connected && this.roomId) {
             this.chatService.sendMessage(this.roomId, mensaje, 'BUDGET', metadata);
             this.enviando = false;
-            sub.unsubscribe();
+            setTimeout(() => {
+              if (sub) {
+                sub.unsubscribe();
+              }
+            }, 0);
           }
         });
 
@@ -623,7 +628,9 @@ export class PresupuestosComponent implements OnChanges, OnInit {
           if (this.enviando && this.roomId) {
             this.chatService.sendMessage(this.roomId, mensaje, 'BUDGET', metadata);
             this.enviando = false;
-            sub.unsubscribe();
+            if (sub) {
+              sub.unsubscribe();
+            }
           }
         }, 1000);
       },

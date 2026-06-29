@@ -510,11 +510,12 @@
                             </a>
                           } @else {
                             <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
-                              <span class="material-icons text-red-500" style="font-size: 20px;">description</span>
+                              <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 20px;">{{ getFileIcon(fileData.fileType) }}</span>
                               <div class="flex-1 min-w-0 text-left">
                                 <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
                                 <span class="text-[9px] text-slate-400 block mt-0.5">Descargar archivo</span>
                               </div>
+                              <span class="material-icons text-slate-400 text-sm">download</span>
                             </a>
                           }
                           @if (msg.content && msg.content !== ('Archivo adjunto: ' + fileData.fileName)) {
@@ -532,11 +533,15 @@
                           
                           <!-- Preview Box -->
                           <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-emerald-200 text-teal-800 shadow-sm">
-                            <span class="material-icons text-emerald-600 text-2xl">receipt_long</span>
+                            <span class="material-icons text-2xl" [class]="isImageFile(fileData.fileType) ? 'text-emerald-600' : getFileIconColorClass(fileData.fileType)">{{ isImageFile(fileData.fileType) ? 'receipt_long' : getFileIcon(fileData.fileType) }}</span>
                             <div class="flex-1 min-w-0 text-left">
                               <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
                               <span class="text-[9px] text-slate-400 block mt-0.5">
-                                Captura de Yape • S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
+                                @if (isImageFile(fileData.fileType)) {
+                                  Captura de Yape • S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
+                                } @else {
+                                  Documento Comprobante • S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
+                                }
                               </span>
                             </div>
                           </div>
@@ -547,7 +552,7 @@
                               <span class="material-icons text-[12px]">zoom_in</span>
                               Ver Detalle
                             </button>
-                            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="irAPagosConVoucher(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
                               <span class="material-icons text-[12px]">payment</span>
                               Confirmar Pago
                             </button>
@@ -727,7 +732,7 @@
                       @if (item.isImage) {
                         <img [src]="item.previewUrl" class="w-5 h-5 object-cover rounded border">
                       } @else {
-                        <span class="material-icons text-red-500 text-xs">description</span>
+                        <span class="material-icons text-xs" [class]="getFileIconColorClass(item.file.type)">{{ getFileIcon(item.file.type) }}</span>
                       }
                       <span class="text-[10px] text-slate-700 truncate max-w-[100px]" [title]="item.file.name">{{ item.file.name }}</span>
                       <button type="button" (click)="removePreloadedFile(idx)" class="text-slate-400 hover:text-red-500 p-0.5 hover:bg-slate-100 rounded cursor-pointer border-none flex">
@@ -895,9 +900,25 @@
         </button>
       </div>
 
-      <!-- Imagen de Yape -->
-      <div class="p-5 flex justify-center bg-slate-100">
-        <img [src]="activeVoucherUrl" alt="Voucher" class="max-w-full max-h-[400px] object-contain rounded-2xl shadow-md border border-slate-200">
+      <!-- Imagen de Yape o Contenedor de Archivo -->
+      @let fileData = parseMetadata(currentVoucherMessage?.metadata || '{}');
+      <div class="p-5 flex flex-col items-center justify-center bg-slate-100 gap-4">
+        @if (isImageFile(fileData.fileType)) {
+          <img [src]="activeVoucherUrl" alt="Voucher" class="max-w-full max-h-[400px] object-contain rounded-2xl shadow-md border border-slate-200">
+        } @else {
+          <!-- Card de archivo para descargar -->
+          <div class="w-full bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col items-center gap-4 text-center">
+            <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 56px;">{{ getFileIcon(fileData.fileType) }}</span>
+            <div class="space-y-1">
+              <h5 class="font-bold text-slate-800 text-xs m-0 truncate max-w-[280px]" [title]="fileData.fileName">{{ fileData.fileName }}</h5>
+              <p class="text-[10px] text-slate-400 m-0">Este archivo no es una imagen y no se puede previsualizar directamente.</p>
+            </div>
+            <a [href]="activeVoucherUrl" target="_blank" download class="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md border-none cursor-pointer text-decoration-none transition-all w-full" style="text-decoration: none;">
+              <span class="material-icons text-sm" style="font-size: 16px;">download</span>
+              Descargar Archivo
+            </a>
+          </div>
+        }
       </div>
 
       <!-- Footer de Acciones -->

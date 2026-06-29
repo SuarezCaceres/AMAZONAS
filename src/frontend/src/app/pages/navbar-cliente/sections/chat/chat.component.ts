@@ -229,7 +229,6 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     this.chatService.getOrCreateRoom(requestId).subscribe({
       next: (room) => {
         this.selectRoom(room);
-        this.loadRoomsList();
       },
       error: (err) => console.error('Error auto-selecting/creating room', err)
     });
@@ -799,5 +798,40 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     }).catch(err => {
       console.error('Error al copiar al portapapeles:', err);
     });
+  }
+
+  isImageFile(fileType?: string): boolean {
+    if (!fileType) return false;
+    return fileType.toLowerCase().startsWith('image/');
+  }
+
+  getFileIcon(fileType?: string): string {
+    if (!fileType) return 'insert_drive_file';
+    const type = fileType.toLowerCase();
+    if (type === 'application/pdf') {
+      return 'picture_as_pdf';
+    }
+    if (
+      type === 'application/msword' ||
+      type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      return 'description';
+    }
+    return 'insert_drive_file';
+  }
+
+  getFileIconColorClass(fileType?: string): string {
+    if (!fileType) return 'text-slate-400';
+    const type = fileType.toLowerCase();
+    if (type === 'application/pdf') {
+      return 'text-red-500';
+    }
+    if (
+      type === 'application/msword' ||
+      type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      return 'text-blue-500';
+    }
+    return 'text-slate-400';
   }
 }
