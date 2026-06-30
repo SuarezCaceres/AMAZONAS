@@ -34,11 +34,19 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentTransaction registerPayment(RegisterPaymentRequest request) {
         log.info("Registrando transacción de pago para el cliente con correo: {}", request.clientEmail());
 
-        UUID clientId = userRepository.findByEmail(request.clientEmail())
+        UUID clientId = userRepository.findByEmailIgnoreCase(request.clientEmail())
                 .map(User::getId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "No se encontró un usuario registrado con el correo: " + request.clientEmail()
-                ));
+                .orElseGet(() -> {
+                    log.info("Cliente no encontrado con el correo {}, creando usuario cliente automático.", request.clientEmail());
+                    User guest = new User();
+                    guest.setNombre(request.clientName());
+                    guest.setEmail(request.clientEmail().toLowerCase().trim());
+                    guest.setTelefono(request.clientPhone() != null && !request.clientPhone().isEmpty() ? request.clientPhone() : "999999999");
+                    // Hash BCrypt genérico válido pero inutilizable
+                    guest.setPassword("$2a$10$e0MYzXyDx.J.q7h.yM1xG.gA4uA5aK2/T9rB8k7/l9r6.j9z.xY3C");
+                    guest.setRole(com.amazonas.backend.modules.auth.enums.Role.CLIENT);
+                    return userRepository.save(guest).getId();
+                });
 
         PaymentTransaction transaction = PaymentTransaction.builder()
                 .clientId(clientId)

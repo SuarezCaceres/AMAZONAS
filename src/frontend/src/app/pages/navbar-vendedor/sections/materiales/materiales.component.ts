@@ -7,19 +7,7 @@ import { MaquetaService } from '../../../../services/maqueta.service';
 import { Material, MaterialCategory, MaterialRequest } from '../../../../models/material.model';
 import { Product } from '../../../../models/product.model';
 
-interface MaterialKit {
-  materialNombre: string;
-  cantidad: number;
-}
 
-interface KitCompleto {
-  id: string;
-  maquetaId: string;
-  maquetaNombre: string;
-  materiales?: MaterialKit[];
-  precioTotal: number;
-  descripcion?: string;
-}
 
 interface PrecioMaqueta {
   id: string;
@@ -62,16 +50,6 @@ export class MaterialesComponent implements OnInit, OnDestroy {
     activo: true
   };
 
-  // Kits Completos
-  kitsCompletos: KitCompleto[] = [];
-  editingKitId: string | null = null;
-  isAddingKit = false;
-  kitFormData = {
-    maquetaId: '',
-    precioTotal: 0,
-    descripcion: ''
-  };
-  kitMaterialesForm: MaterialKit[] = [];
 
   // Precios de Maquetas
   preciosMaquetas: PrecioMaqueta[] = [];
@@ -82,6 +60,8 @@ export class MaterialesComponent implements OnInit, OnDestroy {
     precioCompleta: 0,
     descripcion: ''
   };
+
+  activeTab: 'materiales' | 'kits' | 'precios' = 'materiales';
 
   ngOnInit(): void {
     this.loadAllData();
@@ -134,11 +114,7 @@ export class MaterialesComponent implements OnInit, OnDestroy {
       error: (err) => console.error('Error al cargar productos de maquetas:', err)
     });
 
-    // Cargar datos locales de Kits y Precios
-    const storedKits = localStorage.getItem('kitsCompletos');
-    if (storedKits) {
-      this.kitsCompletos = JSON.parse(storedKits);
-    }
+
 
     const storedPrecios = localStorage.getItem('preciosMaquetas');
     if (storedPrecios) {
@@ -315,87 +291,6 @@ export class MaterialesComponent implements OnInit, OnDestroy {
     this.editingPrecioId = null;
     this.isAddingPrecio = false;
     this.precioFormData = { maquetaId: '', precioCompleta: 0, descripcion: '' };
-  }
-
-  // --- KITS COMPLETOS ---
-  saveKits(updatedKits: KitCompleto[]): void {
-    this.kitsCompletos = updatedKits;
-    localStorage.setItem('kitsCompletos', JSON.stringify(updatedKits));
-  }
-
-  handleEditKit(kit: KitCompleto): void {
-    this.editingKitId = kit.id;
-    this.isAddingKit = false;
-    this.kitFormData = {
-      maquetaId: kit.maquetaId,
-      precioTotal: kit.precioTotal,
-      descripcion: kit.descripcion || ''
-    };
-    this.kitMaterialesForm = kit.materiales || [];
-  }
-
-  handleSaveKit(): void {
-    const maqueta = this.products.find(p => p.id === this.kitFormData.maquetaId);
-    if (!maqueta) {
-      alert('Por favor selecciona una maqueta');
-      return;
-    }
-
-    if (this.editingKitId) {
-      const updated = this.kitsCompletos.map(k =>
-        k.id === this.editingKitId ? {
-          id: this.editingKitId,
-          maquetaId: this.kitFormData.maquetaId,
-          maquetaNombre: maqueta.titulo,
-          precioTotal: this.kitFormData.precioTotal,
-          descripcion: this.kitFormData.descripcion,
-          materiales: this.kitMaterialesForm
-        } : k
-      );
-      this.saveKits(updated);
-      this.editingKitId = null;
-    } else if (this.isAddingKit) {
-      const existingKit = this.kitsCompletos.find(k => k.maquetaId === this.kitFormData.maquetaId);
-      if (existingKit) {
-        alert('Ya existe un kit completo para esta maqueta. Puedes editarlo en lugar de crear uno nuevo.');
-        return;
-      }
-
-      const newKit: KitCompleto = {
-        id: Date.now().toString(),
-        maquetaId: this.kitFormData.maquetaId,
-        maquetaNombre: maqueta.titulo,
-        precioTotal: this.kitFormData.precioTotal,
-        descripcion: this.kitFormData.descripcion,
-        materiales: this.kitMaterialesForm
-      };
-      this.saveKits([...this.kitsCompletos, newKit]);
-      this.isAddingKit = false;
-    }
-
-    this.kitFormData = { maquetaId: '', precioTotal: 0, descripcion: '' };
-    this.kitMaterialesForm = [];
-  }
-
-  handleDeleteKit(id: string): void {
-    if (confirm('¿Estás seguro de eliminar este kit completo?')) {
-      this.saveKits(this.kitsCompletos.filter(k => k.id !== id));
-    }
-  }
-
-  handleCancelKit(): void {
-    this.editingKitId = null;
-    this.isAddingKit = false;
-    this.kitFormData = { maquetaId: '', precioTotal: 0, descripcion: '' };
-    this.kitMaterialesForm = [];
-  }
-
-  agregarMaterialKit(): void {
-    this.kitMaterialesForm.push({ materialNombre: '', cantidad: 1 });
-  }
-
-  eliminarMaterialKit(index: number): void {
-    this.kitMaterialesForm.splice(index, 1);
   }
 
   // --- AUXILIAR / MAPPING ---

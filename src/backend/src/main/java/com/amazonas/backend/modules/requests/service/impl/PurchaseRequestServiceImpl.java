@@ -25,6 +25,8 @@ import com.amazonas.backend.modules.requests.service.PurchaseRequestService;
 import com.amazonas.backend.modules.users.model.User;
 import com.amazonas.backend.modules.users.repository.UserRepository;
 import com.amazonas.backend.modules.vendors.repository.VendorRepository;
+import com.amazonas.backend.modules.chat.repository.ChatRoomRepository;
+import com.amazonas.backend.modules.chat.enums.ChatRoomStatus;
 
 @Service
 @Transactional
@@ -35,18 +37,21 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     private final MaterialRepository materialRepository;
     private final UserRepository userRepository;
     private final VendorRepository vendorRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
     public PurchaseRequestServiceImpl(
             PurchaseRequestRepository purchaseRequestRepository,
             ProductRepository productRepository,
             MaterialRepository materialRepository,
             UserRepository userRepository,
-            VendorRepository vendorRepository) {
+            VendorRepository vendorRepository,
+            ChatRoomRepository chatRoomRepository) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.productRepository = productRepository;
         this.materialRepository = materialRepository;
         this.userRepository = userRepository;
         this.vendorRepository = vendorRepository;
+        this.chatRoomRepository = chatRoomRepository;
     }
 
     // ─────────────────────────────────────────────────────────
@@ -253,7 +258,24 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         List<PurchaseRequest> lista = (estado != null)
                 ? purchaseRequestRepository.findByEstadoOrderByCreatedAtDesc(estado)
                 : purchaseRequestRepository.findAllByOrderByCreatedAtDesc();
-        return lista.stream().map(this::toResponse).collect(Collectors.toList());
+        List<PurchaseRequestResponse> result = new ArrayList<>();
+        for (PurchaseRequest s : lista) {
+            try {
+                result.add(toResponse(s));
+            } catch (Exception ex) {
+                try {
+                    java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
+                    java.io.PrintWriter pw = new java.io.PrintWriter(fw);
+                    pw.println("--- EXCEPTION MAPPING REQUEST " + s.getId() + " --- " + new java.util.Date());
+                    ex.printStackTrace(pw);
+                    pw.close();
+                    fw.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
+        return result;
     }
 
     @Override
@@ -261,7 +283,16 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada: " + id));
         solicitud.setEstado(req.getEstado());
-        return toResponse(purchaseRequestRepository.save(solicitud));
+        PurchaseRequestResponse response = toResponse(purchaseRequestRepository.save(solicitud));
+        
+        if (req.getEstado() == EstadoSolicitud.COMPLETADO) {
+            chatRoomRepository.findByRequestId(id).ifPresent(room -> {
+                room.setStatus(ChatRoomStatus.CLOSED);
+                chatRoomRepository.save(room);
+            });
+        }
+        
+        return response;
     }
 
     @Override
@@ -287,6 +318,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         resp.setClienteEmail(solicitud.getClienteEmail());
         resp.setClienteTelefono(solicitud.getClienteTelefono());
         resp.setCreatedAt(solicitud.getCreatedAt());
+        resp.setEstado(solicitud.getEstado() != null ? solicitud.getEstado().name() : null);
 
         // Get materials: if request has custom or personal materials chosen by client, use them. Otherwise default to product's original materials.
         List<SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO> materiales = new ArrayList<>();

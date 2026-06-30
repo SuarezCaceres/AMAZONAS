@@ -19,6 +19,16 @@
   <!-- Google Fonts: Inter, Outfit, Plus Jakarta Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Intercept y silencia advertencia de desarrollo del CDN de Tailwind -->
+  <script>
+    (function() {
+      const origWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        origWarn.apply(console, args);
+      };
+    })();
+  </script>
   <!-- Tailwind CSS CDN (para soporte instantáneo de maquetación) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Configuration for Tailwind matching the mockup design system -->

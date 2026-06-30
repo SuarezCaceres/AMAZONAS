@@ -6,16 +6,29 @@
     </div>
   </header>
 
+  <!-- Empty State si no hay ninguna solicitud en absoluto -->
   <section class="empty-state" *ngIf="requests.length === 0">
     <h2>Aun no tienes solicitudes</h2>
     <p>Cuando envies una compra o personalizacion, aparecera aqui.</p>
   </section>
 
-  <div class="requests-list" *ngIf="requests.length > 0">
-    <article class="request-card" *ngFor="let request of requests">
-      <div class="card-header">
-        <h2>{{ request.modelTitle }}</h2>
-        <span class="status-badge pending">Pendiente</span>
+  <!-- Listado de Solicitudes Activas (Pendiente y En Proceso) -->
+  <div class="requests-list" *ngIf="requests.length > 0 && activeRequests.length > 0">
+    <article class="request-card" *ngFor="let request of activeRequests">
+      <div class="card-header" style="position: relative;">
+        <h2 style="display: flex; align-items: center; gap: 8px;">
+          {{ request.modelTitle }}
+          <span *ngIf="request.unreadCount && request.unreadCount > 0" style="background: #ef4444; color: white; border-radius: 99px; min-width: 18px; height: 18px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+            {{ request.unreadCount }}
+          </span>
+        </h2>
+        <span class="status-badge" [ngClass]="{
+          'pending': !request.status || request.status === 'PENDIENTE',
+          'procesando': request.status === 'PROCESANDO',
+          'completado': request.status === 'COMPLETADO'
+        }">
+          {{ !request.status || request.status === 'PENDIENTE' ? 'Pendiente' : request.status === 'PROCESANDO' ? 'En Proceso' : 'Completado' }}
+        </span>
       </div>
 
       <div class="card-meta">
@@ -38,8 +51,16 @@
       </small>
 
       <div class="card-info">
-        <span class="info-icon">&#9201;</span>
-        <span>Estamos revisando tu solicitud. Pronto recibiras una respuesta.</span>
+        <span class="info-icon" style="font-size: 14px;">&#9201;</span>
+        <span>
+          {{ 
+            !request.status || request.status === 'PENDIENTE' 
+              ? 'Estamos revisando tu solicitud. Pronto recibirás una respuesta.' 
+              : request.status === 'PROCESANDO' 
+                ? 'Tu maqueta está siendo construida y el pago de adelanto fue verificado.' 
+                : '¡Tu maqueta ha sido fabricada y entregada con éxito!'
+          }}
+        </span>
       </div>
 
       <div class="card-actions" *ngIf="request.backendId">
@@ -51,5 +72,61 @@
         </button>
       </div>
     </article>
+  </div>
+
+  <!-- Empty state si solo hay solicitudes completadas pero ninguna activa -->
+  <div *ngIf="requests.length > 0 && activeRequests.length === 0" class="empty-state-active" style="text-align: center; padding: 30px; background: #f8fafc; border-radius: 12px; border: 1px dashed #e2e8f0; color: #64748b; font-size: 13px; font-weight: 500; margin-bottom: 24px;">
+    No tienes solicitudes activas (pendientes o en proceso) en este momento.
+  </div>
+
+  <!-- Historial de Proyectos Completados (Acordeón colapsable) -->
+  <div class="completed-history-container" *ngIf="requests.length > 0 && completedRequests.length > 0" style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+    <button type="button" class="completed-accordion-trigger" (click)="toggleCompletedHistory()" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 14px 20px; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 700; color: #334155; font-family: inherit;">
+      <span class="trigger-left" style="display: flex; align-items: center; gap: 8px;">
+        <span class="material-icons" style="font-size: 18px; color: #475569;">history</span>
+        Historial de Proyectos Completados ({{ completedRequests.length }})
+      </span>
+      <span class="material-icons arrow-icon" style="color: #475569;">{{ showCompletedHistory ? 'expand_less' : 'expand_more' }}</span>
+    </button>
+
+    <div class="completed-accordion-content" *ngIf="showCompletedHistory" style="margin-top: 16px; animation: slideDown 0.25s ease-out;">
+      <div class="requests-list">
+        <article class="request-card request-card--completed" *ngFor="let request of completedRequests" style="opacity: 0.85; border-color: #cbd5e1;">
+          <div class="card-header">
+            <h2 style="color: #475569;">{{ request.modelTitle }}</h2>
+            <span class="status-badge completado" style="background: #e2e8f0; color: #475569;">Completado</span>
+          </div>
+
+          <div class="card-meta">
+            <span class="type-badge" style="background: #f1f5f9; color: #475569;">
+              {{ request.mode === 'personalizar' ? 'Maqueta Personalizada' : 'Maqueta Ya Hecha' }}
+            </span>
+          </div>
+
+          <div class="card-date">
+            <span class="date-icon">&#128197;</span>
+            <span style="color: #64748b;">Completado el {{ request.date | date:'d \'de\' MMMM \'de\' yyyy' }}</span>
+          </div>
+
+          <p class="card-description" *ngIf="request.detail" style="color: #64748b;">
+            <strong>Descripcion:</strong> {{ request.detail }}
+          </p>
+
+          <div class="card-info card-info--completed" style="background: #f8fafc; border-color: #cbd5e1; color: #475569;">
+            <span class="info-icon" style="color: #475569;">&#10004;</span>
+            <span>¡Tu maqueta ha sido fabricada y entregada con éxito!</span>
+          </div>
+
+          <div class="card-actions" *ngIf="request.backendId">
+            <button class="btn-conversation btn-chat" type="button" (click)="onViewChat(request.backendId)">
+              <svg viewBox="0 0 24 24" class="btn-chat-icon" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Ver conversación
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
   </div>
 </section>

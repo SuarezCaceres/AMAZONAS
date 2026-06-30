@@ -132,6 +132,7 @@ export interface SolicitudParaPresupuestoResponse {
   clienteNombre: string;
   clienteEmail: string;
   clienteTelefono?: string;
+  estado: EstadoSolicitud;
   createdAt: string;
   materialesProducto: MaterialPresupuestoDTO[];
   materialesPreferidos: MaterialSolicitadoDTO[];

@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMAZONAS - Panel de Pruebas Issue 3</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Courier+Prime&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM & CSS VARIABLES (Sleek Dark Theme)
+       ========================================================================== */
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --accent-primary: #6366f1; /* Indigo */
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      --accent-cyan: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --glass-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.05);
+      
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
+      --radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-primary);
+    }
+
+    /* ==========================================================================
+       LAYOUT STRUCTURE
+       ========================================================================== */
+    header {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.5rem;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .logo-text h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .badge-test {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2rem;
+    }
+
+    /* Navigation Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 1rem 1.2rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      transition: var(--transition);
+    }
+
+    .nav-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-btn.active {
+      color: var(--text-main);
+      background: var(--accent-gradient);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    .nav-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Content Area */
+    .content-area {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       TYPOGRAPHY & UTILITIES
+       ========================================================================== */
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    /* Card styling */
+    .card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: var(--text-main);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--text-main);
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .form-control.is-invalid {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+
+    .invalid-feedback {
+      color: var(--danger);
+      font-size: 0.75rem;
+      margin-top: 0.3rem;
+      display: none;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* ==========================================================================
+       COMPONENTS: VENTA PRESENCIAL FORM & SELECTORS
+       ========================================================================== */
+    .option-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .option-card {
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg-primary);
+    }
+
+    .option-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .option-card.selected {
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .option-card svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .option-card.selected svg {
+      fill: var(--accent-primary);
+    }
+
+    .option-card span {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* Catalog Maquetas Selector */
+    .catalog-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .maq-card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .maq-card:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+
+    .maq-card.selected {
+      border-color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.05);
+    }
+
+    .maq-thumb {
+      width: 50px;
+      height: 50px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .maq-info {
+      flex: 1;
+    }
+
+    .maq-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .maq-price {
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      font-weight: 700;
+    }
+
+    .maq-stock {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Materials UI */
+    .materials-adder {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .materials-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+
+    /* Tables */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.85rem 1rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Resumen total */
+    .summary-box {
+      background: rgba(99, 102, 241, 0.04);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      border-radius: 8px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .summary-row.total {
+      font-size: 1.2rem;
+      font-weight: 800;
+      border-top: 1px solid rgba(99, 102, 241, 0.15);
+      padding-top: 0.6rem;
+      color: var(--text-main);
+    }
+
+    .payment-type-selector {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .payment-type-selector label {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      padding: 0.6rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .payment-type-selector input[type="radio"] {
+      accent-color: var(--accent-primary);
+    }
+
+    .payment-type-selector input[type="radio"]:checked + span {
+      color: var(--accent-primary);
+    }
+
+    .payment-type-selector label:has(input[type="radio"]:checked) {
+      border-color: var(--accent-primary);
+      background: rgba(99, 102, 241, 0.05);
+    }
+
+    /* ==========================================================================
+       COMPONENTS: CHAT SIMULATOR
+       ========================================================================== */
+    .chat-container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1.5rem;
+      height: 550px;
+    }
+
+    .chat-sidebar {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow-y: auto;
+    }
+
+    .chat-user-item {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      transition: var(--transition);
+    }
+
+    .chat-user-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .chat-user-item.active {
+      background: rgba(99, 102, 241, 0.08);
+      border-left: 3px solid var(--accent-primary);
+    }
+
+    .chat-avatar {
+      width: 42px;
+      height: 42px;
+      background: var(--bg-tertiary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .chat-user-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .chat-user-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .chat-user-preview {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      margin-top: 0.2rem;
+    }
+
+    .chat-main {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: rgba(255, 255, 255, 0.01);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .chat-body {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .chat-bubble {
+      max-width: 75%;
+      padding: 0.9rem 1.1rem;
+      border-radius: 16px;
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .chat-bubble.incoming {
+      background: var(--bg-secondary);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-bubble.outgoing {
+      background: var(--accent-primary);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .chat-card-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .chat-card-detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .chat-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 0.8rem;
+      background: var(--bg-secondary);
+    }
+
+    /* ==========================================================================
+       MODAL DIALOGS
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: var(--transition);
+      overflow: hidden;
+    }
+
+    .modal-backdrop.open .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    /* Comprobante Viewer Modal (Special Layout) */
+    .voucher-viewer {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 250px;
+      position: relative;
+      border: 1px solid #cbd5e1;
+    }
+
+    .mock-bank-voucher {
+      background: white;
+      color: #1e293b;
+      width: 280px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+      font-family: 'Courier Prime', 'Courier New', monospace;
+      font-size: 0.8rem;
+      position: relative;
+      border-top: 4px solid #10b981;
+    }
+
+    .mock-bank-voucher::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background-image: linear-gradient(-45deg, transparent 4px, white 4px), linear-gradient(45deg, transparent 4px, white 4px);
+      background-size: 8px 8px;
+    }
+
+    .voucher-header {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 0.5rem;
+    }
+
+    .voucher-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+
+    .voucher-stamp {
+      border: 2px solid #10b981;
+      color: #10b981;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      transform: rotate(-10deg);
+      display: inline-block;
+      margin: 1rem auto 0 auto;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+    }
+
+    /* File uploader */
+    .file-drop-area {
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--bg-primary);
+    }
+
+    .file-drop-area:hover {
+      border-color: var(--accent-primary);
+    }
+
+    /* Status Pill */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-paid {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--bg-secondary);
+      border-left: 4px solid var(--success);
+      border-radius: 4px;
+      padding: 1rem 1.5rem;
+      color: var(--text-main);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+      z-index: 2000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ==========================================================================
+       PRINT RECEIPT FORMAT (THERMAL TICKET - 80mm format)
+       ========================================================================== */
+    #thermal-ticket-print-template {
+      display: none;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      
+      #thermal-ticket-print-template, #thermal-ticket-print-template * {
+        visibility: visible;
+      }
+      
+      #thermal-ticket-print-template {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 76mm; /* Margen de seguridad para ticketera de 80mm */
+        padding: 2mm;
+        color: #000;
+        background: #fff;
+        font-family: 'Courier Prime', 'Courier New', monospace;
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .ticket-center {
+        text-align: center;
+      }
+
+      .ticket-divider {
+        border-top: 1px dashed #000;
+        margin: 0.5rem 0;
+      }
+
+      .ticket-row {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .ticket-item-row {
+        margin: 0.3rem 0;
+      }
+
+      .ticket-bold {
+        font-weight: 700;
+      }
+      
+      /* Ocultar todo lo demás en la ventana de impresión del navegador */
+      header, main, .modal-backdrop, .toast {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       HEADER
+       ========================================================================== -->
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon">A</div>
+      <div class="logo-text">
+        <h1>AMAZONAS</h1>
+        <p>Caja Presencial y Auditoría (Pruebas de Desarrollo)</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <span class="badge-test">RELEASE/AUDITORIA-Y-MEJORAS</span>
+      <span class="badge-test" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); border-color: rgba(99, 102, 241, 0.3);">INTERFAZ DE PRUEBAS</span>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN CONTAINER
+       ========================================================================== -->
+  <main>
+    <!-- Navigation Sidebar -->
+    <div class="sidebar">
+      <button class="nav-btn active" onclick="switchTab('tab-venta')">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+        Registrar Venta Directa
+      </button>
+      <button class="nav-btn" onclick="switchTab('tab-saldos')">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg>
+        Saldos Pendientes
+      </button>
+      <button class="nav-btn" onclick="switchTab('tab-chat')">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+        Chat Vendedor (Saldo 50%)
+      </button>
+      <button class="nav-btn" onclick="switchTab('tab-auditoria')">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        Panel de Auditoría Interna
+      </button>
+    </div>
+
+    <!-- Content Workspace -->
+    <div class="content-area">
+      
+      <!-- ==========================================================================
+           TAB: REGISTRAR VENTA PRESENCIAL (FORMULARIO MANUAL)
+           ========================================================================== -->
+      <div id="tab-venta" class="tab-content active">
+        <h2 class="section-title">📝 Registrar Venta Directa en Local</h2>
+        <p class="section-subtitle">Diseño del formulario manual con selectores interactivos de maquetas, materiales y controles de validación en frontend.</p>
+
+        <div class="grid-2">
+          <!-- Columna Izquierda: Formulario -->
+          <div>
+            <form id="venta-form" onsubmit="event.preventDefault(); submitVentaForm();">
+              <div class="form-group">
+                <label for="cliente-nombre">Nombre del Cliente *</label>
+                <input type="text" id="cliente-nombre" class="form-control" placeholder="Ej. Juan Pérez" required>
+                <div class="invalid-feedback" id="val-cliente">El nombre del cliente es obligatorio.</div>
+              </div>
+
+              <!-- Selector interactivo de Maquetas -->
+              <div class="form-group">
+                <label>Tipo de Maqueta Física *</label>
+                <div class="option-cards">
+                  <div class="option-card selected" id="opt-catalogo" onclick="selectMaquetaTipo('catalogo')">
+                    <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0-2-.9-2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                    <span>Seleccionar de Catálogo</span>
+                  </div>
+                  <div class="option-card" id="opt-personalizada" onclick="selectMaquetaTipo('personalizada')">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    <span>Maqueta Personalizada</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contenedor Catálogo de Maquetas -->
+              <div id="section-catalogo">
+                <div class="form-group">
+                  <label>Selecciona una Maqueta del Catálogo</label>
+                  <div class="catalog-list" id="catalog-maquetas-container">
+                    <!-- Dinámico -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contenedor Maqueta Personalizada -->
+              <div id="section-personalizada" style="display: none;">
+                <div class="card" style="margin-bottom: 1.5rem;">
+                  <h4 style="margin-bottom: 0.8rem; font-size: 0.95rem; color: var(--accent-primary);">Dimensiones y Precio Estimado</h4>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="maq-alto">Alto (cm)</label>
+                      <input type="number" id="maq-alto" class="form-control" value="30" min="1" oninput="calculatePersonalizadaPrice()">
+                    </div>
+                    <div class="form-group">
+                      <label for="maq-ancho">Ancho (cm)</label>
+                      <input type="number" id="maq-ancho" class="form-control" value="30" min="1" oninput="calculatePersonalizadaPrice()">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="maq-largo">Largo/Profundidad (cm)</label>
+                    <input type="number" id="maq-largo" class="form-control" value="30" min="1" oninput="calculatePersonalizadaPrice()">
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-muted);">
+                    Precio estimado de la estructura base: <strong style="color: var(--success);" id="pers-price-display">$27.00</strong>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Selector de Materiales Utilizados -->
+              <div class="materials-adder">
+                <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
+                  <svg style="width: 18px; height: 18px; fill: var(--accent-primary);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                  Añadir Materiales Utilizados
+                </h4>
+                <div class="materials-grid">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="material-select">Material</label>
+                    <select id="material-select" class="form-control" onchange="updateMaterialStockLabel()">
+                      <!-- Dinámico -->
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="material-qty">Cantidad</label>
+                    <input type="number" id="material-qty" class="form-control" value="1" min="1">
+                  </div>
+                  <div style="font-size: 0.78rem; color: var(--text-muted); padding-bottom: 0.6rem;" id="material-stock-label">
+                    Stock: 0
+                  </div>
+                  <button type="button" class="btn btn-primary" onclick="addMaterialToCart()">Agregar</button>
+                </div>
+                <div class="invalid-feedback" id="val-material" style="display: block; margin-top: 0.8rem;"></div>
+              </div>
+
+              <!-- Forma de Registro de Cobro Inicial -->
+              <div class="form-group">
+                <label>Modalidad de Cobro Inicial *</label>
+                <div class="payment-type-selector">
+                  <label>
+                    <input type="radio" name="paymentMode" value="total" checked onchange="updatePaymentModeUI()">
+                    <span>Cobro Total (100%)</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="paymentMode" value="adelanto" onchange="updatePaymentModeUI()">
+                    <span>Adelanto (50%)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group" id="caja-cobro-inicial-method">
+                <label for="payment-method-select">Método de Pago</label>
+                <select id="payment-method-select" class="form-control">
+                  <option value="Efectivo">Efectivo (Caja Física)</option>
+                  <option value="POS">Tarjeta (POS Local)</option>
+                  <option value="Transferencia">Transferencia Bancaria</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 1rem; font-size: 1rem; padding: 1rem;">
+                💾 Registrar Venta Directa en Caja
+              </button>
+            </form>
+          </div>
+
+          <!-- Columna Derecha: Detalle y Totales de la Orden Temporal -->
+          <div>
+            <div class="card" style="height: 100%; background: rgba(255, 255, 255, 0.01);">
+              <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.4rem;">
+                🛒 Resumen de la Venta Actual
+              </h3>
+              
+              <!-- Detalles de Maqueta Seleccionada -->
+              <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem;">Estructura Base</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span id="summary-maq-name" style="font-weight: 600;">Ninguna seleccionada</span>
+                  <span id="summary-maq-price" style="font-weight: 700; color: var(--success);">$0.00</span>
+                </div>
+              </div>
+
+              <!-- Listado de Materiales Agregados -->
+              <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">Materiales Agregados</p>
+              <div class="table-container" style="max-height: 200px; margin-bottom: 1rem;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Material</th>
+                      <th>P. Unit.</th>
+                      <th>Cant.</th>
+                      <th>Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="cart-materials-body">
+                    <tr>
+                      <td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">No se han agregado materiales.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Totales -->
+              <div class="summary-box">
+                <div class="summary-row">
+                  <span>Subtotal Maqueta:</span>
+                  <span id="lbl-subtotal-maq">$0.00</span>
+                </div>
+                <div class="summary-row">
+                  <span>Subtotal Materiales:</span>
+                  <span id="lbl-subtotal-mat">$0.00</span>
+                </div>
+                <div class="summary-row total">
+                  <span>Importe Total:</span>
+                  <span id="lbl-total-venta">$0.00</span>
+                </div>
+                <div class="summary-row" id="lbl-split-payment-info" style="display: none; color: var(--warning); font-weight: 600; border-top: 1px dashed rgba(245, 158, 11, 0.3); padding-top: 0.5rem;">
+                  <span>Adelanto (50% a Cobrar Hoy):</span>
+                  <span id="lbl-monto-adelanto">$0.00</span>
+                </div>
+              </div>
+
+              <div style="background: rgba(255,255,255,0.02); border-radius: 8px; padding: 1rem; border: 1px solid var(--border-color); font-size: 0.82rem; line-height: 1.4;">
+                <strong style="color: var(--accent-cyan); display: block; margin-bottom: 0.3rem;">ℹ️ Reglas de Validación Activas:</strong>
+                <ul>
+                  <li>Evita campos de cliente vacíos.</li>
+                  <li>Evita el ingreso de cantidades negativas de materiales.</li>
+                  <li>Impide exceder el stock físico actual.</li>
+                  <li>Permite dividir cobros en adelanto (50%) o pago completo.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================================================
+           TAB: SALDOS PENDIENTES
+           ========================================================================== -->
+      <div id="tab-saldos" class="tab-content">
+        <h2 class="section-title">💰 Liquidación de Saldos Pendientes (Caja)</h2>
+        <p class="section-subtitle">Tabla de deudas activas por compras de clientes en local con opción de liquidar saldos de forma física directa en efectivo/POS.</p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Cód. Venta</th>
+                <th>Cliente</th>
+                <th>Concepto/Detalle</th>
+                <th>Monto Total</th>
+                <th>Pagado (50% Adelanto)</th>
+                <th>Saldo Pendiente</th>
+                <th>Estado</th>
+                <th>Acción de Liquidación</th>
+              </tr>
+            </thead>
+            <tbody id="saldos-pendientes-body">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); padding: 1rem; border-radius: 8px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+          ⚠️ <strong>Nota para el Vendedor:</strong> Los cobros físicos de saldos pendientes se liquidan en efectivo de caja o POS de manera directa. Una vez procesado el cobro físico en la tabla de saldos, se cerrará la cuenta en el sistema de forma inmediata.
+        </div>
+      </div>
+
+      <!-- ==========================================================================
+           TAB: SIMULADOR DE CHAT
+           ========================================================================== -->
+      <div id="tab-chat" class="tab-content">
+        <h2 class="section-title">💬 Chat del Vendedor (Integración de Botón de Pago)</h2>
+        <p class="section-subtitle">Simulador de chat entre el cliente y el vendedor en tiempo real, integrando el botón rápido directo para confirmar la liquidación del 50% restante.</p>
+
+        <div class="chat-container">
+          <!-- Chat Sidebar Users -->
+          <div class="chat-sidebar">
+            <div class="chat-user-item active">
+              <div class="chat-avatar" style="background: var(--accent-gradient);">Carlos</div>
+              <div class="chat-user-info">
+                <div class="chat-user-name">Carlos Mendoza</div>
+                <div class="chat-user-preview" id="chat- Carlos-preview">Pendiente de saldo 50% ($22.00)</div>
+              </div>
+            </div>
+            <div class="chat-user-item">
+              <div class="chat-avatar" style="background: var(--bg-tertiary); color: var(--text-muted);">María</div>
+              <div class="chat-user-info">
+                <div class="chat-user-name">María Ramos</div>
+                <div class="chat-user-preview">Transacción finalizada</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Window -->
+          <div class="chat-main">
+            <div class="chat-header">
+              <div class="chat-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--accent-gradient);">Carlos</div>
+              <div>
+                <div style="font-size: 0.88rem; font-weight: 700;">Carlos Mendoza</div>
+                <div style="font-size: 0.72rem; color: var(--success);">● En Línea</div>
+              </div>
+            </div>
+            <div class="chat-body" id="chat-messages-container">
+              <div class="chat-bubble incoming">
+                Hola, acabo de retirar mi maqueta a medio terminar. Me dijeron que debía pagar el saldo restante del 50% para cerrar la cuenta de forma definitiva. ¿Me lo confirman?
+              </div>
+              <div class="chat-bubble outgoing">
+                Hola Carlos, sí, en efecto. Para poder entregártela y emitirte el comprobante final debemos registrar el cobro del 50% saldo en caja física.
+              </div>
+              
+              <!-- Burbuja de Chat del Vendedor con botón rápido de liquidación de saldo integrado -->
+              <div class="chat-bubble outgoing" style="background: #1e293b; border: 1px solid var(--accent-primary); align-self: flex-end; color: var(--text-main); width: 85%;">
+                <div class="chat-card-title">
+                  💸 Control de Pago Integrado en Chat
+                </div>
+                <div class="chat-card" style="background: var(--bg-primary);">
+                  <div class="chat-card-detail">
+                    <strong>Venta Relacionada:</strong> COD-9912<br>
+                    <strong>Detalle:</strong> Maqueta de Casa de Campo + Materiales<br>
+                    <strong>Adelanto ya pagado:</strong> $26.00 (50%)<br>
+                    <strong style="color: var(--warning);">Monto Saldo Pendiente:</strong> $26.00 (50% restante)
+                  </div>
+                  
+                  <button class="btn btn-primary" id="btn-chat-confirm-pay" onclick="openChatConfirmPaymentModal('COD-9912', 26.00, 'Carlos Mendoza')">
+                    💰 Confirmar Pago de Saldo (50%)
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="chat-footer">
+              <input type="text" class="form-control" placeholder="Escribe un mensaje..." disabled>
+              <button class="btn btn-primary btn-icon" disabled>
+                <svg style="width: 20px; height: 20px; fill: white;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================================================
+           TAB: PANEL DE AUDITORÍA INTERNA
+           ========================================================================== -->
+      <div id="tab-auditoria" class="tab-content">
+        <h2 class="section-title">🔎 Panel de Auditoría Interna de Transacciones</h2>
+        <p class="section-subtitle">Registro centralizado e histórico de caja para auditar los cobros y visualizar los comprobantes cargados (vouchers de banco/caja) e imprimir recibos térmicos.</p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha/Hora</th>
+                <th>ID Transacción</th>
+                <th>Cód. Venta</th>
+                <th>Cliente</th>
+                <th>Tipo Transacción</th>
+                <th>Método de Pago</th>
+                <th>Monto Cobrado</th>
+                <th>Comprobante Digital</th>
+                <th>Impresión</th>
+              </tr>
+            </thead>
+            <tbody id="auditoria-transacciones-body">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ==========================================================================
+       MODAL: REGISTRAR COBRO FÍSICO (SALDOS PENDIENTES)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modal-cobro-fisico">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">💸 Registrar Liquidación de Saldo Físico</h3>
+        <button class="modal-close" onclick="closeModal('modal-cobro-fisico')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="cobro-fisico-form" onsubmit="event.preventDefault(); submitCobroFisico();">
+          <input type="hidden" id="cobro-venta-id">
+          <div class="form-group">
+            <label>Código de Venta / Deuda</label>
+            <input type="text" id="cobro-venta-display" class="form-control" readonly>
+          </div>
+          <div class="form-group">
+            <label>Cliente</label>
+            <input type="text" id="cobro-cliente-display" class="form-control" readonly>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Monto del Saldo a Liquidar ($)</label>
+              <input type="number" id="cobro-monto" class="form-control" step="0.01" min="0.01" required>
+              <div class="invalid-feedback" id="val-cobro-monto">El monto debe ser positivo y menor o igual a la deuda.</div>
+            </div>
+            <div class="form-group">
+              <label for="cobro-metodo">Método de Pago</label>
+              <select id="cobro-metodo" class="form-control">
+                <option value="Efectivo">Efectivo (Caja)</option>
+                <option value="POS">Tarjeta (POS)</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- File Uploader para simular carga de comprobante (imagen / pdf) para auditoría -->
+          <div class="form-group">
+            <label>Cargar Comprobante Físico / Voucher de Pago (Para Auditoría)</label>
+            <div class="file-drop-area" onclick="triggerFileUploader()">
+              <svg style="width: 32px; height: 32px; fill: var(--text-muted); margin-bottom: 0.5rem;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+              <p style="font-size: 0.85rem;" id="file-uploader-text">Haz clic aquí para cargar una imagen del ticket/voucher</p>
+              <input type="file" id="cobro-file" style="display: none;" onchange="handleFileSelected(event)">
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-cobro-fisico')">Cancelar</button>
+            <button type="submit" class="btn btn-success">✅ Liquidar y Cerrar Cuenta</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: VISOR DE COMPROBANTES DE AUDITORÍA
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modal-visor-comprobante">
+    <div class="modal" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">👁️ Visor de Comprobante / Voucher Físico</h3>
+        <button class="modal-close" onclick="closeModal('modal-visor-comprobante')">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; text-align: left;">
+          Mostrando el comprobante escaneado/cargado adjunto a la transacción de caja para fines de auditoría de arqueo.
+        </p>
+        
+        <div class="voucher-viewer">
+          <div class="mock-bank-voucher">
+            <div class="voucher-header">
+              BANCO DE CRÉDITO DEL PERÚ<br>
+              TRANSACCIÓN DE TRANSFERENCIA
+            </div>
+            <div class="voucher-row">
+              <span>Operación:</span>
+              <span style="font-weight: 700;" id="view-v-op">#992318</span>
+            </div>
+            <div class="voucher-row">
+              <span>Fecha:</span>
+              <span id="view-v-fecha">28/06/2026 23:05</span>
+            </div>
+            <div class="voucher-row">
+              <span>Cliente:</span>
+              <span id="view-v-cliente">Carlos Mendoza</span>
+            </div>
+            <div class="voucher-row" style="border-top: 1px dashed #cbd5e1; margin-top: 0.5rem; padding-top: 0.5rem;">
+              <span>Destino:</span>
+              <span>AMAZONAS S.A.C</span>
+            </div>
+            <div class="voucher-row">
+              <span>Monto:</span>
+              <span style="font-weight: 700;" id="view-v-monto">$26.00</span>
+            </div>
+            <div class="voucher-row">
+              <span>Medio:</span>
+              <span id="view-v-metodo">Banca Móvil</span>
+            </div>
+            <div class="voucher-stamp">CONCILIADO</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('modal-visor-comprobante')">Cerrar</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Mandar a Ticketera (80mm)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       TOAST NOTIFICATION
+       ========================================================================== -->
+  <div class="toast" id="toast-notification">
+    <div style="background: rgba(16, 185, 129, 0.2); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--success); font-weight: bold;">✓</div>
+    <span id="toast-message">Transacción procesada correctamente.</span>
+  </div>
+
+  <!-- ==========================================================================
+       PRINT RECEIPT TEMPLATE (THERMAL TICKET FORMAT)
+       ========================================================================== -->
+  <div id="thermal-ticket-print-template">
+    <div class="ticket-center">
+      <span class="ticket-bold" style="font-size: 14px;">AMAZONAS S.A.C.</span><br>
+      R.U.C. 20601234567<br>
+      Av. de la Amazonía 123 - Local Central<br>
+      Tlf: (01) 456-7890<br>
+      ----------------------------------------<br>
+      <span class="ticket-bold">BOLETA DE VENTA DE CAJA</span><br>
+      Nro: <span id="ticket-id">BOL-000102</span><br>
+      Fecha: <span id="ticket-fecha">28/06/2026 23:05</span><br>
+      ----------------------------------------
+    </div>
+    
+    <div class="ticket-row">
+      <span>Cliente:</span>
+      <span id="ticket-cliente">Juan Pérez</span>
+    </div>
+    <div class="ticket-row">
+      <span>Cajero:</span>
+      <span>Caja Central 01</span>
+    </div>
+    <div class="ticket-divider"></div>
+    
+    <div class="ticket-bold">DETALLE DE COMPRA:</div>
+    <div class="ticket-item-row" id="ticket-maq-detail">
+      <!-- Maqueta detail -->
+    </div>
+    
+    <div class="ticket-divider"></div>
+    <div class="ticket-bold">MATERIALES DETALLE:</div>
+    <div id="ticket-materials-list">
+      <!-- Materials list -->
+    </div>
+    
+    <div class="ticket-divider"></div>
+    <div class="ticket-row">
+      <span>SUBTOTAL:</span>
+      <span id="ticket-subtotal">$0.00</span>
+    </div>
+    <div class="ticket-row">
+      <span>IGV (18%):</span>
+      <span id="ticket-igv">$0.00</span>
+    </div>
+    <div class="ticket-row ticket-bold" style="font-size: 12px;">
+      <span>TOTAL A PAGAR:</span>
+      <span id="ticket-total">$0.00</span>
+    </div>
+    
+    <div class="ticket-divider"></div>
+    <div class="ticket-row">
+      <span>Método Pago:</span>
+      <span id="ticket-metodo">Efectivo</span>
+    </div>
+    <div class="ticket-row">
+      <span>Cobro Físico:</span>
+      <span id="ticket-monto-cobrado">$0.00</span>
+    </div>
+    <div class="ticket-row">
+      <span>Deuda Restante:</span>
+      <span id="ticket-saldo-restante">$0.00</span>
+    </div>
+    
+    <div class="ticket-divider"></div>
+    <div class="ticket-center" style="margin-top: 1rem;">
+      ¡GRACIAS POR SU COMPRA!<br>
+      Representación impresa de boleta térmica.<br>
+      Cualquier reclamo presentar este ticket.
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT APPLICATION LOGIC
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       DATA STORES (MOCK BACKEND DATABASE)
+       ========================================================================== */
+    const catalogMaquetas = [
+      { id: 'm1', name: 'Maqueta de Casa de Campo (Catálogo)', price: 45.00, stock: 5 },
+      { id: 'm2', name: 'Maqueta de Edificio Moderno (Catálogo)', price: 75.00, stock: 3 },
+      { id: 'm3', name: 'Maqueta de Puente Colgante (Catálogo)', price: 60.00, stock: 4 }
+    ];
+
+    const catalogMateriales = [
+      { id: 'mat1', name: 'Cartón Paja (Pliego)', price: 1.50, stock: 50 },
+      { id: 'mat2', name: 'Silicona en barra (Unidad)', price: 0.20, stock: 100 },
+      { id: 'mat3', name: 'Madera MDF (Plancha)', price: 5.00, stock: 20 },
+      { id: 'mat4', name: 'Pintura Acrílica (Frasco)', price: 2.50, stock: 30 }
+    ];
+
+    // State Variables
+    let currentMaquetaTipo = 'catalogo'; // 'catalogo' or 'personalizada'
+    let selectedMaqueta = null;
+    let selectedPersonalizadaPrice = 27.00;
+    let cartMaterials = [];
+    let uploadedVoucherFile = null;
+
+    // Database in LocalStorage or memory
+    let saldosPendientes = [
+      { id: 'COD-9912', cliente: 'Carlos Mendoza', concepto: 'Maqueta de Casa de Campo + Materiales', total: 52.00, pagado: 26.00, saldo: 26.00, estado: 'Pendiente' },
+      { id: 'COD-4318', cliente: 'Ana Gómez', concepto: 'Maqueta de Edificio Moderno + Siliconas', total: 81.00, pagado: 40.50, saldo: 40.50, estado: 'Pendiente' }
+    ];
+
+    let transaccionesAuditoria = [
+      { id: 'TX-10029', codigoVenta: 'COD-9912', cliente: 'Carlos Mendoza', tipo: 'Adelanto 50%', metodo: 'Efectivo (Caja)', monto: 26.00, fecha: '28/06/2026 14:32', comprobante: 'BCP-OP-12883' },
+      { id: 'TX-10030', codigoVenta: 'COD-4318', cliente: 'Ana Gómez', tipo: 'Adelanto 50%', metodo: 'POS Tarjeta', monto: 40.50, fecha: '28/06/2026 16:15', comprobante: 'VIS-OP-99831' }
+    ];
+
+    /* ==========================================================================
+       INITIALIZATION
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCatalogMaquetas();
+      renderMaterialOptions();
+      updateMaterialStockLabel();
+      renderSaldosPendientesTable();
+      renderAuditoriaTable();
+      updateVentaSummary();
+    });
+
+    /* ==========================================================================
+       TAB SWITCHING
+       ========================================================================== */
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      
+      // Active navigation button highlight
+      const clickedBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => {
+        return btn.getAttribute('onclick').includes(tabId);
+      });
+      if (clickedBtn) clickedBtn.classList.add('active');
+    }
+
+    /* ==========================================================================
+       RENDER CATALOGS
+       ========================================================================== */
+    function renderCatalogMaquetas() {
+      const container = document.getElementById('catalog-maquetas-container');
+      container.innerHTML = '';
+      
+      catalogMaquetas.forEach(maq => {
+        const div = document.createElement('div');
+        div.className = 'maq-card';
+        div.id = `maq-card-${maq.id}`;
+        div.onclick = () => selectCatalogMaqueta(maq);
+        
+        div.innerHTML = `
+          <div class="maq-thumb">🏠</div>
+          <div class="maq-info">
+            <div class="maq-name">${maq.name}</div>
+            <div class="maq-price">$${maq.price.toFixed(2)}</div>
+            <div class="maq-stock">Stock disponible: ${maq.stock} unds</div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderMaterialOptions() {
+      const select = document.getElementById('material-select');
+      select.innerHTML = '';
+      
+      catalogMateriales.forEach(mat => {
+        const option = document.createElement('option');
+        option.value = mat.id;
+        option.textContent = `${mat.name} - $${mat.price.toFixed(2)}`;
+        select.appendChild(option);
+      });
+    }
+
+    function updateMaterialStockLabel() {
+      const select = document.getElementById('material-select');
+      const matId = select.value;
+      const material = catalogMateriales.find(m => m.id === matId);
+      if (material) {
+        document.getElementById('material-stock-label').textContent = `Stock: ${material.stock}`;
+      }
+    }
+
+    /* ==========================================================================
+       MAQUETA SELECTION ACTIONS
+       ========================================================================== */
+    function selectMaquetaTipo(tipo) {
+      currentMaquetaTipo = tipo;
+      
+      // Update toggle class
+      document.getElementById('opt-catalogo').classList.remove('selected');
+      document.getElementById('opt-personalizada').classList.remove('selected');
+      
+      if (tipo === 'catalogo') {
+        document.getElementById('opt-catalogo').classList.add('selected');
+        document.getElementById('section-catalogo').style.display = 'block';
+        document.getElementById('section-personalizada').style.display = 'none';
+        
+        // Reset selected catalog maqueta
+        selectedMaqueta = null;
+        document.querySelectorAll('.maq-card').forEach(c => c.classList.remove('selected'));
+      } else {
+        document.getElementById('opt-personalizada').classList.add('selected');
+        document.getElementById('section-catalogo').style.display = 'none';
+        document.getElementById('section-personalizada').style.display = 'block';
+        
+        calculatePersonalizadaPrice();
+      }
+      updateVentaSummary();
+    }
+
+    function selectCatalogMaqueta(maq) {
+      selectedMaqueta = maq;
+      document.querySelectorAll('.maq-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById(`maq-card-${maq.id}`).classList.add('selected');
+      
+      updateVentaSummary();
+    }
+
+    function calculatePersonalizadaPrice() {
+      const alto = parseFloat(document.getElementById('maq-alto').value) || 0;
+      const ancho = parseFloat(document.getElementById('maq-ancho').value) || 0;
+      const largo = parseFloat(document.getElementById('maq-largo').value) || 0;
+      
+      // Simple custom price formula: $0.001 per cubic cm + $10 fixed
+      const volume = alto * ancho * largo;
+      selectedPersonalizadaPrice = 10 + (volume * 0.001);
+      
+      document.getElementById('pers-price-display').textContent = `$${selectedPersonalizadaPrice.toFixed(2)}`;
+      updateVentaSummary();
+    }
+
+    /* ==========================================================================
+       CART & TOTALS LOGIC
+       ========================================================================== */
+    function addMaterialToCart() {
+      const select = document.getElementById('material-select');
+      const qtyInput = document.getElementById('material-qty');
+      const valMaterial = document.getElementById('val-material');
+      
+      valMaterial.textContent = '';
+      valMaterial.style.display = 'none';
+      qtyInput.classList.remove('is-invalid');
+      
+      const matId = select.value;
+      const qty = parseInt(qtyInput.value);
+      const material = catalogMateriales.find(m => m.id === matId);
+      
+      if (!material) return;
+      
+      // --- FRONTEND VALIDATIONS (Negative, zero or over-stock quantities) ---
+      if (isNaN(qty) || qty <= 0) {
+        qtyInput.classList.add('is-invalid');
+        valMaterial.textContent = '❌ La cantidad de materiales debe ser mayor a cero y positiva.';
+        valMaterial.style.display = 'block';
+        return;
+      }
+      
+      if (qty > material.stock) {
+        qtyInput.classList.add('is-invalid');
+        valMaterial.textContent = `❌ Stock insuficiente. Solo quedan ${material.stock} unidades de ${material.name}.`;
+        valMaterial.style.display = 'block';
+        return;
+      }
+      
+      // Add or update cart
+      const existing = cartMaterials.find(item => item.id === matId);
+      if (existing) {
+        if (existing.qty + qty > material.stock) {
+          qtyInput.classList.add('is-invalid');
+          valMaterial.textContent = `❌ La cantidad acumulada (${existing.qty + qty}) excede el stock disponible.`;
+          valMaterial.style.display = 'block';
+          return;
+        }
+        existing.qty += qty;
+      } else {
+        cartMaterials.push({
+          id: material.id,
+          name: material.name,
+          price: material.price,
+          qty: qty
+        });
+      }
+      
+      renderCartMaterials();
+      updateVentaSummary();
+      showToast('Material agregado al resumen.');
+    }
+
+    function removeMaterialFromCart(matId) {
+      cartMaterials = cartMaterials.filter(item => item.id !== matId);
+      renderCartMaterials();
+      updateVentaSummary();
+    }
+
+    function renderCartMaterials() {
+      const tbody = document.getElementById('cart-materials-body');
+      tbody.innerHTML = '';
+      
+      if (cartMaterials.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-muted); font-style: italic;">No se han agregado materiales.</td>
+          </tr>
+        `;
+        return;
+      }
+      
+      cartMaterials.forEach(item => {
+        const subtotal = item.price * item.qty;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.name}</td>
+          <td>$${item.price.toFixed(2)}</td>
+          <td>${item.qty}</td>
+          <td style="font-weight: 600;">$${subtotal.toFixed(2)}</td>
+          <td style="text-align: right;">
+            <button class="btn btn-danger btn-icon" onclick="removeMaterialFromCart('${item.id}')">✕</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateVentaSummary() {
+      // Calculate Maqueta Price
+      let maqName = 'Ninguna seleccionada';
+      let maqPrice = 0;
+      
+      if (currentMaquetaTipo === 'catalogo') {
+        if (selectedMaqueta) {
+          maqName = selectedMaqueta.name;
+          maqPrice = selectedMaqueta.price;
+        }
+      } else {
+        maqName = 'Maqueta Personalizada';
+        maqPrice = selectedPersonalizadaPrice;
+      }
+      
+      // Calculate Materials Price
+      const matSubtotal = cartMaterials.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const total = maqPrice + matSubtotal;
+      
+      // Render labels
+      document.getElementById('summary-maq-name').textContent = maqName;
+      document.getElementById('summary-maq-price').textContent = `$${maqPrice.toFixed(2)}`;
+      
+      document.getElementById('lbl-subtotal-maq').textContent = `$${maqPrice.toFixed(2)}`;
+      document.getElementById('lbl-subtotal-mat').textContent = `$${matSubtotal.toFixed(2)}`;
+      document.getElementById('lbl-total-venta').textContent = `$${total.toFixed(2)}`;
+      
+      // Split payments
+      const paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+      if (paymentMode === 'adelanto') {
+        document.getElementById('lbl-split-payment-info').style.display = 'flex';
+        document.getElementById('lbl-monto-adelanto').textContent = `$${(total * 0.5).toFixed(2)}`;
+      } else {
+        document.getElementById('lbl-split-payment-info').style.display = 'none';
+      }
+    }
+
+    function updatePaymentModeUI() {
+      updateVentaSummary();
+    }
+
+    /* ==========================================================================
+       SUBMIT VENTA DIRECTA FORM
+       ========================================================================== */
+    function submitVentaForm() {
+      const clienteInput = document.getElementById('cliente-nombre');
+      const valCliente = document.getElementById('val-cliente');
+      const valMaterial = document.getElementById('val-material');
+      
+      // Clear errors
+      clienteInput.classList.remove('is-invalid');
+      valCliente.style.display = 'none';
+      valMaterial.style.display = 'none';
+      
+      const cliente = clienteInput.value.trim();
+      
+      // Validate customer name
+      if (!cliente) {
+        clienteInput.classList.add('is-invalid');
+        valCliente.style.display = 'block';
+        return;
+      }
+      
+      // Validate structure has been defined/selected
+      let maqName = '';
+      let maqPrice = 0;
+      if (currentMaquetaTipo === 'catalogo') {
+        if (!selectedMaqueta) {
+          valMaterial.textContent = '❌ Debes seleccionar una maqueta de catálogo o elegir maqueta personalizada.';
+          valMaterial.style.display = 'block';
+          return;
+        }
+        maqName = selectedMaqueta.name;
+        maqPrice = selectedMaqueta.price;
+      } else {
+        maqName = `Maqueta Personalizada (${document.getElementById('maq-alto').value}x${document.getElementById('maq-ancho').value}x${document.getElementById('maq-largo').value}cm)`;
+        maqPrice = selectedPersonalizadaPrice;
+      }
+      
+      // Generate ID and totals
+      const ventaId = 'COD-' + Math.floor(1000 + Math.random() * 9000);
+      const total = maqPrice + cartMaterials.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+      const metodo = document.getElementById('payment-method-select').value;
+      
+      let newSaldo = null;
+      let pagado = total;
+      let saldo = 0;
+      let status = 'Finalizado';
+      
+      // Register in Audit / Pendientes
+      if (paymentMode === 'adelanto') {
+        pagado = total * 0.5;
+        saldo = total * 0.5;
+        status = 'Pendiente';
+        
+        newSaldo = {
+          id: ventaId,
+          cliente: cliente,
+          concepto: `${maqName} + Materiales`,
+          total: total,
+          pagado: pagado,
+          saldo: saldo,
+          estado: 'Pendiente'
+        };
+        saldosPendientes.push(newSaldo);
+      }
+      
+      // Create transaction for Audit Panel
+      const txId = 'TX-' + Math.floor(10000 + Math.random() * 90000);
+      const now = new Date();
+      const fechaStr = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      const newTx = {
+        id: txId,
+        codigoVenta: ventaId,
+        cliente: cliente,
+        tipo: paymentMode === 'adelanto' ? 'Adelanto 50%' : 'Pago Completo 100%',
+        metodo: metodo + ' (Caja)',
+        monto: pagado,
+        fecha: fechaStr,
+        comprobante: paymentMode === 'adelanto' ? 'MOCK-VOUCHER-ADELANTO' : 'BOL-TICKET-' + Math.floor(1000 + Math.random() * 9000)
+      };
+      
+      transaccionesAuditoria.push(newTx);
+      
+      // Update UI tables
+      renderSaldosPendientesTable();
+      renderAuditoriaTable();
+      
+      // Update Stock (deduct from stock)
+      cartMaterials.forEach(item => {
+        const match = catalogMateriales.find(m => m.id === item.id);
+        if (match) match.stock -= item.qty;
+      });
+      renderMaterialOptions();
+      updateMaterialStockLabel();
+      
+      // Show ticket thermal dialog print if complete payment
+      if (paymentMode === 'total') {
+        prepareAndPrintTicket(newTx, maqName, maqPrice, cartMaterials, total, saldo);
+      }
+      
+      // Reset Form
+      clienteInput.value = '';
+      cartMaterials = [];
+      selectedMaqueta = null;
+      document.querySelectorAll('.maq-card').forEach(c => c.classList.remove('selected'));
+      renderCartMaterials();
+      updateVentaSummary();
+      
+      showToast(`¡Venta ${ventaId} registrada con éxito!`);
+      
+      // Go to corresponding tab
+      if (paymentMode === 'adelanto') {
+        switchTab('tab-saldos');
+      } else {
+        switchTab('tab-auditoria');
+      }
+    }
+
+    /* ==========================================================================
+       RENDER TABLES
+       ========================================================================== */
+    function renderSaldosPendientesTable() {
+      const tbody = document.getElementById('saldos-pendientes-body');
+      tbody.innerHTML = '';
+      
+      const activeDeudas = saldosPendientes.filter(d => d.estado === 'Pendiente');
+      
+      if (activeDeudas.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); font-style: italic; padding: 2rem;">No hay saldos pendientes en caja.</td>
+          </tr>
+        `;
+        return;
+      }
+      
+      activeDeudas.forEach(deuda => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 700; color: var(--accent-cyan);">${deuda.id}</td>
+          <td>${deuda.cliente}</td>
+          <td style="font-size: 0.82rem; color: var(--text-muted);">${deuda.concepto}</td>
+          <td style="font-weight: 600;">$${deuda.total.toFixed(2)}</td>
+          <td style="color: var(--success); font-weight: 600;">$${deuda.pagado.toFixed(2)}</td>
+          <td style="color: var(--warning); font-weight: 700;">$${deuda.saldo.toFixed(2)}</td>
+          <td><span class="status-badge status-pending">${deuda.estado}</span></td>
+          <td>
+            <button class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" 
+                    onclick="openCobroFisicoModal('${deuda.id}', ${deuda.saldo}, '${deuda.cliente}')">
+              💵 Registrar Cobro Físico
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAuditoriaTable() {
+      const tbody = document.getElementById('auditoria-transacciones-body');
+      tbody.innerHTML = '';
+      
+      transaccionesAuditoria.forEach(tx => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color: var(--text-muted);">${tx.fecha}</td>
+          <td style="font-weight: 600;">${tx.id}</td>
+          <td style="font-weight: 700; color: var(--accent-cyan);">${tx.codigoVenta}</td>
+          <td>${tx.cliente}</td>
+          <td>${tx.tipo}</td>
+          <td>${tx.metodo}</td>
+          <td style="font-weight: 700; color: var(--success);">$${tx.monto.toFixed(2)}</td>
+          <td>
+            <button class="btn btn-secondary btn-icon" style="padding: 0.4rem 0.8rem; font-size: 0.78rem;" 
+                    onclick="openVoucherVisor('${tx.id}', '${tx.cliente}', ${tx.monto}, '${tx.metodo}', '${tx.comprobante}')">
+              👁️ Ver Comprobante
+            </button>
+          </td>
+          <td>
+            <button class="btn btn-primary btn-icon" style="padding: 0.4rem;" 
+                    onclick="triggerPrintForExistingTx('${tx.id}')">
+              🖨️ Imprimir
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ==========================================================================
+       MODAL CONTROLS
+       ========================================================================== */
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('open');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('open');
+    }
+
+    function openCobroFisicoModal(ventaId, saldo, cliente) {
+      document.getElementById('cobro-venta-id').value = ventaId;
+      document.getElementById('cobro-venta-display').value = ventaId;
+      document.getElementById('cobro-cliente-display').value = cliente;
+      document.getElementById('cobro-monto').value = saldo;
+      document.getElementById('cobro-monto').setAttribute('max', saldo);
+      
+      // Reset file upload
+      uploadedVoucherFile = null;
+      document.getElementById('file-uploader-text').innerHTML = `
+        <svg style="width: 32px; height: 32px; fill: var(--text-muted); margin-bottom: 0.5rem;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+        <p style="font-size: 0.85rem;">Haz clic aquí para cargar una imagen del ticket/voucher</p>
+      `;
+      
+      openModal('modal-cobro-fisico');
+    }
+
+    function openChatConfirmPaymentModal(ventaId, saldo, cliente) {
+      openCobroFisicoModal(ventaId, saldo, cliente);
+    }
+
+    /* File Uploader Simulation */
+    function triggerFileUploader() {
+      document.getElementById('cobro-file').click();
+    }
+
+    function handleFileSelected(event) {
+      const file = event.target.files[0];
+      if (file) {
+        uploadedVoucherFile = file;
+        document.getElementById('file-uploader-text').innerHTML = `
+          <span style="color: var(--success); font-weight: 700; display: block; margin-bottom: 0.3rem;">✓ Archivo Cargado Correctamente</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">${file.name} (${(file.size/1024).toFixed(1)} KB)</span>
+        `;
+      }
+    }
+
+    /* Submit Cobro Físico Balance payment */
+    function submitCobroFisico() {
+      const ventaId = document.getElementById('cobro-venta-id').value;
+      const montoInput = document.getElementById('cobro-monto');
+      const valMonto = document.getElementById('val-cobro-monto');
+      
+      montoInput.classList.remove('is-invalid');
+      valMonto.style.display = 'none';
+      
+      const monto = parseFloat(montoInput.value);
+      const metodo = document.getElementById('cobro-metodo').value;
+      
+      const deudaIndex = saldosPendientes.findIndex(d => d.id === ventaId);
+      if (deudaIndex === -1) return;
+      
+      const deuda = saldosPendientes[deudaIndex];
+      
+      if (isNaN(monto) || monto <= 0 || monto > deuda.saldo) {
+        montoInput.classList.add('is-invalid');
+        valMonto.style.display = 'block';
+        return;
+      }
+      
+      // Update Deuda
+      deuda.pagado += monto;
+      deuda.saldo -= monto;
+      if (deuda.saldo <= 0.01) {
+        deuda.estado = 'Pagado';
+        deuda.saldo = 0;
+      }
+      
+      // Register in Audit
+      const txId = 'TX-' + Math.floor(10000 + Math.random() * 90000);
+      const now = new Date();
+      const fechaStr = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      const newTx = {
+        id: txId,
+        codigoVenta: ventaId,
+        cliente: deuda.cliente,
+        tipo: deuda.estado === 'Pagado' ? 'Liquidación Saldo Final 50%' : 'Abono Parcial Físico',
+        metodo: metodo + ' (Caja)',
+        monto: monto,
+        fecha: fechaStr,
+        comprobante: uploadedVoucherFile ? uploadedVoucherFile.name : 'CAJA-OPERACIÓN-' + Math.floor(10000 + Math.random() * 90000)
+      };
+      
+      transaccionesAuditoria.push(newTx);
+      
+      // Update UI
+      renderSaldosPendientesTable();
+      renderAuditoriaTable();
+      closeModal('modal-cobro-fisico');
+      
+      // If we confirm Carlos Mendoza's balance, update Chat view to show completion
+      if (ventaId === 'COD-9912' && deuda.estado === 'Pagado') {
+        updateCarlosChatToPaid();
+      }
+      
+      showToast(`¡Saldo de la venta ${ventaId} liquidado exitosamente en caja!`);
+      
+      // Prepare printable thermal ticket
+      prepareAndPrintTicket(newTx, deuda.concepto, deuda.total - 10, [], deuda.total, deuda.saldo);
+    }
+
+    function updateCarlosChatToPaid() {
+      const container = document.getElementById('chat-messages-container');
+      
+      // Append success message in conversation
+      const infoMsg = document.createElement('div');
+      infoMsg.className = 'chat-bubble outgoing';
+      infoMsg.style.background = 'rgba(16, 185, 129, 0.15)';
+      infoMsg.style.border = '1px solid var(--success)';
+      infoMsg.style.alignSelf = 'center';
+      infoMsg.style.color = 'var(--success)';
+      infoMsg.style.width = '95%';
+      infoMsg.style.textAlign = 'center';
+      infoMsg.style.borderRadius = '8px';
+      
+      infoMsg.innerHTML = `
+        <strong style="display: block;">✓ Cuenta Cerrada - Pago Confirmado</strong>
+        El saldo pendiente de $26.00 ha sido cobrado físicamente en caja. La orden COD-9912 se encuentra pagada al 100%.
+      `;
+      
+      container.appendChild(infoMsg);
+      
+      // Update chat button state
+      const button = document.getElementById('btn-chat-confirm-pay');
+      if (button) {
+        button.disabled = true;
+        button.className = 'btn btn-secondary';
+        button.textContent = '✓ Pago de Saldo Completado';
+      }
+      
+      // Update sidebar preview
+      document.getElementById('chat- Carlos-preview').innerHTML = '✓ Cuenta finalizada y liquidada';
+      
+      // Auto-scroll chat
+      container.scrollTop = container.scrollHeight;
+    }
+
+    /* ==========================================================================
+       AUDIT VOUCHER VISOR
+       ========================================================================== */
+    function openVoucherVisor(txId, cliente, monto, metodo, comprobante) {
+      document.getElementById('view-v-op').textContent = '#' + txId;
+      document.getElementById('view-v-fecha').textContent = '28/06/2026';
+      document.getElementById('view-v-cliente').textContent = cliente;
+      document.getElementById('view-v-monto').textContent = '$' + monto.toFixed(2);
+      document.getElementById('view-v-metodo').textContent = metodo;
+      
+      openModal('modal-visor-comprobante');
+    }
+
+    /* ==========================================================================
+       PRINT SYSTEM INTERACTION
+       ========================================================================== */
+    function prepareAndPrintTicket(tx, maquetaName, maquetaPrice, materialsList, total, saldo) {
+      document.getElementById('ticket-id').textContent = 'BOL-' + tx.codigoVenta;
+      document.getElementById('ticket-fecha').textContent = tx.fecha;
+      document.getElementById('ticket-cliente').textContent = tx.cliente;
+      
+      // Detail
+      document.getElementById('ticket-maq-detail').innerHTML = `
+        <div class="ticket-row">
+          <span>1x ${maquetaName}</span>
+          <span>$${maquetaPrice.toFixed(2)}</span>
+        </div>
+      `;
+      
+      // Materials list print rendering
+      const printMatContainer = document.getElementById('ticket-materials-list');
+      printMatContainer.innerHTML = '';
+      
+      if (materialsList.length === 0) {
+        printMatContainer.innerHTML = '<div>(Ningún material adicional)</div>';
+      } else {
+        materialsList.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'ticket-row';
+          div.innerHTML = `
+            <span>${m.qty}x ${m.name}</span>
+            <span>$${(m.price * m.qty).toFixed(2)}</span>
+          `;
+          printMatContainer.appendChild(div);
+        });
+      }
+      
+      // Math
+      const subtotal = total / 1.18;
+      const igv = total - subtotal;
+      
+      document.getElementById('ticket-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+      document.getElementById('ticket-igv').textContent = `$${igv.toFixed(2)}`;
+      document.getElementById('ticket-total').textContent = `$${total.toFixed(2)}`;
+      document.getElementById('ticket-metodo').textContent = tx.metodo;
+      document.getElementById('ticket-monto-cobrado').textContent = `$${tx.monto.toFixed(2)}`;
+      document.getElementById('ticket-saldo-restante').textContent = `$${saldo.toFixed(2)}`;
+    }
+
+    function triggerPrintForExistingTx(txId) {
+      const tx = transaccionesAuditoria.find(t => t.id === txId);
+      if (!tx) return;
+      
+      // Find corresponding sale detail to fetch maqueta name and materials
+      let maqName = 'Maqueta de Catálogo';
+      let totalVal = tx.monto;
+      
+      // Check if we can extract from active debt record
+      const matchDeuda = saldosPendientes.find(d => d.id === tx.codigoVenta);
+      if (matchDeuda) {
+        maqName = matchDeuda.concepto;
+        totalVal = matchDeuda.total;
+      }
+      
+      prepareAndPrintTicket(tx, maqName, totalVal - 10, [], totalVal, matchDeuda ? matchDeuda.saldo : 0);
+      
+      // Trigger print dialog
+      window.print();
+    }
+
+    /* ==========================================================================
+       TOAST UTILITY
+       ========================================================================== */
+    function showToast(message) {
+      const toast = document.getElementById('toast-notification');
+      document.getElementById('toast-message').textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

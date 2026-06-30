@@ -520,3 +520,17 @@
     font-size: 20px;
   }
 }
+
+/* Disabled nav button styling */
+.tab-btn.disabled-btn,
+.drawer-btn.disabled-btn {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+.tab-btn.disabled-btn:hover,
+.drawer-btn.disabled-btn:hover {
+  background: transparent !important;
+  color: inherit !important;
+  border-color: transparent !important;
+}

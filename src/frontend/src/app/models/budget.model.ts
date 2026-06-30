@@ -13,13 +13,17 @@ export interface BudgetExplanationServiceRequest {
 }
 
 export interface BudgetRequest {
-  solicitudId: string;
+  solicitudId?: string;
   nombre: string;
   descripcion?: string;
   manoDeObra: number;
   margenGanancia: number;
   adelantoRequerido?: boolean;
   adelantoPorcentaje?: number;
+  clienteNombre?: string;
+  clienteEmail?: string;
+  clienteTelefono?: string;
+  esPresencial?: boolean;
   items: BudgetItemRequest[];
   servicioExplicacion?: BudgetExplanationServiceRequest;
 }
@@ -46,7 +50,7 @@ export interface BudgetExplanationServiceResponse {
 
 export interface BudgetResponse {
   id: string;
-  solicitudId: string;
+  solicitudId?: string;
   nombre: string;
   descripcion?: string;
   codigoReferencia?: string;
@@ -55,6 +59,10 @@ export interface BudgetResponse {
   margenGanancia: number;
   adelantoRequerido: boolean;
   adelantoPorcentaje?: number;
+  clienteNombre?: string;
+  clienteEmail?: string;
+  clienteTelefono?: string;
+  esPresencial?: boolean;
   costoMateriales: number;
   subtotal: number;
   ganancia: number;
@@ -64,4 +72,7 @@ export interface BudgetResponse {
   servicioExplicacion?: BudgetExplanationServiceResponse;
   createdAt: string;
   updatedAt: string;
+  isCustom?: boolean;
+  isKit?: boolean;
+  clienteRegistrado?: boolean;
 }

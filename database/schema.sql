@@ -320,7 +320,7 @@ CREATE TABLE IF NOT EXISTS request_preferred_materials (
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS budgets (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    solicitud_id UUID NOT NULL UNIQUE REFERENCES purchase_requests(id) ON DELETE CASCADE,
+    solicitud_id UUID UNIQUE REFERENCES purchase_requests(id) ON DELETE CASCADE,
     nombre VARCHAR(200) NOT NULL,
     descripcion TEXT,
     mano_de_obra NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (mano_de_obra >= 0),
@@ -330,6 +330,12 @@ CREATE TABLE IF NOT EXISTS budgets (
     adelanto_requerido BOOLEAN DEFAULT FALSE,
     adelanto_porcentaje INTEGER DEFAULT 0 CHECK (adelanto_porcentaje >= 0 AND adelanto_porcentaje <= 100),
     adelanto_monto NUMERIC(10,2) DEFAULT 0.00 CHECK (adelanto_monto >= 0),
+
+    -- Datos del cliente para presupuestos presenciales (sin solicitud online)
+    cliente_nombre VARCHAR(255),
+    cliente_email VARCHAR(150),
+    cliente_telefono VARCHAR(15),
+    es_presencial BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
