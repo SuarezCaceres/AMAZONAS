@@ -47,52 +47,59 @@ public class BudgetController {
             @PathVariable UUID solicitudId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        BudgetResponse response = budgetService.obtenerPorSolicitudId(solicitudId);
-        
-        boolean isVendor = userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ADMIN"));
-                
-        if (isVendor) {
-            BudgetVendorResponse vendorResponse = new BudgetVendorResponse(
-                response.getId(),
-                response.getSolicitudId(),
-                response.getNombre(),
-                response.getDescripcion(),
-                response.getCodigoReferencia(),
-                response.getEstado(),
-                response.getManoDeObra(),
-                response.getMargenGanancia(),
-                response.getCostoMateriales(),
-                response.getSubtotal(),
-                response.getGanancia(),
-                response.getTotal(),
-                response.getAdelantoRequerido(),
-                response.getAdelantoPorcentaje(),
-                response.getAdelantoMonto(),
-                response.getItems(),
-                response.getServicioExplicacion()
-            );
-            return ResponseEntity.ok(vendorResponse);
-        } else {
-            List<String> materialesIncluidos = response.getItems().stream()
-                    .map(item -> item.getMaterialNombre() + " (" + item.getCantidad() + ")")
-                    .collect(Collectors.toList());
+        try {
+            BudgetResponse response = budgetService.obtenerPorSolicitudId(solicitudId);
+            
+            boolean isVendor = userDetails.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ADMIN"));
                     
-            BudgetClientResponse clientResponse = new BudgetClientResponse(
-                response.getId(),
-                response.getSolicitudId(),
-                response.getNombre(),
-                response.getDescripcion(),
-                response.getCodigoReferencia(),
-                response.getEstado(),
-                response.getTotal(),
-                response.getAdelantoRequerido(),
-                response.getAdelantoPorcentaje(),
-                response.getAdelantoMonto(),
-                materialesIncluidos,
-                response.getServicioExplicacion()
-            );
-            return ResponseEntity.ok(clientResponse);
+            if (isVendor) {
+                BudgetVendorResponse vendorResponse = new BudgetVendorResponse(
+                    response.getId(),
+                    response.getSolicitudId(),
+                    response.getNombre(),
+                    response.getDescripcion(),
+                    response.getCodigoReferencia(),
+                    response.getEstado(),
+                    response.getManoDeObra(),
+                    response.getMargenGanancia(),
+                    response.getCostoMateriales(),
+                    response.getSubtotal(),
+                    response.getGanancia(),
+                    response.getTotal(),
+                    response.getAdelantoRequerido(),
+                    response.getAdelantoPorcentaje(),
+                    response.getAdelantoMonto(),
+                    response.getItems(),
+                    response.getServicioExplicacion()
+                );
+                return ResponseEntity.ok(vendorResponse);
+            } else {
+                List<String> materialesIncluidos = response.getItems().stream()
+                        .map(item -> item.getMaterialNombre() + " (" + item.getCantidad() + ")")
+                        .collect(Collectors.toList());
+                        
+                BudgetClientResponse clientResponse = new BudgetClientResponse(
+                    response.getId(),
+                    response.getSolicitudId(),
+                    response.getNombre(),
+                    response.getDescripcion(),
+                    response.getCodigoReferencia(),
+                    response.getEstado(),
+                    response.getTotal(),
+                    response.getAdelantoRequerido(),
+                    response.getAdelantoPorcentaje(),
+                    response.getAdelantoMonto(),
+                    materialesIncluidos,
+                    response.getServicioExplicacion()
+                );
+                return ResponseEntity.ok(clientResponse);
+            }
+        } catch (org.springframework.web.server.ResponseStatusException ex) {
+            if (ex.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND) {
+                return ResponseEntity.ok().build();
+            }
+            throw ex;
         }
     }
 

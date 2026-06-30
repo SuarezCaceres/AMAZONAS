@@ -40,6 +40,7 @@ export interface ChatRoomResponse {
   lastMessageAt: string;
   createdAt: string;
   unreadCount: number;
+  requestStatus?: 'PENDING' | 'PROCESANDO' | 'COMPLETADO';
 }
 
 export interface ChatMessageResponse {

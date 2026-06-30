@@ -7,6 +7,7 @@ import com.amazonas.backend.modules.chat.model.*;
 import com.amazonas.backend.modules.chat.repository.*;
 import com.amazonas.backend.modules.chat.service.ChatService;
 import com.amazonas.backend.modules.chat.service.HtmlSanitizerService;
+import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
 import com.amazonas.backend.modules.requests.model.PurchaseRequest;
 import com.amazonas.backend.modules.requests.repository.PurchaseRequestRepository;
 import com.amazonas.backend.modules.users.model.User;
@@ -548,6 +549,10 @@ public class ChatServiceImpl implements ChatService {
         String productName = purchaseRequestRepository.findById(room.getRequestId())
                 .map(r -> r.getProductoNombre()).orElse("Maqueta");
 
+        // Estado de la solicitud
+        EstadoSolicitud requestStatus = purchaseRequestRepository.findById(room.getRequestId())
+                .map(r -> r.getEstado()).orElse(EstadoSolicitud.PENDIENTE);
+
         // Contar mensajes no leídos para el usuario actual
         ChatSenderRole role = getSenderRole(currentEmail, room);
         ChatSenderRole myRole = (role == ChatSenderRole.CLIENT) ? ChatSenderRole.CLIENT : ChatSenderRole.VENDOR;
@@ -564,7 +569,8 @@ public class ChatServiceImpl implements ChatService {
                 room.getAgreedPrice(),
                 room.getLastMessageAt(),
                 room.getCreatedAt(),
-                unread
+                unread,
+                requestStatus
         );
     }
 

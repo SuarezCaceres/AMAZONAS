@@ -130,6 +130,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         log.error("Excepcion no controlada capturada en el API", ex);
+        try {
+            java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
+            java.io.PrintWriter pw = new java.io.PrintWriter(fw);
+            pw.println("--- NEW EXCEPTION --- " + new java.util.Date());
+            ex.printStackTrace(pw);
+            pw.close();
+            fw.close();
+        } catch (Exception e) {
+            log.error("No se pudo escribir error.log", e);
+        }
         ErrorResponse response = new ErrorResponse(
                 "Ha ocurrido un error interno en el servidor. Por favor, intenta mas tarde.",
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

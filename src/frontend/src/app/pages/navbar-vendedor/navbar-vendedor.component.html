@@ -54,6 +54,7 @@
         class="tab-btn"
         type="button"
         [class.active]="activeTab === item.id"
+        [class.disabled-btn]="false"
         (click)="setTab(item.id)"
         [attr.aria-current]="activeTab === item.id ? 'page' : null">
 
@@ -149,6 +150,7 @@
           class="drawer-btn"
           type="button"
           [class.active]="activeTab === item.id"
+          [class.disabled-btn]="false"
           (click)="setTab(item.id)">
 
           <svg viewBox="0 0 24 24" class="drawer-icon" aria-hidden="true">
@@ -250,7 +252,8 @@
         <app-presupuestos 
           [solicitudId]="solicitudIdParaPresupuesto"
           (volverEvent)="volverAlChat()"
-          (navegarATabEvent)="setTab($event)">
+          (navegarATabEvent)="setTab($event)"
+          (navegarAPagosEvent)="navegarAPagos($event)">
         </app-presupuestos>
       }
 

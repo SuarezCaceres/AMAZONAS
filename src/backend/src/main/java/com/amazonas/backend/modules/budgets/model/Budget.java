@@ -20,7 +20,7 @@ public class Budget {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "solicitud_id", nullable = false, unique = true)
+    @JoinColumn(name = "solicitud_id", unique = true)
     private PurchaseRequest solicitud;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,6 +54,24 @@ public class Budget {
     @Column(name = "adelanto_monto", precision = 10, scale = 2)
     private BigDecimal adelantoMonto = BigDecimal.ZERO;
 
+    @Column(name = "cliente_nombre", length = 255)
+    private String clienteNombre;
+
+    @Column(name = "cliente_email", length = 150)
+    private String clienteEmail;
+
+    @Column(name = "cliente_telefono", length = 15)
+    private String clienteTelefono;
+
+    @Column(name = "es_presencial", nullable = false)
+    private Boolean esPresencial = false;
+
+    @Column(name = "is_custom", nullable = false)
+    private Boolean isCustom = false;
+
+    @Column(name = "is_kit", nullable = false)
+    private Boolean isKit = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -73,8 +91,9 @@ public class Budget {
             this.id = UUID.randomUUID();
         }
         if (this.codigoReferencia == null) {
-            int randomNum = (int) (Math.random() * 1000);
-            this.codigoReferencia = String.format("PR-2026-%03d", randomNum);
+            long epoch = System.currentTimeMillis() % 1000000;
+            int randomNum = (int) (Math.random() * 100);
+            this.codigoReferencia = String.format("PR-2026-%06d%02d", epoch, randomNum);
         }
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
@@ -202,6 +221,18 @@ public class Budget {
         this.adelantoMonto = adelantoMonto;
     }
 
+    public String getClienteNombre() { return clienteNombre; }
+    public void setClienteNombre(String clienteNombre) { this.clienteNombre = clienteNombre; }
+
+    public String getClienteEmail() { return clienteEmail; }
+    public void setClienteEmail(String clienteEmail) { this.clienteEmail = clienteEmail; }
+
+    public String getClienteTelefono() { return clienteTelefono; }
+    public void setClienteTelefono(String clienteTelefono) { this.clienteTelefono = clienteTelefono; }
+
+    public Boolean getEsPresencial() { return esPresencial; }
+    public void setEsPresencial(Boolean esPresencial) { this.esPresencial = esPresencial; }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -257,4 +288,10 @@ public class Budget {
     public void setEstado(String estado) {
         this.estado = estado;
     }
+
+    public Boolean getIsCustom() { return isCustom; }
+    public void setIsCustom(Boolean isCustom) { this.isCustom = isCustom; }
+
+    public Boolean getIsKit() { return isKit; }
+    public void setIsKit(Boolean isKit) { this.isKit = isKit; }
 }

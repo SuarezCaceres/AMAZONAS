@@ -31,6 +31,9 @@ export interface SavedRequest {
   explanationType?: string;
   explanationModel?: string;
   explanationPeople?: number;
+  status?: string;
+  unreadCount?: number;
+  lastMessageAt?: string;
 }
 
 @Component({

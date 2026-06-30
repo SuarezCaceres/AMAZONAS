@@ -15,6 +15,12 @@ public class BudgetRequest {
     private Boolean adelantoRequerido;
     private Integer adelantoPorcentaje;
 
+    // Datos del cliente para presupuestos presenciales
+    private String clienteNombre;
+    private String clienteEmail;
+    private String clienteTelefono;
+    private Boolean esPresencial;
+
     private List<BudgetItemRequest> items = new ArrayList<>();
     private BudgetExplanationServiceRequest servicioExplicacion; // Opcional
 
@@ -41,9 +47,30 @@ public class BudgetRequest {
     public Integer getAdelantoPorcentaje() { return adelantoPorcentaje; }
     public void setAdelantoPorcentaje(Integer adelantoPorcentaje) { this.adelantoPorcentaje = adelantoPorcentaje; }
 
+    public String getClienteNombre() { return clienteNombre; }
+    public void setClienteNombre(String clienteNombre) { this.clienteNombre = clienteNombre; }
+
+    public String getClienteEmail() { return clienteEmail; }
+    public void setClienteEmail(String clienteEmail) { this.clienteEmail = clienteEmail; }
+
+    public String getClienteTelefono() { return clienteTelefono; }
+    public void setClienteTelefono(String clienteTelefono) { this.clienteTelefono = clienteTelefono; }
+
+    public Boolean getEsPresencial() { return esPresencial; }
+    public void setEsPresencial(Boolean esPresencial) { this.esPresencial = esPresencial; }
+
     public List<BudgetItemRequest> getItems() { return items; }
     public void setItems(List<BudgetItemRequest> items) { this.items = items; }
 
     public BudgetExplanationServiceRequest getServicioExplicacion() { return servicioExplicacion; }
     public void setServicioExplicacion(BudgetExplanationServiceRequest servicioExplicacion) { this.servicioExplicacion = servicioExplicacion; }
+
+    private Boolean isCustom;
+    private Boolean isKit;
+
+    public Boolean getIsCustom() { return isCustom; }
+    public void setIsCustom(Boolean isCustom) { this.isCustom = isCustom; }
+
+    public Boolean getIsKit() { return isKit; }
+    public void setIsKit(Boolean isKit) { this.isKit = isKit; }
 }

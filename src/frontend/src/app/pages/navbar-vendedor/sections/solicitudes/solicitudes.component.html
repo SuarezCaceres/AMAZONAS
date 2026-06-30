@@ -1,47 +1,64 @@
 <!-- ═══════════════════ VISTA: LISTA DE SOLICITUDES ═══════════════════ -->
 @if (vista === 'lista') {
   <section class="solicitudes-page">
+
+    <!-- Page Header -->
     <header class="page-header">
-      <h1>Solicitudes de Compra</h1>
-      <p>Gestiona las solicitudes de tus clientes</p>
+      <div class="page-header-inner">
+        <div>
+          <h1 class="page-title">Solicitudes de Compra</h1>
+          <p class="page-subtitle">Gestiona y da seguimiento a los pedidos de tus clientes</p>
+        </div>
+      </div>
     </header>
 
     <!-- Stats -->
     <div class="stats-grid">
-      <div class="stat-card">
+      <div class="stat-card stat-card--total">
+        <div class="stat-card-icon">
+          <span class="material-icons" style="font-size:22px;">inbox</span>
+        </div>
         <div class="stat-info">
           <span class="stat-label">Total</span>
           <span class="stat-value">{{ totalSolicitudes }}</span>
         </div>
-        <span class="stat-icon cart-icon">&#128722;</span>
       </div>
-      <div class="stat-card">
+      <div class="stat-card stat-card--pending">
+        <div class="stat-card-icon">
+          <span class="material-icons" style="font-size:22px;">pending_actions</span>
+        </div>
         <div class="stat-info">
           <span class="stat-label">Pendientes</span>
-          <span class="stat-value pending">{{ pendientes }}</span>
+          <span class="stat-value">{{ pendientes }}</span>
         </div>
-        <span class="stat-badge pending">{{ pendientes }}</span>
+        <span class="stat-badge">{{ pendientes }}</span>
       </div>
-      <div class="stat-card">
+      <div class="stat-card stat-card--processing">
+        <div class="stat-card-icon">
+          <span class="material-icons" style="font-size:22px;">precision_manufacturing</span>
+        </div>
         <div class="stat-info">
-          <span class="stat-label">Procesando</span>
-          <span class="stat-value processing">{{ procesando }}</span>
+          <span class="stat-label">En proceso</span>
+          <span class="stat-value">{{ procesando }}</span>
         </div>
-        <span class="stat-badge processing">{{ procesando }}</span>
+        <span class="stat-badge">{{ procesando }}</span>
       </div>
-      <div class="stat-card">
+      <div class="stat-card stat-card--done">
+        <div class="stat-card-icon">
+          <span class="material-icons" style="font-size:22px;">task_alt</span>
+        </div>
         <div class="stat-info">
           <span class="stat-label">Completados</span>
-          <span class="stat-value completed">{{ completados }}</span>
+          <span class="stat-value">{{ completados }}</span>
         </div>
-        <span class="stat-badge completed">{{ completados }}</span>
+        <span class="stat-badge">{{ completados }}</span>
       </div>
     </div>
 
-    <!-- Filtros -->
+    <!-- Filters -->
     <div class="filters-section">
       <div class="search-box">
-        <span class="search-icon">&#128269;</span>
+        <span class="material-icons search-icon" style="font-size:18px;">search</span>
         <input type="text" placeholder="Buscar por producto, cliente o correo..."
           [(ngModel)]="searchTerm">
       </div>
@@ -51,86 +68,279 @@
         <button [class.active]="activeFilter === 'procesando'" (click)="setFilter('procesando')">Procesando</button>
         <button [class.active]="activeFilter === 'completados'" (click)="setFilter('completados')">Completados</button>
       </div>
+
+      <!-- Filtro de rango de fechas -->
+      <div class="date-filter-row" style="display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 4px; align-items: center;">
+        <span style="font-size: 10px; font-weight: 700; color: #64748b; margin-right: 6px; white-space: nowrap;">FILTRO FECHA:</span>
+        <button type="button" [class.active]="activeDateFilter === 'todos'" (click)="setDateFilter('todos')" class="date-filter-btn">Todos</button>
+        <button type="button" [class.active]="activeDateFilter === 'hoy'" (click)="setDateFilter('hoy')" class="date-filter-btn">Hoy</button>
+        <button type="button" [class.active]="activeDateFilter === 'ayer'" (click)="setDateFilter('ayer')" class="date-filter-btn">Ayer</button>
+        <button type="button" [class.active]="activeDateFilter === 'semana'" (click)="setDateFilter('semana')" class="date-filter-btn">Últimos 7 días</button>
+        <button type="button" [class.active]="activeDateFilter === 'mes'" (click)="setDateFilter('mes')" class="date-filter-btn">Este mes</button>
+      </div>
     </div>
 
     <!-- Expand controls -->
     <div class="expand-controls">
-      <button (click)="expandAll()"><span>&#8964;</span> Expandir Todo</button>
-      <button (click)="collapseAll()"><span>&#8963;</span> Colapsar Todo</button>
+      <button (click)="expandAll()">
+        <span class="material-icons" style="font-size:14px;">unfold_more</span>
+        Expandir Todo
+      </button>
+      <button (click)="collapseAll()">
+        <span class="material-icons" style="font-size:14px;">unfold_less</span>
+        Colapsar Todo
+      </button>
     </div>
 
     <!-- Lista de cards -->
     <div class="solicitudes-list" *ngIf="!isLoading">
-      <article class="solicitud-card" *ngFor="let solicitud of filteredSolicitudes"
-        [class.expanded]="solicitud.expanded">
-
-        <div class="card-header" (click)="toggleExpand(solicitud)">
-          <h2>{{ solicitud.productoNombre }}</h2>
-          <div class="header-right">
-            <span class="status-badge" [class]="solicitud.estado">
-              {{ getEstadoLabel(solicitud.estado) }}
-            </span>
-            <span class="expand-icon">{{ solicitud.expanded ? '&#8963;' : '&#8964;' }}</span>
-          </div>
-        </div>
-
-        <div class="card-content" *ngIf="solicitud.expanded">
-          <div class="client-info">
-            <div class="info-row">
-              <span class="info-icon">&#128100;</span>
-              <span class="info-label">Cliente:</span>
-              <span class="info-value">{{ solicitud.clienteNombre }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-icon">&#128197;</span>
-              <span class="info-label">Fecha:</span>
-              <span class="info-value">{{ solicitud.fecha | date:"d 'de' MMMM 'de' yyyy 'a las' hh:mm a" }}</span>
-            </div>
-          </div>
-
-          <div class="contact-info">
-            <div class="info-row">
-              <span class="info-icon">&#9993;</span>
-              <span class="info-label">Email:</span>
-              <span class="info-value email">{{ solicitud.clienteEmail }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-icon">&#128222;</span>
-              <span class="info-label">Teléfono:</span>
-              <span class="info-value">{{ solicitud.clienteTelefono }}</span>
-            </div>
-            @if (solicitud.detalle) {
-              <div class="info-row full-width">
-                <span class="info-icon">&#128172;</span>
-                <span class="info-label">Mensaje:</span>
-                <span class="info-value">{{ solicitud.detalle }}</span>
+      
+      <!-- Renderizado de Solicitudes en Lista Principal (según pestaña de filtro) -->
+      <ng-container *ngIf="activeFilter !== 'completados'">
+        <article class="solicitud-card" *ngFor="let solicitud of activeSolicitudes" [class.expanded]="solicitud.expanded">
+          <div class="card-header" (click)="toggleExpand(solicitud)">
+            <div class="card-header-left">
+              <div style="position: relative; display: inline-block;">
+                <div class="card-avatar">{{ solicitud.productoNombre.substring(0,2).toUpperCase() || 'SL' }}</div>
+                <span *ngIf="solicitud.unreadCount && solicitud.unreadCount > 0" style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border-radius: 99px; min-width: 18px; height: 18px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); padding: 0 4px;">
+                  {{ solicitud.unreadCount }}
+                </span>
               </div>
-            }
+              <div>
+                <h2>{{ solicitud.productoNombre }}</h2>
+                <span class="card-client-name">
+                  <span class="material-icons" style="font-size:12px;vertical-align:middle;">person</span>
+                  {{ solicitud.clienteNombre }}
+                </span>
+              </div>
+            </div>
+            <div class="header-right">
+              <span class="status-badge" [ngClass]="solicitud.estado">
+                {{ getEstadoLabel(solicitud.estado) }}
+              </span>
+              <span class="expand-icon material-icons" style="font-size:18px;">
+                {{ solicitud.expanded ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
           </div>
 
-          <div class="card-actions">
-            <button class="btn-communicate" (click)="abrirChat(solicitud)">
-              <span>&#128172;</span> Comunicar con Cliente
-            </button>
-            <button class="btn-budget" (click)="crearPresupuestoEvent.emit(solicitud.id)">
-              <span>&#128196;</span> {{ solicitud.tienePresupuesto ? 'Editar Presupuesto' : 'Crear Presupuesto' }}
-            </button>
+          <div class="card-content" *ngIf="solicitud.expanded">
+            <div class="client-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">person_outline</span>
+                <span class="info-label">Cliente:</span>
+                <span class="info-value">{{ solicitud.clienteNombre }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">calendar_today</span>
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">{{ solicitud.fecha | date:"d 'de' MMMM 'de' yyyy 'a las' hh:mm a" }}</span>
+              </div>
+            </div>
+
+            <div class="contact-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">mail_outline</span>
+                <span class="info-label">Email:</span>
+                <span class="info-value email">{{ solicitud.clienteEmail }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">phone</span>
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{ solicitud.clienteTelefono }}</span>
+              </div>
+              @if (solicitud.detalle) {
+                <div class="info-row full-width">
+                  <span class="material-icons info-icon" style="font-size:16px;">chat_bubble_outline</span>
+                  <span class="info-label">Mensaje:</span>
+                  <span class="info-value">{{ solicitud.detalle }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-communicate" (click)="abrirChat(solicitud)">
+                <span class="material-icons" style="font-size:16px;">forum</span>
+                Comunicar con Cliente
+              </button>
+              <button class="btn-budget" (click)="crearPresupuestoEvent.emit(solicitud.id)">
+                <span class="material-icons" style="font-size:16px;">calculate</span>
+                {{ solicitud.tienePresupuesto ? 'Editar Presupuesto' : 'Crear Presupuesto' }}
+              </button>
+            </div>
           </div>
+        </article>
+
+        <!-- Empty state si no hay solicitudes activas con los filtros -->
+        <div class="empty-state" *ngIf="activeSolicitudes.length === 0">
+          <span class="material-icons empty-state-icon">inbox</span>
+          <p class="empty-state-title">Sin solicitudes activas</p>
+          <p class="empty-state-desc">No se encontraron solicitudes activas (pendientes o en proceso).</p>
         </div>
-      </article>
+      </ng-container>
 
-      <div class="empty-state" *ngIf="filteredSolicitudes.length === 0">
-        <p>No se encontraron solicitudes con los filtros aplicados.</p>
+      <!-- Si la pestaña es Completados, renderizar todas las completadas en el listado principal -->
+      <ng-container *ngIf="activeFilter === 'completados'">
+        <article class="solicitud-card solicitud-card--completed" *ngFor="let solicitud of completedSolicitudes" [class.expanded]="solicitud.expanded" style="opacity: 0.85; border-color: #cbd5e1;">
+          <div class="card-header" (click)="toggleExpand(solicitud)">
+            <div class="card-header-left">
+              <div class="card-avatar" style="background: linear-gradient(135deg, #64748b, #475569);">
+                {{ solicitud.productoNombre.substring(0,2).toUpperCase() || 'SL' }}
+              </div>
+              <div>
+                <h2 style="color: #475569;">{{ solicitud.productoNombre }}</h2>
+                <span class="card-client-name">
+                  <span class="material-icons" style="font-size:12px;vertical-align:middle;">person</span>
+                  {{ solicitud.clienteNombre }}
+                </span>
+              </div>
+            </div>
+            <div class="header-right">
+              <span class="status-badge completado" style="background: #e2e8f0; color: #475569;">
+                Completado
+              </span>
+              <span class="expand-icon material-icons" style="font-size:18px;">
+                {{ solicitud.expanded ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="card-content" *ngIf="solicitud.expanded">
+            <div class="client-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">person_outline</span>
+                <span class="info-label">Cliente:</span>
+                <span class="info-value">{{ solicitud.clienteNombre }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">calendar_today</span>
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">{{ solicitud.fecha | date:"d 'de' MMMM 'de' yyyy" }}</span>
+              </div>
+            </div>
+
+            <div class="contact-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">mail_outline</span>
+                <span class="info-label">Email:</span>
+                <span class="info-value email">{{ solicitud.clienteEmail }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">phone</span>
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{ solicitud.clienteTelefono }}</span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-communicate" (click)="abrirChat(solicitud)">
+                <span class="material-icons" style="font-size:16px;">visibility</span>
+                Ver Conversación
+              </button>
+              <button class="btn-budget" (click)="crearPresupuestoEvent.emit(solicitud.id)" [disabled]="!solicitud.tienePresupuesto">
+                <span class="material-icons" style="font-size:16px;">calculate</span>
+                Ver Presupuesto
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Empty state si no hay solicitudes completadas con los filtros -->
+        <div class="empty-state" *ngIf="completedSolicitudes.length === 0">
+          <span class="material-icons empty-state-icon">task_alt</span>
+          <p class="empty-state-title">Sin solicitudes completadas</p>
+          <p class="empty-state-desc">No se encontraron solicitudes completadas con los filtros aplicados.</p>
+        </div>
+      </ng-container>
+
+      <!-- Historial Colapsable de Completadas (solo visible en pestaña "Todos") -->
+      <div class="completed-history-container completed-history-container--vendor" *ngIf="activeFilter === 'todos' && completedSolicitudes.length > 0" style="margin-top: 24px; border-top: 1px solid #cbd5e1; padding-top: 20px;">
+        <button type="button" class="completed-accordion-trigger completed-accordion-trigger--vendor" (click)="showCompletedHistory = !showCompletedHistory" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; border: 1.5px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 12px; font-weight: 750; color: #475569; font-family: inherit;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span class="material-icons" style="font-size: 18px; color: #64748b;">history</span>
+            Historial de Solicitudes Completadas ({{ completedSolicitudes.length }})
+          </span>
+          <span class="material-icons">{{ showCompletedHistory ? 'expand_less' : 'expand_more' }}</span>
+        </button>
+
+        <div class="completed-accordion-content" *ngIf="showCompletedHistory" style="margin-top: 14px; animation: slideDown 0.25s ease-out;">
+          <article class="solicitud-card solicitud-card--completed" *ngFor="let solicitud of completedSolicitudes" [class.expanded]="solicitud.expanded" style="opacity: 0.85; border-color: #cbd5e1; margin-bottom: 12px;">
+            <div class="card-header" (click)="toggleExpand(solicitud)">
+              <div class="card-header-left">
+                <div class="card-avatar" style="background: linear-gradient(135deg, #64748b, #475569);">
+                  {{ solicitud.productoNombre.substring(0,2).toUpperCase() || 'SL' }}
+                </div>
+                <div>
+                  <h2 style="color: #475569;">{{ solicitud.productoNombre }}</h2>
+                  <span class="card-client-name">
+                    <span class="material-icons" style="font-size:12px;vertical-align:middle;">person</span>
+                    {{ solicitud.clienteNombre }}
+                  </span>
+                </div>
+              </div>
+              <div class="header-right">
+                <span class="status-badge completado" style="background: #e2e8f0; color: #475569;">
+                  Completado
+                </span>
+                <span class="expand-icon material-icons" style="font-size:18px;">
+                  {{ solicitud.expanded ? 'expand_less' : 'expand_more' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="card-content" *ngIf="solicitud.expanded">
+              <div class="client-info">
+                <div class="info-row">
+                  <span class="material-icons info-icon" style="font-size:16px;">person_outline</span>
+                  <span class="info-label">Cliente:</span>
+                  <span class="info-value">{{ solicitud.clienteNombre }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="material-icons info-icon" style="font-size:16px;">calendar_today</span>
+                  <span class="info-label">Fecha:</span>
+                  <span class="info-value">{{ solicitud.fecha | date:"d 'de' MMMM 'de' yyyy" }}</span>
+                </div>
+              </div>
+
+              <div class="contact-info">
+                <div class="info-row">
+                  <span class="material-icons info-icon" style="font-size:16px;">mail_outline</span>
+                  <span class="info-label">Email:</span>
+                  <span class="info-value email">{{ solicitud.clienteEmail }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="material-icons info-icon" style="font-size:16px;">phone</span>
+                  <span class="info-label">Teléfono:</span>
+                  <span class="info-value">{{ solicitud.clienteTelefono }}</span>
+                </div>
+              </div>
+
+              <div class="card-actions">
+                <button class="btn-communicate" (click)="abrirChat(solicitud)">
+                  <span class="material-icons" style="font-size:16px;">visibility</span>
+                  Ver Conversación
+                </button>
+                <button class="btn-budget" (click)="crearPresupuestoEvent.emit(solicitud.id)" [disabled]="!solicitud.tienePresupuesto">
+                  <span class="material-icons" style="font-size:16px;">calculate</span>
+                  Ver Presupuesto
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
+
     </div>
 
     <div class="loading-state" *ngIf="isLoading">
+      <div class="loading-spinner"></div>
       <p>Cargando solicitudes...</p>
     </div>
   </section>
 }
 
 <!-- ═══════════════════ VISTA: CHAT EMBEBIDO (SELLER WORKSPACE) ═══════════════════ -->
+
 @if (vista === 'chat' && solicitudActiva) {
   <section class="flex flex-col h-[calc(100vh-56px)] md:h-[calc(100vh-120px)] max-h-[calc(100vh-56px)] md:max-h-[calc(100vh-120px)] overflow-hidden bg-slate-50 font-sans text-slate-800 antialiased">
 
@@ -389,13 +599,13 @@
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
-                [class.bg-emerald-500]="room?.status === 'AGREED' || room?.status === 'CLOSED'"
-                [class.bg-slate-200]="room?.status !== 'AGREED' && room?.status !== 'CLOSED'">
+                [class.bg-emerald-500]="solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado'"
+                [class.bg-slate-200]="solicitudActiva.estado !== 'procesando' && solicitudActiva.estado !== 'completado'">
               </div>
 
               <!-- Step 4: Pago -->
               <div class="flex items-center gap-1.5">
-                @if (room?.status === 'CLOSED') {
+                @if (solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado') {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
@@ -413,13 +623,18 @@
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
-                [class.bg-emerald-500]="room?.status === 'CLOSED'"
-                [class.bg-slate-200]="room?.status !== 'CLOSED'">
+                [class.bg-emerald-500]="solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado'"
+                [class.bg-slate-200]="solicitudActiva.estado !== 'procesando' && solicitudActiva.estado !== 'completado'">
               </div>
 
               <!-- Step 5: Producción -->
               <div class="flex items-center gap-1.5">
-                @if (room?.status === 'CLOSED') {
+                @if (solicitudActiva.estado === 'completado') {
+                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-850">Producción</span>
+                } @else if (solicitudActiva.estado === 'procesando') {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
                     5
                   </div>
@@ -552,7 +767,11 @@
                               <span class="material-icons text-[12px]">zoom_in</span>
                               Ver Detalle
                             </button>
-                            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                              <span class="material-icons text-[12px]">payments</span>
+                              Confirmar Adelanto
+                            </button>
+                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
                               <span class="material-icons text-[12px]">payment</span>
                               Confirmar Pago
                             </button>
@@ -703,12 +922,28 @@
 
         <!-- Entrada del mensaje footer -->
         <div class="border-t border-slate-150 bg-white shrink-0">
-          @if (room?.status === 'CLOSED' || room?.status === 'ARCHIVED') {
+          @if (solicitudActiva.estado === 'completado') {
+            <div class="text-center p-3.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold m-3 flex items-center justify-center gap-2 shadow-sm">
+              <span class="material-icons text-emerald-600 text-sm">lock</span>
+              <span>Esta solicitud ha sido completada y el chat está en modo de solo lectura.</span>
+            </div>
+          } @else if (room?.status === 'CLOSED' || room?.status === 'ARCHIVED') {
             <div class="text-center p-2.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold m-3">
               La negociación ha finalizado. El precio acordado es de {{ room?.agreedPrice | currency:'S/ ':'code':'1.2-2' }}.
             </div>
           } @else {
-            @if (room?.status === 'AGREED') {
+            @if (solicitudActiva.estado === 'procesando') {
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs font-semibold mx-3 mt-3">
+                <span class="text-blue-800 flex items-center gap-1.5">
+                  <span class="material-icons text-blue-600 text-sm" style="font-size: 16px;">handyman</span>
+                  La maqueta está en proceso de elaboración.
+                </span>
+                <button (click)="marcarComoCompletado()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg shadow-sm border-none cursor-pointer text-[10px] uppercase tracking-wider flex items-center gap-1">
+                  <span class="material-icons text-xs" style="font-size: 12px;">check_circle</span>
+                  Completar Pedido
+                </button>
+              </div>
+            } @else if (room?.status === 'AGREED') {
               <div class="text-center p-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold mx-3 mt-3">
                 Presupuesto aceptado por S/ {{ room?.agreedPrice | number:'1.2-2' }}. Puedes coordinar la entrega o recibir comprobantes de pago.
               </div>
@@ -794,18 +1029,8 @@
                 <span class="material-icons text-sm" style="font-size: 16px;">calculate</span>
               </div>
               <div class="text-left min-w-0">
-                <span class="block font-bold text-[11px] text-slate-800">Presupuestar</span>
-                <span class="text-[9px] text-slate-400 block truncate">Configurar costos y materiales</span>
-              </div>
-            </button>
-
-            <button (click)="solicitarAdelantoRapido()" class="w-full bg-white border border-slate-200 hover:border-teal-500 hover:bg-teal-50/20 text-slate-700 hover:text-teal-850 py-2.5 px-3 rounded-xl transition-all duration-300 flex items-center gap-2.5 cursor-pointer">
-              <div class="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
-                <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
-              </div>
-              <div class="text-left min-w-0">
-                <span class="block font-bold text-[11px] text-slate-800">Adelanto (50%)</span>
-                <span class="text-[9px] text-slate-400 block truncate">Solicitar cobro y abrir pagos</span>
+                <span class="block font-bold text-[11px] text-slate-800">{{ solicitudActiva.estado === 'completado' ? 'Ver Presupuesto' : 'Presupuestar' }}</span>
+                <span class="text-[9px] text-slate-400 block truncate">{{ solicitudActiva.estado === 'completado' ? 'Ver costos y materiales (Lectura)' : 'Configurar costos y materiales' }}</span>
               </div>
             </button>
           </div>
@@ -866,7 +1091,7 @@
               </div>
             }
 
-            @if (room?.status === 'CLOSED') {
+            @if (solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado') {
               <div class="relative text-[11px] mt-4">
                 <div class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-sm">
                   <span class="material-icons text-[10px]" style="font-size: 10px;">build</span>
@@ -880,6 +1105,16 @@
             }
 
           </div>
+
+          <!-- Botón Completado abajo de Historial de Pedido -->
+          @if (solicitudActiva.estado === 'procesando') {
+            <div class="mt-4 pt-3 border-t border-slate-150 shrink-0">
+              <button (click)="marcarComoCompletado()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border-none shadow-sm text-xs uppercase tracking-wider">
+                <span class="material-icons text-sm" style="font-size: 16px;">check_circle</span>
+                Completado
+              </button>
+            </div>
+          }
         </div>
       </aside>
 
@@ -926,7 +1161,11 @@
         <button (click)="closeVoucherZoom()" class="flex-1 bg-white hover:bg-slate-100 text-slate-650 font-bold py-2.5 rounded-xl border border-slate-250 transition-all cursor-pointer text-xs">
           Cerrar Vista
         </button>
-        <button [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+        <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+          <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
+          Confirmar Adelanto
+        </button>
+        <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
           <span class="material-icons text-sm" style="font-size: 16px;">task_alt</span>
           Confirmar Pago
         </button>

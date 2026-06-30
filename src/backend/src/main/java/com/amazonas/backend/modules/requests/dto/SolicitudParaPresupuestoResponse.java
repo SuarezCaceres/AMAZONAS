@@ -15,6 +15,7 @@ public class SolicitudParaPresupuestoResponse {
     private String clienteEmail;
     private String clienteTelefono;
     private LocalDateTime createdAt;
+    private String estado;
     
     private List<MaterialPresupuestoDTO> materialesProducto;
     private List<MaterialSolicitadoDTO> materialesPreferidos;
@@ -31,6 +32,9 @@ public class SolicitudParaPresupuestoResponse {
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
     public String getProductoNombre() { return productoNombre; }
     public void setProductoNombre(String productoNombre) { this.productoNombre = productoNombre; }

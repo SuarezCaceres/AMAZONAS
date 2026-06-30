@@ -95,6 +95,16 @@
   color: #dc2626;
 }
 
+.status-badge.procesando {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.completado {
+  background: #d1fae5;
+  color: #065f46;
+}
+
 .card-meta {
   margin-bottom: 12px;
 }
@@ -231,3 +241,20 @@
   height: 16px;
 }
 
+/* Acordeón del Historial Completado */
+.completed-accordion-trigger:hover {
+  background: #cbd5e1 !important;
+  border-color: #94a3b8 !important;
+  color: #1e293b !important;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

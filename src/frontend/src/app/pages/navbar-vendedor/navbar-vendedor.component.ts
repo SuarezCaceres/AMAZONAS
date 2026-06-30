@@ -73,10 +73,15 @@ export class NavbarVendedorComponent {
   }
 
   irAPresupuestoConSolicitud(solicitudId: string): void {
-    this.solicitudIdParaPresupuesto = solicitudId;
-    this.solicitudIdParaChat = solicitudId; // Guardar context para el retorno
-    this.activeTab = 'presupuestos';
-    this.mobileMenuOpen = false;
+    this.solicitudIdParaPresupuesto = null;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.solicitudIdParaPresupuesto = solicitudId;
+      this.solicitudIdParaChat = solicitudId; // Guardar context para el retorno
+      this.activeTab = 'presupuestos';
+      this.mobileMenuOpen = false;
+      this.cdr.detectChanges();
+    });
   }
 
   volverAlChat(): void {

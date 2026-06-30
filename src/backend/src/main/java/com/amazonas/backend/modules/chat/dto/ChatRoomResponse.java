@@ -1,6 +1,7 @@
 package com.amazonas.backend.modules.chat.dto;
 
 import com.amazonas.backend.modules.chat.enums.ChatRoomStatus;
+import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -21,5 +22,6 @@ public record ChatRoomResponse(
         BigDecimal agreedPrice,
         OffsetDateTime lastMessageAt,
         OffsetDateTime createdAt,
-        long unreadCount          // Mensajes no leídos para el usuario actual
+        long unreadCount,          // Mensajes no leídos para el usuario actual
+        EstadoSolicitud requestStatus // Estado actual de la solicitud
 ) {}

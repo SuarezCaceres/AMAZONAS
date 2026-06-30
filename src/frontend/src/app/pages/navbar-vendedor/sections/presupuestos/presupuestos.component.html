@@ -1,6 +1,7 @@
-<section class="presupuestos-page">
+<div class="presupuestos-page">
 
-  <!-- ══════════════════ HEADER ══════════════════ -->
+
+    <!-- ══════════════════ HEADER ══════════════════ -->
   <header class="page-header">
     <div class="header-info">
       <div class="header-title-row">
@@ -22,7 +23,7 @@
           Volver al Chat
         </button>
       }
-      @if (presupuestoGuardado && !modoEdicion) {
+      @if (presupuestoGuardado && !modoEdicion && !pagoConfirmado) {
         <button class="btn-cancelar" (click)="nuevoPresupuesto()">
           <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -40,10 +41,476 @@
 
   </header>
 
+  <!-- ══════════════════ HISTORIAL DE PRESUPUESTOS (VISTA PREMIUM SUPERIOR) ══════════════════ -->
+  <div class="form-card history-card premium-history-card" style="margin-bottom: 24px;">
+    <div class="history-header" (click)="mostrarHistorial = !mostrarHistorial" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+      <h2 class="card-title purple" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px; font-size: 16px;">
+        <span class="material-icons" style="font-size:18px;color:#7c3aed;">history</span>
+        Historial de Presupuestos Guardados
+        <span class="history-count-badge">{{ historialFiltrado.length }}</span>
+      </h2>
+      <span class="expand-icon" style="display:flex;align-items:center;gap:4px;">
+        <span class="material-icons" style="font-size:16px;">{{ mostrarHistorial ? 'expand_less' : 'expand_more' }}</span>
+        {{ mostrarHistorial ? 'Ocultar' : 'Mostrar (' + historialFiltrado.length + ')' }}
+      </span>
+    </div>
+
+    @if (mostrarHistorial) {
+      <div class="history-content" style="margin-top: 16px;">
+        <!-- Filtro por Fecha -->
+        <div class="history-filter-row" style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; width: max-content;">
+          <label for="filtroFecha" style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px;">
+            <span class="material-icons" style="font-size: 16px; color: #7c3aed;">calendar_today</span>
+            Filtrar por Fecha:
+          </label>
+          <input type="date" id="filtroFecha" [(ngModel)]="filtroFechaHistorial" style="padding: 6px 10px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 12.5px; color: #334155; outline: none; background: #ffffff;">
+          <button type="button" (click)="filtroFechaHistorial = ''" style="padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #64748b; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; gap: 4px;" *ngIf="filtroFechaHistorial">
+            <span class="material-icons" style="font-size: 12px;">close</span>
+            Limpiar Filtro
+          </button>
+        </div>
+
+        @if (historialFiltrado.length === 0) {
+          <div class="empty-history-state" style="padding: 24px; text-align: center; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; color: #64748b;">
+            <span class="material-icons" style="font-size:36px;color:#cbd5e1;display:block;margin-bottom:6px;">folder_open</span>
+            <p style="margin: 0; font-size: 13px;">No hay presupuestos para la fecha seleccionada.</p>
+          </div>
+        } @else {
+          <div class="history-list-grid">
+            @for (h of historialFiltrado; track h.id) {
+              <div class="premium-history-item-card" [class.presencial-item]="h.esPresencial" [class.online-item]="!h.esPresencial">
+                
+                <!-- TOP BADGES & REF -->
+                <div class="card-top-row">
+                  <span class="ref-code">#{{ h.codigoReferencia || h.id.substring(0, 8) }}</span>
+                  <div class="badge-group">
+                    <!-- Badge Canal de Compra -->
+                    @if (h.esPresencial) {
+                      <span class="badge badge-channel presencial">
+                        <span class="material-icons" style="font-size:11px;">store</span> Presencial
+                      </span>
+                    } @else {
+                      <span class="badge badge-channel online">
+                        <span class="material-icons" style="font-size:11px;">language</span> Online
+                      </span>
+                    }
+
+                    <!-- Badge Tipo de Maqueta -->
+                    @if (h.isCustom) {
+                      <span class="badge badge-type custom">
+                        <span class="material-icons" style="font-size:11px;">auto_fix_high</span> Personalizada
+                      </span>
+                    } @else {
+                      <span class="badge badge-type standard">
+                        <span class="material-icons" style="font-size:11px;">inventory_2</span> Estándar
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <!-- CARD MAIN INFO -->
+                <div class="card-body-info">
+                  <h4 class="project-name">{{ h.nombre }}</h4>
+                  
+                  <div class="client-detail">
+                    <span class="detail-label">Cliente:</span>
+                    <span class="detail-value">{{ h.clienteNombre || h.clienteEmail || 'Invitado/Anónimo' }}</span>
+                    
+                    <!-- Registro del Cliente Status Badge -->
+                    @if (h.clienteRegistrado) {
+                      <span class="status-indicator registered" title="Cliente registrado en la plataforma">
+                        <span class="material-icons" style="font-size:10px;">verified_user</span> Registrado
+                      </span>
+                    } @else {
+                      <span class="status-indicator guest" title="Cliente no registrado o sin cuenta">
+                        <span class="material-icons" style="font-size:10px;">person_outline</span> Invitado
+                      </span>
+                    }
+                  </div>
+
+                  @if (h.descripcion) {
+                    <p class="project-description">{{ h.descripcion }}</p>
+                  }
+                </div>
+
+                <!-- CARD BOTTOM ROW: PRICE & LOAD BUTTON -->
+                <div class="card-footer-row">
+                  <div class="price-section">
+                    <span class="price-label">Monto Total</span>
+                    <span class="price-value">S/ {{ h.total | number:'1.2-2' }}</span>
+                    <span class="payment-mode-label">
+                      {{ h.adelantoRequerido ? 'Adelanto ' + h.adelantoPorcentaje + '%' : '100% Completo' }}
+                    </span>
+                  </div>
+
+                  <button type="button" (click)="cargarPresupuestoDesdeHistorial(h)" class="btn-load-budget">
+                    <span>Cargar y Editar</span>
+                    <svg viewBox="0 0 24 24" class="load-icon" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </button>
+                </div>
+
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
   <div class="content-grid">
 
     <!-- ══════════════════ COLUMNA FORMULARIO ══════════════════ -->
     <div class="form-column">
+
+
+      <!-- ══════════════════ CANAL DE VENTA ══════════════════ -->
+      <!-- ══════════════════ CANAL DE VENTA ══════════════════ -->
+      <div class="form-card" style="border-left: 3.5px solid var(--clr-accent);">
+        <div class="card-header-row" style="margin-bottom: 12px;">
+          <h2 class="card-title green" style="display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3zM9 3v18M21 9H3"/></svg>
+            Canal de Venta
+          </h2>
+          <span class="badge" [class.badge-channel]="true" [class.presencial]="tipoCompra === 'presencial'" [class.online]="tipoCompra === 'online'">
+            {{ tipoCompra === 'presencial' ? 'Presencial' : 'Online' }}
+          </span>
+        </div>
+        <div class="btn-canal-container">
+          <button type="button" class="btn-canal-option"
+                  [class.active-presencial]="tipoCompra === 'presencial'"
+                  [disabled]="true"
+                  [class.disabled]="true"
+                  [style.opacity]="tipoCompra === 'presencial' ? '1' : '0.4'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <div>
+              <div>Compra Presencial</div>
+              <span class="opt-desc">Cobro 100% en tienda</span>
+            </div>
+          </button>
+          <button type="button" class="btn-canal-option"
+                  [class.active-online]="tipoCompra === 'online'"
+                  [disabled]="true"
+                  [class.disabled]="true"
+                  [style.opacity]="tipoCompra === 'online' ? '1' : '0.4'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <div>
+              <div>Compra Online (Chat)</div>
+              <span class="opt-desc">Adelanto 50% + Saldo</span>
+            </div>
+            @if (!solicitudId) {
+              <span class="material-icons" style="font-size:16px; margin-left: auto; color: var(--clr-text-muted); opacity: 0.7;">lock</span>
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════════════ SELECTOR DE MAQUETA ══════════════════ -->
+      @if (!presupuestoGuardado || modoEdicion) {
+        <div class="form-card" style="border-left: 3.5px solid var(--clr-violet);">
+          <div class="card-header-row" style="margin-bottom: 12px;">
+            <h2 class="card-title purple" style="display: flex; align-items: center; gap: 8px; margin-bottom: 0;">
+              <svg viewBox="0 0 24 24" style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                <polyline points="2 17 12 22 22 17"/>
+                <polyline points="2 12 12 17 22 12"/>
+              </svg>
+              Estructura Base de la Maqueta
+            </h2>
+            <span class="badge" 
+                  [class.badge-channel]="true"
+                  [class.presencial]="currentMaquetaTipo === 'catalogo'"
+                  [class.online]="currentMaquetaTipo === 'kit'"
+                  [class.badge-type]="currentMaquetaTipo === 'personalizada'"
+                  [class.custom]="currentMaquetaTipo === 'personalizada'">
+              {{ currentMaquetaTipo === 'personalizada' ? 'Personalizada' : (currentMaquetaTipo === 'kit' ? 'Kit' : 'Estándar') }}
+            </span>
+          </div>
+
+          <!-- Toggle Catálogo / Personalizada / Kit -->
+          <div class="segment-control">
+            <button type="button" class="segment-btn"
+                    [class.active-catalogo]="currentMaquetaTipo === 'catalogo'"
+                    (click)="setMaquetaTipo('catalogo')">
+              Maqueta Estándar
+            </button>
+            <button type="button" class="segment-btn"
+                    [class.active-personalizada]="currentMaquetaTipo === 'personalizada'"
+                    (click)="setMaquetaTipo('personalizada')">
+              Maqueta Personalizada
+            </button>
+            <button type="button" class="segment-btn"
+                    [class.active-kit]="currentMaquetaTipo === 'kit'"
+                    (click)="setMaquetaTipo('kit')">
+              Kits por Maqueta
+            </button>
+          </div>
+
+          @if (currentMaquetaTipo === 'catalogo') {
+            @if (!solicitudId) {
+              <!-- Catálogo de maquetas en recuadros interactivos -->
+              <div class="catalog-maquetas-grid" style="margin-top: 8px;">
+                @for (maq of catalogMaquetas; track maq.id) {
+                  <div class="maqueta-card" 
+                       [class.selected]="selectedMaquetaId === maq.id" 
+                       (click)="seleccionarMaqueta(maq)">
+                    @if (maq.imageUrl) {
+                      <img [src]="maq.imageUrl" alt="{{ maq.titulo }}" class="card-image">
+                    } @else {
+                      <span class="material-icons card-icon">home</span>
+                    }
+                    <div class="card-name">{{ maq.titulo }}</div>
+                    <div class="card-price">S/ {{ getMaquetaPrecio(maq) | number:'1.2-2' }}</div>
+                    <small class="card-stock" [style.color]="maq.stock > 0 ? '#009b79' : '#ef4444'">Stock: {{ maq.stock }} und</small>
+                  </div>
+                }
+              </div>
+            } @else {
+              <!-- Si viene de solicitud, el nombre ya está fijo y precargado -->
+              <div style="padding: 10px 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px; color: #334155; margin-top: 4px;">
+                Maqueta solicitada: <strong>{{ nombreProyecto }}</strong>
+              </div>
+            }
+            @if (selectedMaquetaId || solicitudId) {
+              <div style="margin-top: 10px; padding: 10px 14px; background: #ecfdf5; border-radius: 8px; border: 1px solid #bbf7d0; font-size: 12px; color: #166534; display: flex; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span><strong>{{ nombreProyecto }}</strong> seleccionada. Sus materiales fueron precargados abajo.</span>
+              </div>
+            }
+          }
+
+          @if (currentMaquetaTipo === 'kit') {
+            <!-- Cabecera de Kits por Maqueta -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; gap: 10px;">
+              <div>
+                <label style="font-size: 13px; font-weight: 700; color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 6px;">
+                  <span class="material-icons" style="font-size: 18px;">inventory</span>
+                  Gestión de Kits por Maqueta
+                </label>
+                <span style="font-size: 11px; color: #64748b;">Define o selecciona kits de materiales recomendados</span>
+              </div>
+              <button
+                type="button"
+                (click)="isAddingKit = true; editingKitId = null; kitFormData = { maquetaId: '', descripcion: '' }; kitMaterialesForm = []"
+                style="padding: 6px 12px; border: 1.5px solid #ddd6fe; border-radius: 8px; background: #f5f3ff; color: #7c3aed; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; font-family: inherit;"
+              >
+                <span class="material-icons" style="font-size: 15px;">add</span>
+                Agregar Kit
+              </button>
+            </div>
+
+            <!-- Formulario de Agregar/Editar Kit (Solo visible si está agregando o editando) -->
+            @if (isAddingKit || editingKitId) {
+              <div style="background: #f5f3ff; border: 1.5px solid #ddd6fe; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 700; color: #6d28d9;">
+                  {{ isAddingKit ? 'Crear Nuevo Kit de Materiales' : 'Editar Kit de Materiales' }}
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Seleccionar Maqueta *</label>
+                    <select
+                      [(ngModel)]="kitFormData.maquetaId"
+                      style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; background: #ffffff; outline: none; font-family: inherit;"
+                    >
+                      <option value="">-- Seleccionar maqueta --</option>
+                      @for (prod of catalogMaquetas; track prod.id) {
+                        <option [value]="prod.id">{{ prod.titulo }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Total del Kit (Autocalculado)</label>
+                    <div style="padding: 8px 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 13px; font-weight: 700; color: #065f46; min-height: 38px; display: flex; align-items: center; gap: 4px;">
+                      <span class="material-icons" style="font-size:15px;">calculate</span>
+                      S/ {{ calcularTotalKit(kitMaterialesForm) | number:'1.2-2' }}
+                    </div>
+                  </div>
+                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px; grid-column: span 2;">
+                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Descripción del Kit (Opcional)</label>
+                    <input
+                      type="text"
+                      [(ngModel)]="kitFormData.descripcion"
+                      placeholder="Ej: Incluye base de madera, planchas de acrílico y pegamento rápido"
+                      style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; outline: none; font-family: inherit;"
+                    />
+                  </div>
+                </div>
+
+                <!-- Subformulario de Materiales del Kit -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 12px; font-weight: 700; color: #4c1d95;">Materiales del Kit</span>
+                    <button
+                      type="button"
+                      (click)="agregarMaterialKit()"
+                      style="padding: 4px 10px; border: 1px solid #c084fc; border-radius: 6px; background: #fdf4ff; color: #a21caf; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit;"
+                    >
+                      <span class="material-icons" style="font-size:12px;">add</span>
+                      Agregar Material
+                    </button>
+                  </div>
+
+                  @if (kitMaterialesForm.length > 0) {
+                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                      @for (matKit of kitMaterialesForm; track $index) {
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                          <select
+                            [(ngModel)]="matKit.materialNombre"
+                            style="flex: 2; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #ffffff; outline: none; font-family: inherit;"
+                          >
+                            <option value="">-- Seleccionar material --</option>
+                            @for (m of materialesDisponibles; track m.nombre) {
+                              <option [value]="m.nombre">{{ m.nombre }} (S/ {{ m.precio }} )</option>
+                            }
+                          </select>
+                          <input
+                            type="number"
+                            min="1"
+                            [(ngModel)]="matKit.cantidad"
+                            style="flex: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; font-family: inherit; text-align: center; max-width: 70px;"
+                            placeholder="Cant."
+                          />
+                          <button
+                            type="button"
+                            (click)="eliminarMaterialKit($index)"
+                            style="padding: 6px; border: none; border-radius: 6px; background: #fee2e2; color: #ef4444; cursor: pointer; display: flex; align-items: center;"
+                            title="Eliminar material"
+                          >
+                            <span class="material-icons" style="font-size: 14px;">delete</span>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div style="text-align: center; padding: 12px; font-size: 11.5px; color: #94a3b8; border: 1.5px dashed #cbd5e1; border-radius: 6px;">
+                      No hay materiales en el kit. Haz clic en "Agregar Material".
+                    </div>
+                  }
+                </div>
+
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                  <button
+                    type="button"
+                    (click)="handleCancelKit()"
+                    style="padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    (click)="handleSaveKit()"
+                    style="padding: 6px 14px; border: none; border-radius: 6px; background: #7c3aed; color: #ffffff; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;"
+                  >
+                    Guardar Kit
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Selector de Kit para precargar materiales (Visible si no se está editando ni agregando) -->
+            @if (!isAddingKit && !editingKitId) {
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Seleccionar kit predefinido</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <select
+                    [(ngModel)]="kitSeleccionadoId"
+                    (change)="cargarKitParaPresupuesto(kitSeleccionadoId)"
+                    class="form-group-input"
+                    style="flex: 1; cursor: pointer;"
+                  >
+                    <option value="">-- Seleccionar kit --</option>
+                    @for (kit of kitsGuardados; track kit.id) {
+                      <option [value]="kit.id">
+                        {{ kit.maquetaNombre }} (S/ {{ kit.precioTotal | number:'1.2-2' }} · {{ kit.materiales?.length || 0 }} materiales)
+                      </option>
+                    }
+                  </select>
+
+                  @if (kitSeleccionadoId) {
+                    <button
+                      type="button"
+                      (click)="onEditKitSelected()"
+                      style="padding: 10px; border: 1.5px solid #ddd6fe; border-radius: 8px; background: #f5f3ff; color: #7c3aed; cursor: pointer; display: flex; align-items: center; outline: none;"
+                      title="Editar este kit"
+                    >
+                      <span class="material-icons" style="font-size:16px;">edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="onDeleteKitSelected()"
+                      style="padding: 10px; border: 1.5px solid #fee2e2; border-radius: 8px; background: #fef2f2; color: #ef4444; cursor: pointer; display: flex; align-items: center; outline: none;"
+                      title="Eliminar este kit"
+                    >
+                      <span class="material-icons" style="font-size:16px;">delete</span>
+                    </button>
+                  }
+                </div>
+                <p style="font-size: 11.5px; color: var(--clr-text-muted); margin: 6px 0 0; line-height: 1.4;">
+                  Cargar un kit predefinido precargará todos sus materiales directamente en la calculadora de presupuestos de manera presencial.
+                </p>
+              </div>
+
+              @if (kitSeleccionadoId && nombreProyecto) {
+                <div style="margin-top: 10px; padding: 10px 14px; background: #f5f3ff; border-radius: 8px; border: 1px solid #ddd6fe; font-size: 12px; color: #6d28d9; display: flex; align-items: center; gap: 8px;">
+                  <span class="material-icons" style="font-size:16px;">check_circle</span>
+                  <span>Kit <strong>{{ nombreProyecto }}</strong> cargado con éxito. Sus materiales fueron precargados abajo.</span>
+                </div>
+              }
+            }
+          }
+
+          @if (currentMaquetaTipo === 'personalizada') {
+            <!-- Campo libre para maqueta personalizada -->
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Nombre del proyecto personalizado *</label>
+              <input type="text"
+                     [(ngModel)]="nombreProyecto"
+                     placeholder="Ej: Maqueta del Colegio San Martín..."
+                     class="form-group-input"
+                     style="width: 100%; box-sizing: border-box; margin-bottom: 12px;">
+
+              <!-- Autocomplete para maqueta base opcional -->
+              <div class="autocomplete-input-wrapper">
+                <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Copiar materiales desde una maqueta existente (Opcional)</label>
+                <input type="text"
+                       [(ngModel)]="busquedaMaquetaBase"
+                       (input)="filtrarMaquetasBase(); mostrarDropdownMaquetaBase = true"
+                       (focus)="mostrarDropdownMaquetaBase = true"
+                       (blur)="onBlurMaquetaBaseAutocomplete()"
+                       placeholder="Buscar maqueta base para copiar sus materiales..."
+                       class="form-group-input"
+                       style="width: 100%; box-sizing: border-box;">
+                @if (mostrarDropdownMaquetaBase && maquetasFiltradasBase.length > 0) {
+                  <div class="autocomplete-dropdown">
+                    @for (maq of maquetasFiltradasBase; track maq.id) {
+                      <div (mousedown)="seleccionarMaquetaBase(maq)" class="autocomplete-item">
+                        @if (maq.imageUrl) {
+                          <img [src]="maq.imageUrl" alt="" style="width: 30px; height: 30px;">
+                        } @else {
+                          <div class="fallback-img" style="width: 30px; height: 30px; font-size: 14px;">🏠</div>
+                        }
+                        <div style="flex: 1; min-width: 0;">
+                          <div style="font-weight: 700; font-size: 12px; color: var(--clr-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ maq.titulo }}</div>
+                          <div style="font-size: 10px; color: var(--clr-text-muted);">{{ maq.categoriaNombre }} · Stock: {{ maq.stock }}</div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Maqueta solicitada -->
       @if (nombreProyecto) {
@@ -53,6 +520,11 @@
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
             </svg>
             <span class="solicitud-header-label">Maqueta Solicitada</span>
+            <span style="margin-left: auto; font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 700;"
+                  [style.background]="isMaquetaPersonalizada ? '#fffbeb' : '#ecfdf5'"
+                  [style.color]="isMaquetaPersonalizada ? '#b45309' : '#059669'">
+              {{ isMaquetaPersonalizada ? 'Personalizada' : 'Estándar' }}
+            </span>
           </div>
           <h2 class="solicitud-nombre">{{ nombreProyecto }}</h2>
           @if (descripcion) {
@@ -61,8 +533,38 @@
         </div>
       }
 
-      <!-- Info cliente -->
-      @if (clienteEmail) {
+      <!-- Info cliente: formulario editable (presencial) o solo lectura (online) -->
+      <!-- Info cliente: formulario editable (presencial) o solo lectura (online) -->
+      @if (tipoCompra === 'presencial' && (!presupuestoGuardado || modoEdicion)) {
+        <div class="form-card" style="border-left: 3.5px solid var(--clr-primary);">
+          <div class="card-header-row" style="margin-bottom: 12px;">
+            <h2 class="card-title" style="display: flex; align-items: center; gap: 8px; color: var(--clr-primary);">
+              <svg viewBox="0 0 24 24" style="width: 18px; height: 18px;" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Datos del Cliente (Presencial)
+            </h2>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cliNombre">Nombre del Cliente *</label>
+              <input type="text" id="cliNombre" [(ngModel)]="clienteNombre" placeholder="Ej: Juan Pérez">
+            </div>
+            <div class="form-group">
+              <label for="cliEmail">Correo Electrónico *</label>
+              <input type="email" id="cliEmail" [(ngModel)]="clienteEmail" placeholder="Ej: cliente@correo.com">
+            </div>
+          </div>
+          <div class="form-row" style="margin-top: 12px;">
+            <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 0;">
+              <label for="cliTelefono">Teléfono (opcional)</label>
+              <input type="tel" id="cliTelefono" [(ngModel)]="clienteTelefono" placeholder="Ej: 999 888 777">
+            </div>
+          </div>
+          <small style="color: var(--clr-text-muted); font-size: 11px; margin-top: 10px; display: block;">Los datos se usarán para registrar al cliente en la plataforma.</small>
+        </div>
+      } @else if (clienteEmail) {
         <div class="form-card cliente-info-card">
           <div class="cliente-info-header">
             <svg viewBox="0 0 24 24" class="card-icon blue" fill="none" stroke="currentColor" stroke-width="2">
@@ -97,8 +599,9 @@
           }
         </div>
 
-        <div class="material-selector" style="position: relative; display: flex; gap: 8px; align-items: center;">
-          <div style="position: relative; flex: 1;">
+        <!-- Selector/Buscador de materiales (Solo editable para Maqueta Personalizada y si el pago no está confirmado) -->
+        <div class="material-selector" *ngIf="isMaquetaPersonalizada && !pagoConfirmado" style="margin-bottom: 16px;">
+          <div class="autocomplete-input-wrapper" style="flex: 1;">
             <input 
               type="text" 
               placeholder="Buscar material real en inventario..." 
@@ -106,24 +609,22 @@
               (focus)="mostrarDropdown = true; filtrarMateriales()"
               (input)="filtrarMateriales()"
               (blur)="onBlurAutocomplete()"
-              style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; outline: none; font-size: 13px;"
+              class="form-group-input"
+              style="width: 100%; box-sizing: border-box;"
             >
             @if (mostrarDropdown && materialesFiltrados.length > 0) {
-              <ul style="position: absolute; top: 105%; left: 0; right: 0; max-height: 180px; overflow-y: auto; background: white; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 500; margin: 0; padding: 0; list-style: none; text-align: left;">
+              <ul class="material-autocomplete-dropdown">
                 @for (mat of materialesFiltrados; track mat.nombre) {
-                  <li 
-                    (mousedown)="seleccionarMaterial(mat)"
-                    style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 12px; transition: background 0.15s;"
-                    onmouseover="this.style.backgroundColor='#f1f5f9'"
-                    onmouseout="this.style.backgroundColor='transparent'">
-                    <span style="font-weight: 600; color: #1e293b;">{{ mat.nombre }}</span> — <span style="font-weight: 550; color: #0d9488;">S/ {{ mat.precio.toFixed(2) }}</span>
+                  <li (mousedown)="seleccionarMaterial(mat)" class="material-autocomplete-item">
+                    <span class="material-autocomplete-name">{{ mat.nombre }}</span>
+                    <span class="material-autocomplete-price">S/ {{ mat.precio.toFixed(2) }}</span>
                   </li>
                 }
               </ul>
             }
           </div>
-          <input type="number" min="1" [(ngModel)]="cantidadMaterial" class="cantidad-input" style="width: 70px; height: 40px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
-          <button class="btn-add" (click)="agregarMaterialDesdeAutocomplete()" style="height: 40px; padding: 0 16px; background: #0f766e; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">+</button>
+          <input type="number" min="1" [(ngModel)]="cantidadMaterial" class="cantidad-input" style="height: 44px; box-sizing: border-box;">
+          <button class="btn-add" (click)="agregarMaterialDesdeAutocomplete()" style="height: 44px; background: var(--clr-primary); font-family: inherit; font-weight: 700; border-radius: var(--radius-md); transition: background var(--transition-fast); display: flex; align-items: center; justify-content: center;">+</button>
         </div>
 
 
@@ -152,23 +653,26 @@
               <span class="material-badge solicitado" *ngIf="mat.esSolicitado">Solicitado</span>
               <span class="material-badge extra" *ngIf="!mat.esDelProducto && !mat.esSolicitado">Extra</span>
             </span>
-            <span class="mat-col">{{ mat.cantidad }}</span>
+            <span class="mat-col" style="display: flex; align-items: center; justify-content: center;">
+              <input *ngIf="isMaquetaPersonalizada && !pagoConfirmado" type="number" min="1" [(ngModel)]="mat.cantidad" class="cantidad-input" style="width: 60px; height: 32px; padding: 4px; font-size: 13px;">
+              <span *ngIf="!isMaquetaPersonalizada || pagoConfirmado">{{ mat.cantidad }}</span>
+            </span>
             <span class="mat-col">S/ {{ (mat.precioUnitario || 0).toFixed(2) }}</span>
             <span class="mat-col bold">S/ {{ (mat.cantidad * (mat.precioUnitario || 0)).toFixed(2) }}</span>
-            <button class="btn-remove" (click)="eliminarMaterial(mat.id)" *ngIf="!mat.esDelProducto">
+            <button class="btn-remove" (click)="eliminarMaterial(mat.id)" *ngIf="isMaquetaPersonalizada && !pagoConfirmado">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="remove-icon">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6l-1 14H6L5 6"/>
                 <path d="M10 11v6M14 11v6"/>
               </svg>
             </button>
-            <span *ngIf="mat.esDelProducto"></span>
+            <span *ngIf="!isMaquetaPersonalizada"></span>
           </div>
         </div>
       </div>
 
-      <!-- Materiales solicitados por el cliente -->
-      <div class="form-card client-request-card" *ngIf="materialesSolicitados.length > 0 || materialesDeseados">
+      <!-- Materiales solicitados por el cliente (Ocultar si el pago está confirmado / venta cerrada) -->
+      <div class="form-card client-request-card" *ngIf="isMaquetaPersonalizada && !pagoConfirmado && (materialesSolicitados.length > 0 || materialesDeseados)">
         <h2 class="card-title purple">📦 Materiales Solicitados por el Cliente</h2>
         <div class="client-materials-notice">
           <span class="notice-icon">💡</span>
@@ -187,9 +691,6 @@
                 type="button"
                 class="btn-registrar-material" 
                 (click)="irARegistrarMaterial(mat)"
-                style="height: 34px; padding: 0 12px; background: #f0fdf4; color: #166534; border: 1.5px solid #bbf7d0; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;"
-                onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#86efac'"
-                onmouseout="this.style.background='#f0fdf4'; this.style.borderColor='#bbf7d0'"
               >
                 ⚙️ Registrar
               </button>
@@ -214,11 +715,11 @@
         <div class="form-row">
           <div class="form-group">
             <label for="manoObra">Mano de Obra (S/)</label>
-            <input type="number" id="manoObra" min="0" [(ngModel)]="manoDeObra">
+            <input type="number" id="manoObra" min="0" [(ngModel)]="manoDeObra" [disabled]="pagoConfirmado">
           </div>
           <div class="form-group">
             <label for="margen">Margen de Ganancia (%)</label>
-            <input type="number" id="margen" min="0" max="100" [(ngModel)]="margenGanancia">
+            <input type="number" id="margen" min="0" max="100" [(ngModel)]="margenGanancia" [disabled]="pagoConfirmado">
           </div>
         </div>
       </div>
@@ -228,7 +729,7 @@
         <div class="adelanto-header">
           <h2 class="card-title">Adelanto</h2>
           <label class="toggle-label">
-            <input type="checkbox" [(ngModel)]="requiereAdelanto" class="toggle-input">
+            <input type="checkbox" [(ngModel)]="requiereAdelanto" class="toggle-input" [disabled]="pagoConfirmado">
             <span class="toggle-track">
               <span class="toggle-thumb"></span>
             </span>
@@ -237,7 +738,7 @@
         </div>
         <div class="adelanto-content" *ngIf="requiereAdelanto">
           <div class="adelanto-warning">
-            <span class="warning-icon">⚠</span>
+            <span class="warning-icon material-icons" style="font-size:18px;">warning_amber</span>
             <div class="warning-text">
               <strong>Adelanto para Pedidos Personalizados</strong>
               <p>El cliente deberá confirmar el pago del adelanto antes de iniciar la fabricación.</p>
@@ -245,7 +746,7 @@
           </div>
           <div class="form-group">
             <label for="porcentaje">Porcentaje del Adelanto (%)</label>
-            <input type="number" id="porcentaje" min="0" max="100" [(ngModel)]="porcentajeAdelanto">
+            <input type="number" id="porcentaje" min="0" max="100" [(ngModel)]="porcentajeAdelanto" [disabled]="pagoConfirmado">
             <small>Porcentaje del total que se solicita como adelanto (típicamente 50%)</small>
           </div>
           <div class="adelanto-monto">
@@ -261,9 +762,12 @@
       <!-- Explicación -->
       <div class="form-card explicacion-card">
         <div class="explicacion-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h2 class="card-title orange" style="margin-bottom: 0;">🎓 Servicio de Explicación</h2>
+          <h2 class="card-title orange" style="margin-bottom: 0; display:flex; align-items:center; gap:6px;">
+            <span class="material-icons" style="font-size:18px;">school</span>
+            Servicio de Explicación
+          </h2>
           <label class="toggle-label">
-            <input type="checkbox" [(ngModel)]="solicitarExplicacion" (change)="toggleExplicacion()" class="toggle-input">
+            <input type="checkbox" [(ngModel)]="solicitarExplicacion" (change)="toggleExplicacion()" class="toggle-input" [disabled]="pagoConfirmado">
             <span class="toggle-track">
               <span class="toggle-thumb"></span>
             </span>
@@ -280,15 +784,15 @@
           </div>
           <div class="form-group">
             <label for="personas">Cantidad de Personas *</label>
-            <input type="number" id="personas" min="1" [(ngModel)]="cantidadPersonas" (change)="validarPersonas()">
+            <input type="number" id="personas" min="1" [(ngModel)]="cantidadPersonas" (change)="validarPersonas()" [disabled]="pagoConfirmado">
           </div>
           <div class="form-group">
             <label for="duracion">Duración (minutos) *</label>
-            <input type="number" id="duracion" min="15" step="15" [(ngModel)]="duracionExplicacion" (change)="validarDuracion()">
+            <input type="number" id="duracion" min="15" step="15" [(ngModel)]="duracionExplicacion" (change)="validarDuracion()" [disabled]="pagoConfirmado">
           </div>
           <div class="form-group">
             <label for="precioExp">Precio del Servicio (S/)</label>
-            <input type="number" id="precioExp" min="0" [(ngModel)]="precioExplicacion">
+            <input type="number" id="precioExp" min="0" [(ngModel)]="precioExplicacion" [disabled]="pagoConfirmado">
             <small>{{ explicacionLabel }}</small>
           </div>
         </div>
@@ -298,189 +802,399 @@
 
     <!-- ══════════════════ COLUMNA RESUMEN ══════════════════ -->
     <div class="summary-column">
-      <div class="summary-card">
-        <h2 class="summary-title">
-          <svg viewBox="0 0 24 24" class="summary-title-icon" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="2" width="18" height="20" rx="2"/>
-            <line x1="8" y1="7" x2="16" y2="7"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
-            <line x1="8" y1="17" x2="12" y2="17"/>
-          </svg>
-          Resumen del Presupuesto
-        </h2>
+      <div class="ticket-receipt-card">
+        <div class="ticket-receipt-content">
+          <h2 class="summary-title">
+            <svg viewBox="0 0 24 24" class="summary-title-icon" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="2" width="18" height="20" rx="2"/>
+              <line x1="8" y1="7" x2="16" y2="7"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+              <line x1="8" y1="17" x2="12" y2="17"/>
+            </svg>
+            Resumen del Presupuesto
+          </h2>
 
-        <div class="summary-row">
-          <span>Materiales:</span>
-          <span>S/ {{ totalMateriales.toFixed(2) }}</span>
-        </div>
-        <div class="summary-row">
-          <span>Mano de Obra:</span>
-          <span>S/ {{ (manoDeObra || 0).toFixed(2) }}</span>
-        </div>
-        <div class="summary-row" *ngIf="solicitarExplicacion">
-          <span>Servicio Explicación:</span>
-          <span>S/ {{ (precioExplicacion || 0).toFixed(2) }}</span>
-        </div>
-        <div class="summary-divider"></div>
-        <div class="summary-row">
-          <span>Subtotal:</span>
-          <span>S/ {{ subtotal.toFixed(2) }}</span>
-        </div>
-        <div class="summary-row ganancia">
-          <span>Ganancia ({{ margenGanancia || 0 }}%):</span>
-          <span>+ S/ {{ ganancia.toFixed(2) }}</span>
-        </div>
-        <div class="summary-total">
-          <span>TOTAL:</span>
-          <span class="total-value">S/ {{ total.toFixed(2) }}</span>
-        </div>
-
-        @if (requiereAdelanto) {
-          <div class="adelanto-section">
-            <div class="adelanto-row">
-              <span>Adelanto Requerido:</span>
-              <span class="adelanto-value">S/ {{ montoAdelanto.toFixed(2) }}</span>
-            </div>
-            <small class="adelanto-note">{{ porcentajeAdelanto }}% del total • Requerido para iniciar fabricación</small>
+          <div class="ticket-receipt-row">
+            <span class="label">Materiales:</span>
+            <span class="value">S/ {{ totalMateriales.toFixed(2) }}</span>
           </div>
-        }
+          <div class="ticket-receipt-row">
+            <span class="label">Mano de Obra:</span>
+            <span class="value">S/ {{ (manoDeObra || 0).toFixed(2) }}</span>
+          </div>
+          <div class="ticket-receipt-row" *ngIf="solicitarExplicacion">
+            <span class="label">Servicio Explicación:</span>
+            <span class="value">S/ {{ (precioExplicacion || 0).toFixed(2) }}</span>
+          </div>
+          
+          <div class="summary-divider"></div>
+          
+          <div class="ticket-receipt-row">
+            <span class="label">Subtotal:</span>
+            <span class="value">S/ {{ subtotal.toFixed(2) }}</span>
+          </div>
+          <div class="ticket-receipt-row highlighted">
+            <span class="label">Ganancia ({{ margenGanancia || 0 }}%):</span>
+            <span class="value">+ S/ {{ ganancia.toFixed(2) }}</span>
+          </div>
+          
+          <div class="ticket-receipt-total">
+            <span class="label">TOTAL:</span>
+            <span class="value">S/ {{ total.toFixed(2) }}</span>
+          </div>
+
+          @if (requiereAdelanto) {
+            <div class="adelanto-section">
+              <div class="adelanto-row">
+                <span>Adelanto Requerido:</span>
+                <span class="adelanto-value">S/ {{ montoAdelanto.toFixed(2) }}</span>
+              </div>
+              <small class="adelanto-note">{{ porcentajeAdelanto }}% del total • Requerido para iniciar fabricación</small>
+            </div>
+          }
 
         <div class="summary-actions">
-          @if (!presupuestoGuardado) {
-            <button class="btn-guardar" (click)="guardarPresupuesto()" [disabled]="guardando">
-              @if (guardando) {
-                <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+
+          <!-- ═══ FLUJO PRESENCIAL ════════════════════════════════════════ -->
+          @if (tipoCompra === 'presencial') {
+
+            @if (!presupuestoGuardado || modoEdicion) {
+              <button class="btn-guardar" (click)="guardarPresupuesto()" [disabled]="guardando">
+                @if (guardando) {
+                  <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Guardando...
+                } @else {
+                  <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                  </svg>
+                  {{ modoEdicion ? 'Actualizar Presupuesto' : 'Guardar Presupuesto' }}
+                }
+              </button>
+              <small class="summary-hint">{{ modoEdicion ? 'Editando — guarda para cobrar' : 'Guarda para habilitar el cobro' }}</small>
+
+            } @else {
+              <!-- Presupuesto guardado presencial: cobro + boleta -->
+              <div class="saved-banner">
+                <svg viewBox="0 0 24 24" class="saved-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
-                Guardando...
-              } @else {
+                <div>
+                  <span class="saved-label">Presupuesto guardado</span>
+                  <span class="saved-total">Total: S/ {{ total.toFixed(2) }}</span>
+                </div>
+              </div>
+
+              <!-- SI EL PAGO NO HA SIDO CONFIRMADO: Mostrar Editar, Cobrar e Imprimir -->
+              @if (!pagoConfirmado) {
+                <button class="btn-editar" (click)="activarEdicion()">
+                  <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Editar Presupuesto
+                </button>
+
+                @if (requiereAdelanto) {
+                  <!-- Botón: cobrar adelanto + imprimir boleta parcial -->
+                  <button (click)="imprimirBoletaPresencial('adelanto')" [disabled]="imprimiendoBoleta"
+                    style="background:#d97706;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(217,119,6,.25);transition:background .2s;">
+                    @if (imprimiendoBoleta) {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;" class="spin">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                      </svg>
+                      Preparando boleta...
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;">
+                        <polyline points="6 9 6 2 18 2 18 9"/>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                      </svg>
+                      <div style="text-align:left;">
+                        <div>Cobrar Adelanto ({{ porcentajeAdelanto }}%) e Imprimir Boleta</div>
+                        <small style="font-weight:400;opacity:.85;font-size:11px;">Monto: S/ {{ montoAdelanto.toFixed(2) }}</small>
+                      </div>
+                    }
+                  </button>
+                  <small class="summary-hint" style="color:#b45309; margin-bottom:8px; display:block;">Saldo pendiente: S/ {{ (total - montoAdelanto).toFixed(2) }}</small>
+                } @else {
+                  <!-- Botón: cobrar total + imprimir boleta completa -->
+                  <button (click)="imprimirBoletaPresencial('completo')" [disabled]="imprimiendoBoleta"
+                    style="background:#059669;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(5,150,105,.25);transition:background .2s;">
+                    @if (imprimiendoBoleta) {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;" class="spin">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                      </svg>
+                      Preparando boleta...
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;">
+                        <polyline points="6 9 6 2 18 2 18 9"/>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                      </svg>
+                      <div style="text-align:left;">
+                        <div>Cobrar Pago Completo e Imprimir Boleta</div>
+                        <small style="font-weight:400;opacity:.85;font-size:11px;">Total: S/ {{ total.toFixed(2) }}</small>
+                      </div>
+                    }
+                  </button>
+                  <small class="summary-hint" style="color:#065f46; margin-bottom:8px; display:block;">Pago único completo (100%)</small>
+                }
+              }
+
+              <!-- Botón: Pago Completado & Descontar Stock (Siempre visible) -->
+              <button (click)="completarPagoPresencial()" [disabled]="pagoConfirmado"
+                [style.background]="pagoConfirmado ? '#ecfdf5' : '#7c3aed'"
+                [style.color]="pagoConfirmado ? '#047857' : '#ffffff'"
+                [style.border]="pagoConfirmado ? '1.5px solid #a7f3d0' : 'none'"
+                [style.boxShadow]="pagoConfirmado ? 'none' : '0 4px 12px rgba(124,58,237,0.25)'"
+                style="padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;transition:all .2s; font-family: inherit;">
+                <span class="material-icons" style="font-size: 18px;">{{ pagoConfirmado ? 'check_circle' : 'paid' }}</span>
+                <div style="text-align:left;">
+                  <div style="font-weight:700;">{{ pagoConfirmado ? 'Pago Completado (Stock Descontado)' : 'Pago Completado' }}</div>
+                  <small style="font-weight:400;opacity:.85;font-size:10px;display:block;">
+                    {{ pagoConfirmado ? 'Inventario actualizado en el backend' : 'Confirmar pago y descontar materiales del inventario' }}
+                  </small>
+                </div>
+              </button>
+
+              <!-- SI EL PAGO YA HA SIDO CONFIRMADO: Mostrar banner de venta cerrada y botón neutral de Reimprimir -->
+              @if (pagoConfirmado) {
+                <div style="margin-top: 10px; padding: 12px; background: #ecfdf5; border-radius: 8px; border: 1px solid #a7f3d0; font-size: 11.5px; color: #047857; font-weight: 600; text-align: center; display: flex; align-items: center; gap: 8px; justify-content: center;">
+                  <span class="material-icons" style="font-size: 16px;">check_circle</span>
+                  <span>Venta Cerrada: Pago verificado y stock descontado.</span>
+                </div>
+
+                <button (click)="imprimirBoletaPresencial(requiereAdelanto ? 'adelanto' : 'completo')"
+                  style="background: #f1f5f9; color: #334155; border: 1.5px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; justify-content: center; margin-top: 8px; transition: all .2s; font-family: inherit;">
+                  <span class="material-icons" style="font-size: 18px;">print</span>
+                  Reimprimir Boleta
+                </button>
+              }
+            }
+
+          } @else {
+          <!-- ═══ FLUJO ONLINE (CHAT) ════════════════════════════════════ -->
+
+            @if (!presupuestoGuardado) {
+              <button class="btn-guardar" (click)="guardarPresupuesto()" [disabled]="guardando || pagoConfirmado">
+                @if (guardando) {
+                  <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Guardando...
+                } @else {
+                  <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                  </svg>
+                  Guardar Presupuesto
+                }
+              </button>
+              <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando || pagoConfirmado">
+                @if (enviando) {
+                  <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Enviando...
+                } @else {
+                  <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                  Guardar y Enviar al Cliente
+                }
+              </button>
+              <small class="summary-hint">El presupuesto se enviará por chat al cliente</small>
+
+            } @else if (modoEdicion) {
+              <button class="btn-guardar" (click)="guardarPresupuesto()" [disabled]="guardando || pagoConfirmado">
                 <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                   <polyline points="17 21 17 13 7 13 7 21"/>
-                  <polyline points="7 3 7 8 15 8"/>
                 </svg>
-                Guardar Presupuesto
-              }
-            </button>
-            <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando">
-              @if (enviando) {
-                <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-                Enviando...
-              } @else {
-                <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="22" y1="2" x2="11" y2="13"/>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                </svg>
-                Guardar y Enviar al Cliente
-              }
-            </button>
-            <small class="summary-hint">Guardando presupuesto nuevo</small>
-          } @else if (modoEdicion) {
-            <button class="btn-guardar" (click)="guardarPresupuesto()" [disabled]="guardando">
-              <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-              </svg>
-              Actualizar Presupuesto
-            </button>
-            <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando">
-              @if (enviando) {
-                <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-                Enviando...
-              } @else {
-                <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="22" y1="2" x2="11" y2="13"/>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                </svg>
-                Actualizar y Notificar Cliente
-              }
-            </button>
-            <small class="summary-hint">Editando presupuesto existente</small>
-          } @else {
-            <!-- Presupuesto guardado, modo visualización -->
-            <div class="saved-banner">
-              <svg viewBox="0 0 24 24" class="saved-icon" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              <div>
-                <span class="saved-label">Presupuesto guardado</span>
-                <span class="saved-total">Total: S/ {{ total.toFixed(2) }}</span>
-              </div>
-            </div>
-            <button class="btn-editar" (click)="activarEdicion()">
-              <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              Editar Presupuesto
-            </button>
-            <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando">
-              <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-              </svg>
-              Reenviar Presupuesto al Cliente
-            </button>
-            @if (requiereAdelanto) {
-              <button class="btn-adelanto-action" (click)="abrirModalAdelanto()">
-                <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="2" y="5" width="20" height="14" rx="2"/>
-                  <line x1="2" y1="10" x2="22" y2="10"/>
-                </svg>
-                Enviar Adelanto
+                Actualizar Presupuesto
               </button>
+              <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando || pagoConfirmado">
+                @if (enviando) {
+                  <svg viewBox="0 0 24 24" class="btn-icon spin" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Enviando...
+                } @else {
+                  <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                  Actualizar y Notificar Cliente
+                }
+              </button>
+              <small class="summary-hint">Editando presupuesto existente</small>
+
+            } @else {
+              @if (pagoConfirmado) {
+                <div style="margin-top: 10px; padding: 12px; background: #ecfdf5; border-radius: 8px; border: 1px solid #a7f3d0; font-size: 11.5px; color: #047857; font-weight: 600; text-align: center; display: flex; align-items: center; gap: 8px; justify-content: center;">
+                  <span class="material-icons" style="font-size: 16px;">check_circle</span>
+                  <span>Venta Cerrada: Solicitud completada y entregada.</span>
+                </div>
+
+                <button (click)="imprimirBoletaPresencial(requiereAdelanto ? 'adelanto' : 'completo')"
+                  style="background: #f1f5f9; color: #334155; border: 1.5px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; justify-content: center; margin-top: 8px; transition: all .2s; font-family: inherit;">
+                  <span class="material-icons" style="font-size: 18px;">print</span>
+                  Reimprimir Boleta
+                </button>
+              } @else {
+                <div class="saved-banner">
+                  <svg viewBox="0 0 24 24" class="saved-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <div>
+                    <span class="saved-label">Presupuesto enviado al cliente</span>
+                    <span class="saved-total">Total: S/ {{ total.toFixed(2) }}</span>
+                  </div>
+                </div>
+                <button class="btn-editar" (click)="activarEdicion()">
+                  <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Editar Presupuesto
+                </button>
+                <button class="btn-enviar" (click)="enviarPresupuestoAlCliente()" [disabled]="enviando">
+                  <svg viewBox="0 0 24 24" class="btn-icon" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                  Reenviar Presupuesto al Cliente
+                </button>
+              }
             }
-          }
+
+          } <!-- /fin flujo online -->
         </div>
       </div>
     </div>
-
   </div>
+</div>
 
-  <!-- ══════════════════ HISTORIAL DE PRESUPUESTOS ══════════════════ -->
-  <div class="form-card history-card" style="margin-top: 24px;">
-    <div class="history-header" (click)="mostrarHistorial = !mostrarHistorial" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
-      <h2 class="card-title purple" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
-        <span>📋</span> Historial de Presupuestos Guardados
-      </h2>
-      <span class="expand-icon" style="font-size: 14px; font-weight: bold; color: #9ca3af;">{{ mostrarHistorial ? '&#8963;' : '&#8964;' }}</span>
-    </div>
 
-    @if (mostrarHistorial) {
-      <div class="history-content" style="margin-top: 16px;">
-        @if (historialPresupuestos.length === 0) {
-          <p class="text-xs text-slate-400 py-3 text-center">No hay presupuestos guardados en el historial.</p>
-        } @else {
-          <div class="history-list-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-            @for (h of historialPresupuestos; track h.id) {
-              <div class="history-item-card" style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background-color: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <span style="font-size: 10px; font-weight: bold; font-family: monospace; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase;">#{{ h.codigoReferencia || h.id.substring(0, 8) }}</span>
-                    <span style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px;" [style.background-color]="h.adelantoRequerido ? '#fef3c7' : '#e2e8f0'" [style.color]="h.adelantoRequerido ? '#d97706' : '#475569'">
-                      {{ h.adelantoRequerido ? 'Adelanto ' + h.adelantoPorcentaje + '%' : 'Completo' }}
-                    </span>
-                  </div>
-                  <h4 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 6px 0 2px 0;">{{ h.nombre }}</h4>
-                  <p style="font-size: 11px; color: #64748b; margin: 0;">Cliente: {{ h.clienteNombre || h.clienteEmail }}</p>
-                  <p style="font-size: 12px; font-weight: 800; color: #0f766e; margin-top: 6px; margin-bottom: 0;">Total: S/ {{ h.totalAmount | number:'1.2-2' }}</p>
-                </div>
-                <button type="button" (click)="cargarPresupuestoDesdeHistorial(h)" class="w-full text-center py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer border-none" style="margin-top: 4px;">
-                  Cargar y Editar
-                </button>
-              </div>
-            }
-          </div>
-        }
-      </div>
+<!-- ══════════════════ BOLETA TÉRMICA — SOLO VISIBLE AL IMPRIMIR ══════════════════ -->
+<div id="presupuesto-ticket-print-template">
+  <style>
+    #presupuesto-ticket-print-template {
+      display: none;
     }
+    @media print {
+      /* Ocultar elementos de la app que puedan verse de fondo */
+      .top-bar, .tab-nav, .mobile-overlay, .mobile-drawer, 
+      .premium-history-card, .page-header, .content-grid, .modal-backdrop {
+        display: none !important;
+      }
+      
+      /* Limpiar layouts y fondos de los contenedores padres */
+      body, html, .vendedor-shell, .tab-content, app-presupuestos, section.presupuestos-page {
+        background: #ffffff !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+      }
+
+      #presupuesto-ticket-print-template, #presupuesto-ticket-print-template * {
+        visibility: visible !important;
+      }
+      #presupuesto-ticket-print-template {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 76mm;
+        padding: 4mm 2mm;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 11px;
+        line-height: 1.3;
+        box-sizing: border-box;
+      }
+      #presupuesto-ticket-print-template table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+    }
+  </style>
+  <div style="text-align:center;font-size:15px;font-weight:700;letter-spacing:1px;margin-bottom:2px;">AMAZONAS MAQUETAS</div>
+  <div style="text-align:center;font-size:10px;color:#555;margin-bottom:8px;">Maquetas Arquitectónicas &amp; Educativas</div>
+  <div style="border-top:1px dashed #999;margin:6px 0;"></div>
+
+  <div style="font-size:11px;font-weight:700;text-align:center;letter-spacing:2px;margin-bottom:6px;">
+    {{ boletaTipo === 'adelanto' ? '── BOLETA DE ADELANTO ──' : '── BOLETA DE PAGO ──' }}
   </div>
-</section>
+
+  <table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:6px;">
+    <tr><td style="color:#555;">Cliente:</td><td style="text-align:right;font-weight:600;">{{ clienteNombre || '—' }}</td></tr>
+    <tr><td style="color:#555;">Proyecto:</td><td style="text-align:right;font-weight:600;">{{ nombreProyecto }}</td></tr>
+    <tr><td style="color:#555;">Tipo:</td><td style="text-align:right;">{{ isMaquetaPersonalizada ? 'Personalizada' : 'Estándar (Catálogo)' }}</td></tr>
+    <tr><td style="color:#555;">Fecha:</td><td style="text-align:right;">{{ fechaSolicitud ? (fechaSolicitud | date:'dd/MM/yyyy HH:mm') : (today | date:'dd/MM/yyyy HH:mm') }}</td></tr>
+  </table>
+
+  <div style="border-top:1px dashed #999;margin:6px 0;"></div>
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Materiales incluidos:</div>
+
+  @for (mat of materialesAgregados; track mat.id) {
+    <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px;">
+      <span>{{ mat.cantidad }}x {{ mat.nombre }}</span>
+      <span>S/ {{ (mat.cantidad * (mat.precioUnitario || 0)).toFixed(2) }}</span>
+    </div>
+  }
+
+  <div style="border-top:1px dashed #999;margin:8px 0 4px;"></div>
+
+  <table style="width:100%;font-size:11px;border-collapse:collapse;">
+    <tr><td style="color:#555;">Materiales:</td><td style="text-align:right;">S/ {{ totalMateriales.toFixed(2) }}</td></tr>
+    <tr><td style="color:#555;">Mano de Obra:</td><td style="text-align:right;">S/ {{ (manoDeObra || 0).toFixed(2) }}</td></tr>
+    @if (solicitarExplicacion) {
+      <tr><td style="color:#555;">Servicio Explicación:</td><td style="text-align:right;">S/ {{ (precioExplicacion || 0).toFixed(2) }}</td></tr>
+    }
+    <tr><td style="color:#555;">Ganancia ({{ margenGanancia }}%):</td><td style="text-align:right;">S/ {{ ganancia.toFixed(2) }}</td></tr>
+    <tr style="font-weight:700;font-size:13px;">
+      <td>TOTAL:</td>
+      <td style="text-align:right;">S/ {{ total.toFixed(2) }}</td>
+    </tr>
+  </table>
+
+  @if (boletaTipo === 'adelanto') {
+    <div style="border-top:1px dashed #999;margin:8px 0 4px;"></div>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+      <tr style="color:#b45309;font-weight:700;">
+        <td>ADELANTO ({{ porcentajeAdelanto }}%):</td>
+        <td style="text-align:right;">S/ {{ montoAdelanto.toFixed(2) }}</td>
+      </tr>
+      <tr style="color:#555;">
+        <td>Saldo pendiente:</td>
+        <td style="text-align:right;">S/ {{ (total - montoAdelanto).toFixed(2) }}</td>
+      </tr>
+    </table>
+    <div style="font-size:9px;color:#888;margin-top:4px;text-align:center;">El saldo se pagará al entregar la maqueta.</div>
+  } @else {
+    <div style="font-size:9px;color:#888;margin-top:4px;text-align:center;">Pago completo recibido. ¡Gracias!</div>
+  }
+
+  <div style="border-top:1px dashed #999;margin:8px 0 4px;"></div>
+  <div style="text-align:center;font-size:9px;color:#666;">
+    Gracias por confiar en Amazonas Maquetas<br>
+    Guarda esta boleta como comprobante de pago.
+  </div>
+</div>
 
 
 <!-- ══════════════════ MODAL ADELANTO ══════════════════ -->
@@ -558,7 +1272,7 @@
         </div>
 
         @if (copiado) {
-          <div class="copiado-toast">✓ Copiado al portapapeles</div>
+          <div class="copiado-toast">Copiado al portapapeles</div>
         }
 
         <!-- Instrucciones -->
@@ -589,3 +1303,4 @@
     </div>
   </div>
 }
+</div>

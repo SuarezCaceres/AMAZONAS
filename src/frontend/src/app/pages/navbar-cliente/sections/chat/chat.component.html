@@ -54,16 +54,27 @@
             <p class="text-[10px] text-slate-400 truncate mt-0.5">Asesor: {{ room.vendorName }}</p>
             <div class="flex items-center justify-between mt-1">
               <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                [class.bg-yellow-50]="room.status === 'ACTIVE' || room.status === 'OPEN'"
-                [class.text-yellow-700]="room.status === 'ACTIVE' || room.status === 'OPEN'"
-                [class.border-yellow-200]="room.status === 'ACTIVE' || room.status === 'OPEN'"
-                [class.bg-emerald-50]="room.status === 'AGREED'"
-                [class.text-emerald-700]="room.status === 'AGREED'"
-                [class.border-emerald-200]="room.status === 'AGREED'"
-                [class.bg-slate-100]="room.status === 'CLOSED'"
-                [class.text-slate-600]="room.status === 'CLOSED'"
-                [class.border-slate-300]="room.status === 'CLOSED'">
-                {{ room.status === 'AGREED' ? 'Acordado' : room.status === 'CLOSED' ? 'En Fabricación' : 'Negociando' }}
+                [class.bg-yellow-50]="room.requestStatus === 'PENDING' && room.status !== 'AGREED'"
+                [class.text-yellow-700]="room.requestStatus === 'PENDING' && room.status !== 'AGREED'"
+                [class.border-yellow-250]="room.requestStatus === 'PENDING' && room.status !== 'AGREED'"
+                [class.bg-emerald-55]="room.status === 'AGREED' && room.requestStatus === 'PENDING'"
+                [class.text-emerald-800]="room.status === 'AGREED' && room.requestStatus === 'PENDING'"
+                [class.border-emerald-200]="room.status === 'AGREED' && room.requestStatus === 'PENDING'"
+                [class.bg-blue-50]="room.requestStatus === 'PROCESANDO'"
+                [class.text-blue-700]="room.requestStatus === 'PROCESANDO'"
+                [class.border-blue-200]="room.requestStatus === 'PROCESANDO'"
+                [class.bg-emerald-500]="room.requestStatus === 'COMPLETADO'"
+                [class.text-white]="room.requestStatus === 'COMPLETADO'"
+                [class.border-none]="room.requestStatus === 'COMPLETADO'">
+                {{ 
+                  room.requestStatus === 'COMPLETADO' 
+                    ? 'Completado' 
+                    : room.requestStatus === 'PROCESANDO' 
+                      ? 'En Fabricación' 
+                      : room.status === 'AGREED' 
+                        ? 'Acordado' 
+                        : 'Negociando' 
+                }}
               </span>
               <span class="text-[9px] text-slate-400">{{ room.lastMessageAt | date:'shortTime' }}</span>
             </div>
@@ -158,15 +169,26 @@
                   <div class="flex items-center gap-2">
                     <h2 class="font-bold text-slate-800 text-xs">Canal de Negociación</h2>
                     <span class="px-2 py-0.5 text-[9px] font-bold rounded"
-                      [class.bg-yellow-50]="selectedRoom.status === 'ACTIVE' || selectedRoom.status === 'OPEN'"
-                      [class.text-yellow-700]="selectedRoom.status === 'ACTIVE' || selectedRoom.status === 'OPEN'"
-                      [class.border-yellow-100]="selectedRoom.status === 'ACTIVE' || selectedRoom.status === 'OPEN'"
-                      [class.bg-emerald-50]="selectedRoom.status === 'AGREED'"
-                      [class.text-emerald-700]="selectedRoom.status === 'AGREED'"
-                      [class.border-emerald-100]="selectedRoom.status === 'AGREED'"
-                      [class.bg-slate-100]="selectedRoom.status === 'CLOSED'"
-                      [class.text-slate-700]="selectedRoom.status === 'CLOSED'">
-                      {{ selectedRoom.status === 'AGREED' ? 'Presupuesto Aceptado' : selectedRoom.status === 'CLOSED' ? 'En Producción' : 'Cotización en Revisión' }}
+                      [class.bg-yellow-50]="selectedRoom.requestStatus === 'PENDING' && selectedRoom.status !== 'AGREED'"
+                      [class.text-yellow-750]="selectedRoom.requestStatus === 'PENDING' && selectedRoom.status !== 'AGREED'"
+                      [class.border-yellow-100]="selectedRoom.requestStatus === 'PENDING' && selectedRoom.status !== 'AGREED'"
+                      [class.bg-emerald-50]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDING'"
+                      [class.text-emerald-700]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDING'"
+                      [class.border-emerald-100]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDING'"
+                      [class.bg-blue-50]="selectedRoom.requestStatus === 'PROCESANDO'"
+                      [class.text-blue-700]="selectedRoom.requestStatus === 'PROCESANDO'"
+                      [class.border-blue-100]="selectedRoom.requestStatus === 'PROCESANDO'"
+                      [class.bg-emerald-500]="selectedRoom.requestStatus === 'COMPLETADO'"
+                      [class.text-white]="selectedRoom.requestStatus === 'COMPLETADO'">
+                      {{ 
+                        selectedRoom.requestStatus === 'COMPLETADO' 
+                          ? 'Completado' 
+                          : selectedRoom.requestStatus === 'PROCESANDO' 
+                            ? 'En Producción' 
+                            : selectedRoom.status === 'AGREED' 
+                              ? 'Presupuesto Aceptado' 
+                              : 'Cotización en Revisión' 
+                      }}
                     </span>
                   </div>
                   <p class="text-[10px] text-slate-500 m-0">Chat activo con {{ selectedRoom.vendorName }}</p>
@@ -230,13 +252,13 @@
                   }
                 </div>
                 <div class="flex-1 h-0.5 mx-1.5"
-                  [class.bg-emerald-500]="selectedRoom.status === 'AGREED' || selectedRoom.status === 'CLOSED'"
-                  [class.bg-slate-200]="selectedRoom.status !== 'AGREED' && selectedRoom.status !== 'CLOSED'">
+                  [class.bg-emerald-500]="selectedRoom.status === 'AGREED' || selectedRoom.status === 'CLOSED' || selectedRoom.requestStatus === 'PROCESANDO' || selectedRoom.requestStatus === 'COMPLETADO'"
+                  [class.bg-slate-200]="selectedRoom.status !== 'AGREED' && selectedRoom.status !== 'CLOSED' && selectedRoom.requestStatus !== 'PROCESANDO' && selectedRoom.requestStatus !== 'COMPLETADO'">
                 </div>
 
                 <!-- Step 4: Pago -->
                 <div class="flex items-center gap-1.5">
-                  @if (selectedRoom.status === 'CLOSED') {
+                  @if (selectedRoom.requestStatus === 'PROCESANDO' || selectedRoom.requestStatus === 'COMPLETADO') {
                     <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                       <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                     </div>
@@ -254,13 +276,18 @@
                   }
                 </div>
                 <div class="flex-1 h-0.5 mx-1.5"
-                  [class.bg-emerald-500]="selectedRoom.status === 'CLOSED'"
-                  [class.bg-slate-200]="selectedRoom.status !== 'CLOSED'">
+                  [class.bg-emerald-500]="selectedRoom.requestStatus === 'PROCESANDO' || selectedRoom.requestStatus === 'COMPLETADO'"
+                  [class.bg-slate-200]="selectedRoom.requestStatus !== 'PROCESANDO' && selectedRoom.requestStatus !== 'COMPLETADO'">
                 </div>
 
                 <!-- Step 5: Producción -->
                 <div class="flex items-center gap-1.5">
-                  @if (selectedRoom.status === 'CLOSED') {
+                  @if (selectedRoom.requestStatus === 'COMPLETADO') {
+                    <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                      <span class="material-icons text-xs" style="font-size: 12px;">check</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-slate-850">Producción</span>
+                  } @else if (selectedRoom.requestStatus === 'PROCESANDO') {
                     <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
                       5
                     </div>
@@ -547,7 +574,14 @@
                 La negociación ha finalizado. El precio acordado es de {{ selectedRoom.agreedPrice | currency:'S/ ':'code':'1.2-2' }}.
               </div>
             } @else {
-              @if (selectedRoom.status === 'AGREED') {
+              @if (selectedRoom.requestStatus === 'PROCESANDO') {
+                <div class="text-center p-2 bg-blue-50 text-blue-800 border border-blue-200 rounded-xl text-xs font-semibold mb-2">
+                  <span class="flex items-center justify-center gap-1.5">
+                    <span class="material-icons text-blue-600 text-sm" style="font-size: 16px;">handyman</span>
+                    La maqueta está en proceso de elaboración. El artesano coordinará la entrega contigo.
+                  </span>
+                </div>
+              } @else if (selectedRoom.status === 'AGREED') {
                 <div class="text-center p-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold mb-2">
                   Presupuesto aceptado por S/ {{ selectedRoom.agreedPrice | number:'1.2-2' }}. Por favor, envía el comprobante de pago o continúa la conversación.
                 </div>
@@ -840,7 +874,7 @@
                 }
 
                 <!-- Item 4: Producción -->
-                @if (selectedRoom.status === 'CLOSED') {
+                @if (selectedRoom.requestStatus === 'PROCESANDO' || selectedRoom.requestStatus === 'COMPLETADO') {
                   <div class="relative text-[11px] mt-4">
                     <div class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-sm">
                       <span class="material-icons text-[10px]" style="font-size: 10px;">build</span>

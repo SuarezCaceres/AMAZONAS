@@ -240,6 +240,9 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
       return;
     }
 
+    // Feedback visual inmediato (optimistic update)
+    room.unreadCount = 0;
+
     if (this.selectedRoom) {
       this.chatService.unsubscribeFromRoom(this.selectedRoom.id);
     }
