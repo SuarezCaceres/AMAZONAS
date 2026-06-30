@@ -13,6 +13,10 @@
         "build": {
           "builder": "@ngx-env/builder:application",
           "options": {
+            "outputPath": {
+              "base": "dist/frontend-app",
+              "browser": ""
+            },
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
