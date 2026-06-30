@@ -28,4 +28,10 @@ export class BudgetService {
       `${this.API_URL}/admin/budgets/${id}`, request
     );
   }
+
+  listarTodos(): Observable<BudgetResponse[]> {
+    return this.http.get<BudgetResponse[]>(
+      `${this.API_URL}/admin/budgets`
+    );
+  }
 }

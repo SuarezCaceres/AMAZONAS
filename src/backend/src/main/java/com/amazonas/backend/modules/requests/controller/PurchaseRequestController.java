@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.amazonas.backend.modules.requests.dto.PurchaseRequestRequest;
 import com.amazonas.backend.modules.requests.dto.PurchaseRequestResponse;
+import com.amazonas.backend.modules.requests.dto.RequestFilesUpdateRequest;
+import com.amazonas.backend.modules.requests.dto.SolicitudParaPresupuestoResponse;
 import com.amazonas.backend.modules.requests.dto.UpdateEstadoRequest;
 import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
 import com.amazonas.backend.modules.requests.service.PurchaseRequestService;
@@ -21,6 +23,7 @@ import com.amazonas.backend.modules.requests.service.PurchaseRequestService;
  *   POST   /api/purchase-requests           → Crear solicitud
  *   GET    /api/purchase-requests/my         → Mis solicitudes
  *   GET    /api/purchase-requests/{id}       → Detalle de una solicitud
+ *   PUT    /api/purchase-requests/{id}/files → Guardar archivos definitivos
  *
  * Rutas de administrador (vendedor):
  *   GET    /api/admin/purchase-requests      → Listar todas (con filtro de estado)
@@ -48,6 +51,19 @@ public class PurchaseRequestController {
             Principal principal) {
         PurchaseRequestResponse response = purchaseRequestService.crear(request, principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * PUT /api/purchase-requests/{id}/files
+     * Guarda los enlaces de los archivos definitivos de la solicitud.
+     */
+    @PutMapping("/api/purchase-requests/{id}/files")
+    public ResponseEntity<PurchaseRequestResponse> actualizarArchivos(
+            @PathVariable UUID id,
+            @RequestBody RequestFilesUpdateRequest request,
+            Principal principal) {
+        PurchaseRequestResponse response = purchaseRequestService.actualizarArchivos(id, request, principal.getName());
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -93,5 +109,17 @@ public class PurchaseRequestController {
             @PathVariable UUID id,
             @RequestBody UpdateEstadoRequest request) {
         return ResponseEntity.ok(purchaseRequestService.actualizarEstado(id, request));
+    }
+
+    /**
+     * GET /api/admin/purchase-requests/{id}/para-presupuesto
+     * Obtiene los datos de una solicitud para crear un presupuesto,
+     * incluyendo los materiales del producto asociado.
+     * Solo accesible para usuarios con rol ADMIN.
+     */
+    @GetMapping("/api/admin/purchase-requests/{id}/para-presupuesto")
+    public ResponseEntity<SolicitudParaPresupuestoResponse> obtenerParaPresupuesto(
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(purchaseRequestService.obtenerParaPresupuesto(id));
     }
 }

@@ -54,6 +54,7 @@
         class="tab-btn"
         type="button"
         [class.active]="activeTab === item.id"
+        [class.disabled-btn]="false"
         (click)="setTab(item.id)"
         [attr.aria-current]="activeTab === item.id ? 'page' : null">
 
@@ -103,6 +104,10 @@
               <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
             }
 
+            @case ('message') {
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            }
+
           }
         </svg>
 
@@ -145,6 +150,7 @@
           class="drawer-btn"
           type="button"
           [class.active]="activeTab === item.id"
+          [class.disabled-btn]="false"
           (click)="setTab(item.id)">
 
           <svg viewBox="0 0 24 24" class="drawer-icon" aria-hidden="true">
@@ -184,6 +190,9 @@
                 <line x1="12" y1="1" x2="12" y2="23"/>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
               }
+              @case ('message') {
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              }
             }
           </svg>
 
@@ -206,7 +215,7 @@
   </aside>
 
   <!-- ══════════════════════════════════ CONTENT ═══════════════════════════════════ -->
-  <main class="tab-content">
+  <main class="tab-content" [class.chat-active]="isChatActivo">
 
     @switch (activeTab) {
 
@@ -226,15 +235,13 @@
       }
 
       @case ('solicitudes') {
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Solicitudes</h2>
-            <p class="section-subtitle">Solicitudes de compra de clientes</p>
-          </div>
-        </div>
-        <div class="placeholder-empty">
-          <p>El módulo de <strong>Solicitudes</strong> se construirá en el siguiente paso.</p>
-        </div>
+        <app-solicitudes
+          [inicialSolicitudId]="solicitudIdParaChat"
+          (chatIniciado)="solicitudIdParaChat = null"
+          (chatActivoEvent)="setChatActivo($event)"
+          (crearPresupuestoEvent)="irAPresupuestoConSolicitud($event)"
+          (navegarAPagosEvent)="navegarAPagos($event)">
+        </app-solicitudes>
       }
 
       @case ('materiales') {
@@ -242,31 +249,24 @@
       }
 
       @case ('presupuestos') {
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Presupuestos</h2>
-            <p class="section-subtitle">Generación y seguimiento de presupuestos</p>
-          </div>
-        </div>
-        <div class="placeholder-empty">
-          <p>El módulo de <strong>Presupuestos</strong> se construirá en el siguiente paso.</p>
-        </div>
+        <app-presupuestos 
+          [solicitudId]="solicitudIdParaPresupuesto"
+          (volverEvent)="volverAlChat()"
+          (navegarATabEvent)="setTab($event)"
+          (navegarAPagosEvent)="navegarAPagos($event)">
+        </app-presupuestos>
       }
 
       @case ('pagos') {
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Pagos</h2>
-            <p class="section-subtitle">Historial y gestión de pagos</p>
-          </div>
-        </div>
-        <div class="placeholder-empty">
-          <p>El módulo de <strong>Pagos</strong> se construirá en el siguiente paso.</p>
-        </div>
+        <app-flujodepagos 
+          [prefilledData]="selectedPaymentData"
+          (pagoRegistrado)="selectedPaymentData = null">
+        </app-flujodepagos>
       }
 
     }
 
   </main>
+
 
 </div>

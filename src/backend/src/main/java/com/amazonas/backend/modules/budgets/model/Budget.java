@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.amazonas.backend.modules.requests.model.PurchaseRequest;
+import com.amazonas.backend.modules.vendors.model.Vendor;
 
 import jakarta.persistence.*;
 
@@ -19,14 +20,24 @@ public class Budget {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "solicitud_id", nullable = false, unique = true)
+    @JoinColumn(name = "solicitud_id", unique = true)
     private PurchaseRequest solicitud;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creador_id")
+    private Vendor creador;
 
     @Column(nullable = false, length = 200)
     private String nombre;
 
     @Column(columnDefinition = "TEXT")
     private String descripcion;
+
+    @Column(name = "codigo_referencia", nullable = false, unique = true, length = 30)
+    private String codigoReferencia;
+
+    @Column(name = "estado", nullable = false, length = 30)
+    private String estado = "PENDIENTE"; // PENDIENTE, ENVIADO, ACEPTADO, RECHAZADO, EN_PRODUCCION
 
     @Column(name = "mano_de_obra", nullable = false, precision = 10, scale = 2)
     private BigDecimal manoDeObra = BigDecimal.ZERO;
@@ -42,6 +53,24 @@ public class Budget {
 
     @Column(name = "adelanto_monto", precision = 10, scale = 2)
     private BigDecimal adelantoMonto = BigDecimal.ZERO;
+
+    @Column(name = "cliente_nombre", length = 255)
+    private String clienteNombre;
+
+    @Column(name = "cliente_email", length = 150)
+    private String clienteEmail;
+
+    @Column(name = "cliente_telefono", length = 15)
+    private String clienteTelefono;
+
+    @Column(name = "es_presencial", nullable = false)
+    private Boolean esPresencial = false;
+
+    @Column(name = "is_custom", nullable = false)
+    private Boolean isCustom = false;
+
+    @Column(name = "is_kit", nullable = false)
+    private Boolean isKit = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -60,6 +89,11 @@ public class Budget {
     protected void onCreate() {
         if (this.id == null) {
             this.id = UUID.randomUUID();
+        }
+        if (this.codigoReferencia == null) {
+            long epoch = System.currentTimeMillis() % 1000000;
+            int randomNum = (int) (Math.random() * 100);
+            this.codigoReferencia = String.format("PR-2026-%06d%02d", epoch, randomNum);
         }
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
@@ -187,6 +221,18 @@ public class Budget {
         this.adelantoMonto = adelantoMonto;
     }
 
+    public String getClienteNombre() { return clienteNombre; }
+    public void setClienteNombre(String clienteNombre) { this.clienteNombre = clienteNombre; }
+
+    public String getClienteEmail() { return clienteEmail; }
+    public void setClienteEmail(String clienteEmail) { this.clienteEmail = clienteEmail; }
+
+    public String getClienteTelefono() { return clienteTelefono; }
+    public void setClienteTelefono(String clienteTelefono) { this.clienteTelefono = clienteTelefono; }
+
+    public Boolean getEsPresencial() { return esPresencial; }
+    public void setEsPresencial(Boolean esPresencial) { this.esPresencial = esPresencial; }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -218,4 +264,34 @@ public class Budget {
     public void setServicioExplicacion(BudgetExplanationService servicioExplicacion) {
         this.servicioExplicacion = servicioExplicacion;
     }
+
+    public Vendor getCreador() {
+        return creador;
+    }
+
+    public void setCreador(Vendor creador) {
+        this.creador = creador;
+    }
+
+    public String getCodigoReferencia() {
+        return codigoReferencia;
+    }
+
+    public void setCodigoReferencia(String codigoReferencia) {
+        this.codigoReferencia = codigoReferencia;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public Boolean getIsCustom() { return isCustom; }
+    public void setIsCustom(Boolean isCustom) { this.isCustom = isCustom; }
+
+    public Boolean getIsKit() { return isKit; }
+    public void setIsKit(Boolean isKit) { this.isKit = isKit; }
 }

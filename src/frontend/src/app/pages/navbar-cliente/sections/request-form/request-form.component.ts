@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ModelItem } from '../../../data/model';
 import { PurchaseRequestService } from '../../../../services/purchase-request.service';
 import { PurchaseRequestRequest } from '../../../../models/purchase-request.model';
+import { MaterialService } from '../../../../services/material.service';
 
 export type RequestMode = 'personalizar' | 'comprar';
 
@@ -15,6 +16,7 @@ export interface SessionUser {
 
 export interface SavedRequest {
   id: number;
+  backendId?: string;
   mode: RequestMode;
   modelTitle: string;
   fullName: string;
@@ -29,6 +31,9 @@ export interface SavedRequest {
   explanationType?: string;
   explanationModel?: string;
   explanationPeople?: number;
+  status?: string;
+  unreadCount?: number;
+  lastMessageAt?: string;
 }
 
 @Component({
@@ -38,9 +43,10 @@ export interface SavedRequest {
   templateUrl: './request-form.component.html',
   styleUrl: './request-form.component.css'
 })
-export class RequestFormComponent {
+export class RequestFormComponent implements OnInit {
 
   private readonly requestService = inject(PurchaseRequestService);
+  private readonly materialService = inject(MaterialService);
 
   @Input({ required: true }) model!: ModelItem;
   @Input({ required: true }) mode!: RequestMode;
@@ -120,19 +126,58 @@ export class RequestFormComponent {
   explanationModels = ['Individual', 'Grupal', 'Salon'];
 
   selectedMaterials: string[] = [];
+  materialDropdownOptions: string[][] = [];
   selectedExtras: string[] = [];
   successMessage = '';
   errorMessage = '';
 
-  ngOnChanges(): void {
+  ngOnInit(): void {
+    this.materialService.getAllMaterials().subscribe({
+      next: (mats) => {
+        if (mats && mats.length > 0) {
+          const activeMats = mats.filter(m => m.activo !== false).map(m => m.nombre);
+          if (activeMats.length > 0) {
+            this.materialOptions = activeMats;
+            this.additionalMaterials = [...activeMats];
+            this.regenerateDropdownOptions(false);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching materials from DB, using fallback hardcoded list:', err);
+      }
+    });
+  }
 
+  ngOnChanges(): void {
     this.form.fullName = this.user?.name || this.form.fullName || 'Juan';
     this.form.email = this.user?.email || this.form.email || 'juan@gmail.com';
     this.form.phone = this.form.phone || '+51 999 999 999';
 
-    // Evita error si model aún no existe
+    this.regenerateDropdownOptions(true);
+  }
+
+  regenerateDropdownOptions(resetSelected: boolean): void {
     if (this.model?.materials) {
-      this.selectedMaterials = this.model.materials.slice(0, 4);
+      if (resetSelected || !this.selectedMaterials || this.selectedMaterials.length === 0) {
+        this.selectedMaterials = this.model.materials.slice(0, 4);
+      }
+
+      // Generate the options for each slot
+      this.materialDropdownOptions = [];
+      const originalMaterials = this.model.materials.slice(0, 4);
+      for (let i = 0; i < 4; i++) {
+        const orig = originalMaterials[i];
+        if (orig) {
+          if (!this.materialOptions.includes(orig)) {
+            this.materialDropdownOptions.push([orig, ...this.materialOptions]);
+          } else {
+            this.materialDropdownOptions.push([...this.materialOptions]);
+          }
+        } else {
+          this.materialDropdownOptions.push([...this.materialOptions]);
+        }
+      }
 
       while (
         this.selectedMaterials.length < 4 &&
@@ -201,6 +246,35 @@ export class RequestFormComponent {
   }
 
   submitRequest(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    // Validar duplicidad de materiales seleccionados (si es personalización)
+    if (this.isCustomization && this.selectedMaterials && this.selectedMaterials.length > 0) {
+      const nonNullMaterials = this.selectedMaterials.filter(m => !!m).map(m => m.trim().toLowerCase());
+      const uniqueMaterials = new Set(nonNullMaterials);
+      if (uniqueMaterials.size !== nonNullMaterials.length) {
+        this.errorMessage = 'No se permiten materiales duplicados. Cada material seleccionado debe ser único.';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+    }
+
+    // Validar teléfono del cliente (Perú: 9 dígitos numéricos)
+    const rawPhone = this.form.phone || '';
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 11 && cleanPhone.startsWith('51')) {
+      cleanPhone = cleanPhone.substring(2);
+    }
+
+    if (!/^[0-9]{9}$/.test(cleanPhone)) {
+      this.errorMessage = 'El número telefónico debe contener exactamente 9 dígitos numéricos (ej: 999888777).';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    this.form.phone = cleanPhone;
+
     const request: SavedRequest = {
       id: Date.now(),
       mode: this.mode,
@@ -244,15 +318,20 @@ export class RequestFormComponent {
       isKit: false,
       isCustom: this.isCustomization,
       descripcionPersonalizacion: this.isCustomization ? this.form.description : undefined,
-      materialesDeseados: this.isCustomization
-        ? [this.form.otherMaterials, ...this.selectedExtras].filter(Boolean).join(', ')
+      materialesDeseados: this.isCustomization && this.form.otherMaterials
+        ? this.form.otherMaterials
         : undefined,
       solicitarExplicacion: this.form.explanation,
       tipoEvento: this.form.explanation ? this.form.explanationType : undefined,
       cantidadPersonas: this.form.explanation && this.requiresExplanationPeople ? this.form.explanationPeople : undefined,
       materialesCustomizados: [],
       materialesPersonales: [],
-      materialesPreferidos: []
+      materialesPreferidos: this.isCustomization && this.selectedExtras.length > 0
+        ? this.selectedExtras.map(extraName => ({
+            materialName: extraName,
+            razonPreferencia: 'Material extra seleccionado por el cliente'
+          }))
+        : []
     };
 
     if (this.isCustomization && this.model?.rawProduct?.materialesDetalle) {

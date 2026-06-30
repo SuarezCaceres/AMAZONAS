@@ -29,120 +29,454 @@
     </div>
   </div>
 
-  <!-- ADVANCED FILTERS CARD -->
-  <div class="advanced-filters-card animate-fade-in">
-    <h2 class="filter-header">Filtros Avanzados</h2>
-    
-    <div class="filters-grid">
-      <!-- CHECKBOX KIT -->
-      <div class="filter-col checkbox-col">
-        <label class="checkbox-container">
-          <input type="checkbox" [(ngModel)]="selectKitOnly">
-          <span class="custom-checkbox"></span>
-          <span class="checkbox-label-wrapper">
-            <span class="checkbox-title">
-              <span class="material-icons checkbox-icon">inventory_2</span>
-              Seleccionar Kit
-            </span>
-            <span class="checkbox-desc">Compra kits completos o materiales individuales</span>
-          </span>
-        </label>
-      </div>
+  <div class="page-layout">
+    <!-- COLUMNA IZQUIERDA -->
+    <div class="main-content">
 
-      <!-- SELECT OCASIÓN -->
-      <div class="filter-col select-col">
-        <label class="select-label">
-          <span class="material-icons select-icon">event</span>
-          Ocasión
-        </label>
-        <div class="select-wrapper">
-          <select class="custom-select" [(ngModel)]="selectedOccasion">
-            <option *ngFor="let oc of ocasiones" [value]="oc">{{ oc }}</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- SELECT GRADO ESCOLAR -->
-      <div class="filter-col select-col">
-        <label class="select-label">
-          <span class="material-icons select-icon">school</span>
-          Grado Escolar
-        </label>
-        <div class="select-wrapper">
-          <select class="custom-select" [(ngModel)]="selectedGrade">
-            <option *ngFor="let gr of grados" [value]="gr">{{ gr }}</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RESULTS / PLACEHOLDER AREA -->
-  <div class="results-section">
-    <!-- NO FILTERS ACTIVE PLACEHOLDER -->
-    <div class="placeholder-container animate-fade-in" *ngIf="!isFilterActive">
-      <span class="material-icons placeholder-main-icon">menu_book</span>
-      <h2>Selecciona Filtros Avanzados</h2>
-      <p>Usa los filtros de arriba para encontrar maquetas por categoría, ocasión o grado escolar</p>
-      <p class="secondary-p">O activa "Seleccionar Kit" para armar tu pedido de materiales</p>
-    </div>
-
-    <!-- FILTERS ACTIVE BUT NO RESULTS -->
-    <div class="placeholder-container empty-results animate-fade-in" *ngIf="isFilterActive && filteredProducts.length === 0 && !isLoading">
-      <span class="material-icons placeholder-main-icon">search_off</span>
-      <h2>No se encontraron maquetas</h2>
-      <p>Intenta cambiar los filtros seleccionados para encontrar lo que buscas.</p>
-    </div>
-
-    <!-- LOADING STATE -->
-    <div class="loading-container animate-fade-in" *ngIf="isLoading">
-      <div class="spinner"></div>
-      <p>Cargando maquetas...</p>
-    </div>
-
-    <!-- MAQUETAS RESULTS GRID -->
-    <div class="results-grid animate-fade-in" *ngIf="isFilterActive && filteredProducts.length > 0 && !isLoading">
-      <div 
-        *ngFor="let prod of filteredProducts" 
-        class="maqueta-result-card" 
-        (click)="selectProduct(prod)"
-        role="button"
-        tabindex="0"
-        (keydown.enter)="selectProduct(prod)">
+      <!-- FILTROS AVANZADOS (Sección superior) -->
+      <div class="advanced-filters-card animate-fade-in">
+        <h2 class="filter-header">Filtros Avanzados</h2>
         
-        <div class="card-img-wrapper">
-          <img 
-            [src]="prod.imageUrl || 'https://via.placeholder.com/400x300?text=Maqueta'" 
-            [alt]="prod.titulo" 
-            class="card-img"
-            loading="lazy">
-          <div class="card-badge" *ngIf="prod.materialesReciclables">Reciclable</div>
+        <div class="filters-grid">
+          <!-- CHECKBOX KIT -->
+          <div class="filter-col checkbox-col">
+            <label class="checkbox-container">
+              <input type="checkbox" [(ngModel)]="selectKitOnly" (ngModelChange)="togglePersonalKit()">
+              <span class="custom-checkbox"></span>
+              <span class="checkbox-label-wrapper">
+                <span class="checkbox-title">
+                  <span class="material-icons checkbox-icon">inventory_2</span>
+                  Seleccionar Kit
+                </span>
+                <span class="checkbox-desc">Compra kits completos o materiales individuales</span>
+              </span>
+            </label>
+          </div>
+    
+          <!-- SELECT OCASIÓN -->
+          <div class="filter-col select-col">
+            <label class="select-label">
+              <span class="material-icons select-icon">event</span>
+              Ocasión
+            </label>
+            <div class="select-wrapper">
+              <select class="custom-select" [(ngModel)]="selectedOccasion" (ngModelChange)="onFilterChange()">
+                <option *ngFor="let oc of ocasiones" [value]="oc">{{ oc }}</option>
+              </select>
+            </div>
+          </div>
+    
+          <!-- SELECT GRADO ESCOLAR -->
+          <div class="filter-col select-col">
+            <label class="select-label">
+              <span class="material-icons select-icon">school</span>
+              Grado Escolar
+            </label>
+            <div class="select-wrapper">
+              <select class="custom-select" [(ngModel)]="selectedGrade" (ngModelChange)="onFilterChange()">
+                <option *ngFor="let gr of grados" [value]="gr">{{ gr }}</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="card-info">
-          <span class="card-tag">{{ prod.categoriaNombre }}</span>
-          <h3>{{ prod.titulo }}</h3>
-          <p class="card-desc">{{ prod.descripcion }}</p>
-          
-          <div class="card-meta">
-            <span class="meta-grade">
-              <span class="material-icons">school</span>
-              {{ prod.gradoEscolar }}
+        <!-- CHIPS DE FILTROS ACTIVOS -->
+        <div class="active-filters-row" *ngIf="isFilterActive">
+          <div class="chips-container">
+            <span class="filter-chip" *ngIf="selectedCategory">
+              {{ selectedCategory }}
+              <span class="material-icons chip-close" (click)="removeFilter('category')">close</span>
             </span>
-            <span class="meta-materials" *ngIf="prod.materiales && prod.materiales.length > 0">
-              <span class="material-icons">inventory_2</span>
-              {{ prod.materiales.length }} materiales
+            <span class="filter-chip" *ngIf="selectKitOnly">
+              Modo Kit
+              <span class="material-icons chip-close" (click)="removeFilter('kitOnly')">close</span>
+            </span>
+            <span class="filter-chip" *ngIf="selectedOccasion !== 'Todas las ocasiones'">
+              {{ selectedOccasion }}
+              <span class="material-icons chip-close" (click)="removeFilter('occasion')">close</span>
+            </span>
+            <span class="filter-chip" *ngIf="selectedGrade !== 'Todos los grados'">
+              {{ selectedGrade }}
+              <span class="material-icons chip-close" (click)="removeFilter('grade')">close</span>
             </span>
           </div>
+          <button class="clear-filters-btn" (click)="clearAllFilters()">Limpiar Filtros</button>
+        </div>
+      </div>
 
-          <div class="card-footer">
-            <span class="view-detail-btn">
-              Ver Detalles
-              <span class="material-icons">arrow_forward</span>
-            </span>
+      <!-- KITS PREDISENADOS -->
+      <div class="kits-section">
+        <div class="section-header">
+          <h2>Kits por Maqueta</h2>
+          <p>Kits completos con todos los materiales para cada maqueta</p>
+        </div>
+
+        <!-- Mensaje informativo cuando no se han aplicado filtros -->
+        <div class="empty-filters-placeholder animate-fade-in" *ngIf="!hasSearched">
+          <span class="material-icons placeholder-icon">filter_alt</span>
+          <p class="placeholder-title">Kits por Maqueta</p>
+          <p class="placeholder-desc">Utiliza los filtros para encontrar maquetas.</p>
+        </div>
+
+        <!-- Mensaje cuando los filtros no arrojan resultados -->
+        <div class="empty-filters-placeholder animate-fade-in" *ngIf="hasSearched && filteredProducts.length === 0">
+          <span class="material-icons placeholder-icon">search_off</span>
+          <p class="placeholder-title">Sin Resultados</p>
+          <p class="placeholder-desc">No se encontraron maquetas que cumplan con los filtros seleccionados</p>
+        </div>
+
+        <div class="results-grid animate-fade-in" *ngIf="hasSearched && filteredProducts.length > 0">
+          <div 
+            *ngFor="let prod of filteredProducts" 
+            class="maqueta-result-card">
+            
+            <div class="card-content-top" (click)="selectProduct(prod)">
+              <div class="card-img-wrapper">
+                <img 
+                  [src]="prod.imageUrl || 'https://via.placeholder.com/400x300?text=Maqueta'" 
+                  [alt]="prod.titulo" 
+                  class="card-img"
+                  loading="lazy">
+              </div>
+
+              <div class="card-info">
+                <h3>{{ prod.titulo }}</h3>
+                <p class="card-desc">{{ prod.descripcion }}</p>
+                <div class="kit-badge"><span class="material-icons">inventory_2</span> Kit Completo</div>
+              </div>
+            </div>
+
+            <div class="materials-list">
+              <span class="materials-label">Materiales incluidos:</span>
+              <div class="materials-tags">
+                <span class="mat-tag" *ngFor="let m of prod.materiales | slice:0:4">{{m}}</span>
+                <span class="mat-tag" *ngIf="prod.materiales && prod.materiales.length > 4">...</span>
+              </div>
+            </div>
+
+            <div class="card-footer-controls">
+              <div class="quantity-control">
+                <span class="qty-label">Cantidad:</span>
+                <button class="qty-btn" (click)="decreaseProductQty(prod.id)">−</button>
+                <span class="qty-value">{{ getProductQty(prod.id) }}</span>
+                <button class="qty-btn" (click)="increaseProductQty(prod.id)">+</button>
+              </div>
+              <div class="card-actions-layout">
+                <button class="add-to-cart-btn" (click)="addKitToCart(prod)">
+                  <span class="material-icons">add_shopping_cart</span> Agregar {{ getProductQty(prod.id) }} Kit
+                </button>
+                <button class="customize-kit-btn" (click)="openCustomizeModal(prod)">
+                  <span class="material-icons">architecture</span> Personalizar Maqueta
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- KITS PERSONALES (MATERIALES) -->
+      <div class="personal-kit-section" *ngIf="selectKitOnly">
+        <div class="section-header">
+          <div class="header-icon-title">
+            <span class="material-icons purple-icon">palette</span>
+            <h2>Kits Personales - Selecciona Materiales Individuales</h2>
+          </div>
+          <p class="purple-subtitle">Elige los materiales que necesites y la cantidad de cada uno</p>
+        </div>
+
+        <div class="materials-accordion-container">
+          <div class="accordion-group" *ngFor="let group of groupedMaterials">
+            
+            <!-- Accordion Header -->
+            <div class="accordion-header" (click)="toggleAccordion(group)">
+              <span class="material-icons expand-icon" [style.color]="getMaterialCategoryClass(group.categoryName).text">
+                {{ group.expanded ? 'expand_less' : 'expand_more' }}
+              </span>
+              <span class="accordion-badge" 
+                    [style.background-color]="getMaterialCategoryClass(group.categoryName).bg"
+                    [style.color]="getMaterialCategoryClass(group.categoryName).text">
+                {{ group.categoryName }}
+              </span>
+              <div class="accordion-line"></div>
+            </div>
+            
+            <!-- Accordion Content (Material Cards) -->
+            <div class="accordion-content" *ngIf="group.expanded">
+              <div class="materials-grid">
+                
+                <div class="material-card" 
+                     *ngFor="let mat of group.materials"
+                     [class.selected]="getMaterialQty(mat.id) > 0">
+                  
+                  <div class="mat-badge" *ngIf="getMaterialQty(mat.id) > 0">{{ getMaterialQty(mat.id) }}</div>
+                  
+                  <div class="mat-info">
+                    <span class="mat-name">{{ mat.nombre }}</span>
+                    <span class="mat-unit">por {{ mat.unidad }}</span>
+                  </div>
+                  
+                  <div class="mat-controls">
+                    <button class="qty-btn" (click)="decreaseMaterial(mat)">−</button>
+                    <span class="qty-value">{{ getMaterialQty(mat.id) }}</span>
+                    <button class="qty-btn" (click)="increaseMaterial(mat)">+</button>
+                  </div>
+                  
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- COLUMNA DERECHA (CARRITO STICKY) -->
+    <div class="cart-sidebar">
+      <div class="cart-card">
+        
+        <div class="cart-header">
+          <span class="material-icons cart-icon">shopping_cart</span>
+          <h2>Carrito de Kits</h2>
+          <span class="cart-items-badge" *ngIf="totalCartItems > 0">{{ totalCartItems }} {{ totalCartItems === 1 ? 'ítem' : 'ítems' }}</span>
+        </div>
+
+        <div class="cart-body">
+          <div class="empty-cart" *ngIf="totalCartItems === 0">
+            <span class="material-icons empty-cart-icon">shopping_cart</span>
+            <p class="empty-cart-title">Tu carrito de kits está vacío</p>
+            <span class="empty-cart-subtitle">Selecciona kits de maquetas o materiales personales</span>
+          </div>
+
+          <div class="cart-content" *ngIf="totalCartItems > 0">
+            
+            <!-- SCROLLABLE LIST OF ITEMS -->
+            <div class="cart-items-scrollable">
+              <!-- KITS COMPLETOS -->
+              <div class="cart-section" *ngIf="cartKits.length > 0">
+                <div class="cart-section-title">
+                  <span class="material-icons green-icon">inventory_2</span>
+                  Kits en Carrito
+                </div>
+                <div class="cart-item kit-item" *ngFor="let item of cartKits; let idx = index" [class.custom-kit-item]="item.isCustom">
+                  <div class="item-details">
+                    <span class="material-icons green-bullet">{{ item.isCustom ? 'architecture' : 'keyboard_arrow_down' }}</span>
+                    <div class="item-text">
+                      <span class="item-name">{{ item.product.titulo }} {{ item.isCustom ? '(Personalizado)' : '' }}</span>
+                      <span class="item-qty">Cantidad: {{ item.quantity }}</span>
+                      <ul class="custom-mats-mini-list" *ngIf="item.isCustom && item.customMaterials && item.customMaterials.length > 0">
+                        <li *ngFor="let cm of item.customMaterials">{{ cm.material.nombre }}: {{ cm.quantity }}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <button class="delete-btn" (click)="removeKitFromCart(idx)">
+                    <span class="material-icons">delete_outline</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- MATERIALES PERSONALES -->
+              <div class="cart-section" *ngIf="cartMaterials.length > 0">
+                <div class="cart-section-title">
+                  <span class="material-icons purple-icon">palette</span>
+                  Materiales Personales
+                </div>
+                <div class="cart-item material-item" *ngFor="let item of cartMaterials">
+                  <div class="item-details">
+                    <div class="item-text">
+                      <span class="item-name">{{ item.material.nombre }}</span>
+                      <span class="item-qty">{{ item.quantity }} {{ item.material.unidad }}</span>
+                    </div>
+                  </div>
+                  <button class="delete-btn" (click)="removeMaterialFromCart(item.material.id)">
+                    <span class="material-icons">delete_outline</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <hr class="cart-divider">
+
+            <!-- CHECKBOX EXPLICACION -->
+            <label class="service-checkbox">
+              <input type="checkbox" [(ngModel)]="isServiceRequested">
+              <span class="custom-square-checkbox">
+                <span class="material-icons checked-mark" *ngIf="isServiceRequested">check</span>
+              </span>
+              <div class="service-text">
+                <div class="service-title">
+                  <span class="material-icons purple-icon">live_tv</span>
+                  Solicitar Servicio de Explicación
+                </div>
+                <p>Recibe una explicación detallada sobre el uso de los materiales</p>
+              </div>
+            </label>
+
+            <!-- SECCIÓN DETALLE EXPLICACIÓN (Bajo requerimientos visuales) -->
+            <div class="explanation-details-subpanel" *ngIf="isServiceRequested">
+              <div class="explanation-type-selector">
+                <span class="section-sub-label">Tipo de Explicación</span>
+                
+                <label class="exp-radio-option">
+                  <input type="radio" name="tipoExplicacion" value="video" [(ngModel)]="cartForm.tipoExplicacion">
+                  <span class="custom-radio"></span>
+                  <span class="material-icons radio-icon">videocam</span>
+                  <span class="radio-text">Video pregrabado</span>
+                </label>
+
+                <label class="exp-radio-option">
+                  <input type="radio" name="tipoExplicacion" value="presencial" [(ngModel)]="cartForm.tipoExplicacion">
+                  <span class="custom-radio"></span>
+                  <span class="material-icons radio-icon">groups</span>
+                  <span class="radio-text">Explicación presencial</span>
+                </label>
+
+                <label class="exp-radio-option">
+                  <input type="radio" name="tipoExplicacion" value="virtual" [(ngModel)]="cartForm.tipoExplicacion">
+                  <span class="custom-radio"></span>
+                  <span class="material-icons radio-icon">devices</span>
+                  <span class="radio-text">Explicación virtual</span>
+                </label>
+              </div>
+
+              <div class="form-group-sub">
+                <label>Modelo de Explicación</label>
+                <select class="sub-custom-select" [(ngModel)]="cartForm.modeloExplicacion">
+                  <option value="" disabled selected>Seleccionar modelo...</option>
+                  <option *ngFor="let opt of explanationModels" [value]="opt">{{ opt }}</option>
+                </select>
+                <span class="error-text" *ngIf="validationAttempted && isServiceRequested && !cartForm.modeloExplicacion">Este campo es obligatorio.</span>
+              </div>
+
+              <div class="form-group-sub" *ngIf="cartForm.modeloExplicacion === 'Grupal' || cartForm.modeloExplicacion === 'Salon'">
+                <label>Cantidad de Personas (Mínimo {{ cartForm.modeloExplicacion === 'Salon' ? 10 : 2 }})</label>
+                <input type="number" class="sub-custom-input" [(ngModel)]="cartForm.cantidadPersonas" [min]="cartForm.modeloExplicacion === 'Salon' ? 10 : 2">
+                <span class="error-text" *ngIf="validationAttempted && isServiceRequested && cartForm.modeloExplicacion === 'Salon' && cartForm.cantidadPersonas < 10">Mínimo 10 personas para salón.</span>
+                <span class="error-text" *ngIf="validationAttempted && isServiceRequested && cartForm.modeloExplicacion === 'Grupal' && cartForm.cantidadPersonas < 2">Mínimo 2 personas para explicación grupal.</span>
+              </div>
+            </div>
+
+            <hr class="cart-divider">
+
+            <!-- FORMULARIO -->
+            <div class="cart-form">
+              <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" [(ngModel)]="cartForm.nombre" placeholder="Nombre completo">
+                <span class="error-text" *ngIf="validationAttempted && !cartForm.nombre">Este campo es obligatorio.</span>
+              </div>
+              <div class="form-group">
+                <label>Correo</label>
+                <input type="email" [(ngModel)]="cartForm.correo" placeholder="correo@ejemplo.com">
+                <span class="error-text" *ngIf="validationAttempted && !cartForm.correo">Este campo es obligatorio.</span>
+                <span class="error-text" *ngIf="validationAttempted && cartForm.correo && !cartForm.correo.includes('@')">Ingrese un correo válido.</span>
+              </div>
+              <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" [(ngModel)]="cartForm.telefono" placeholder="+51 999 999 999">
+                <span class="error-text" *ngIf="validationAttempted && !cartForm.telefono">Este campo es obligatorio.</span>
+              </div>
+              <div class="form-group">
+                <label>Mensaje (opcional)</label>
+                <textarea [(ngModel)]="cartForm.mensaje" placeholder="Detalles adicionales..."></textarea>
+              </div>
+            </div>
+
+            <!-- ADVERTENCIA DE AUTENTICACION -->
+            <div class="auth-warning-alert" *ngIf="showAuthError">
+              <p>Debes <a href="javascript:void(0)" (click)="redirectToLogin()" class="login-link">iniciar sesión</a> para solicitar.</p>
+            </div>
+
+            <!-- BANNER DE VALIDACIÓN -->
+            <div class="validation-banner-error animate-fade-in" *ngIf="validationAttempted && isFormInvalid">
+              <span class="material-icons">error_outline</span>
+              <span>Por favor, complete los campos obligatorios.</span>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="cart-actions">
+              <button class="submit-cart-btn" (click)="submitCart()">
+                <span class="material-icons">send</span> Solicitar
+              </button>
+              <button class="clear-cart-btn" (click)="clearCart()">
+                <span class="material-icons">delete_outline</span>
+              </button>
+            </div>
+
+            <div class="login-prompt-under" *ngIf="showAuthError">
+              <span>Debes <a href="javascript:void(0)" (click)="redirectToLogin()">iniciar sesión</a> para solicitar</span>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- MODAL FLOTANTE (PERSONALIZAR MAQUETA) -->
+<div class="customize-modal-overlay animate-fade-in" *ngIf="selectedModalProduct">
+  <div class="customize-modal-card">
+    <div class="modal-header">
+      <h2>Personalizar Kit - {{ selectedModalProduct.titulo }}</h2>
+      <button class="close-modal-btn" (click)="closeModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    
+    <div class="modal-body-scrollable">
+      <p class="modal-instructions">Selecciona los materiales y cantidades que necesitas para esta maqueta</p>
+      
+      <!-- Informacion de maqueta -->
+      <div class="modal-product-summary">
+        <img [src]="selectedModalProduct.imageUrl || 'https://via.placeholder.com/400x300?text=Maqueta'" [alt]="selectedModalProduct.titulo" class="summary-img">
+        <div class="summary-info">
+          <h3>{{ selectedModalProduct.titulo }}</h3>
+          <p>{{ selectedModalProduct.descripcion }}</p>
+        </div>
+      </div>
+
+      <!-- Seleccion de materiales -->
+      <h4 class="materials-avail-title">Materiales Disponibles</h4>
+      <div class="modal-materials-grid">
+        <div class="modal-material-card" *ngFor="let mat of modalMaterialsList" [class.active]="getModalMaterialQty(mat.id) > 0">
+          <div class="m-card-details">
+            <span class="m-name">{{ mat.nombre }}</span>
+            <span class="m-desc">por {{ mat.unidad }}</span>
+          </div>
+          <div class="m-controls">
+            <button class="m-qty-btn" (click)="decreaseModalMaterial(mat.id)">−</button>
+            <input type="number" class="m-qty-input" 
+                   [ngModel]="getModalMaterialQty(mat.id)" 
+                   (ngModelChange)="setModalMaterialQty(mat.id, $event)"
+                   min="0">
+            <button class="m-qty-btn" (click)="increaseModalMaterial(mat.id)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="add-custom-kit-btn" (click)="addCustomKitToCart()">
+        <span class="material-icons">add_shopping_cart</span> Agregar Kit Personalizado
+      </button>
+      <button class="cancel-modal-btn" (click)="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE NOTIFICACIÓN DE ÉXITO -->
+<div class="success-notification-overlay" *ngIf="showSuccessNotification">
+  <div class="success-notification-card">
+    <div class="success-icon-wrapper">
+      <span class="material-icons success-checkmark">check_circle</span>
+    </div>
+    <h2>¡Solicitud Enviada!</h2>
+    <p>Tu solicitud ha sido registrada correctamente. En breve nos pondremos en contacto contigo para coordinar los detalles.</p>
+    <button class="success-close-btn" (click)="showSuccessNotification = false">Entendido</button>
+  </div>
+</div>
+

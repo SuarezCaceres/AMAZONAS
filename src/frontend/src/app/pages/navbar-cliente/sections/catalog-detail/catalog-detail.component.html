@@ -1,12 +1,12 @@
-<section class="detail-page" *ngIf="detailedModel">
+<section class="detail-page" *ngIf="detailedModel" style="padding: 28px 40px 64px; max-width: 1400px; margin: 0 auto;">
   <button class="back-button" type="button" (click)="back.emit()">← Volver al catalogo</button>
 
-  <article class="detail-layout" [class.loading-fade]="isLoading">
-    <div class="detail-media">
-      <img [src]="detailedModel.imageUrl" [alt]="detailedModel.title">
+  <article class="detail-layout" [class.loading-fade]="isLoading" style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
+    <div class="detail-media" style="flex: 0 0 45%; max-width: 45%;">
+      <img [src]="detailedModel.imageUrl" [alt]="detailedModel.title" style="width: 100%; max-height: 500px; border-radius: 8px; object-fit: cover;">
     </div>
 
-    <div class="detail-content">
+    <div class="detail-content" style="flex: 1; min-width: 0;">
       <span class="eyebrow">{{ detailedModel.category }} · {{ detailedModel.level }}</span>
       <h1>{{ detailedModel.title }}</h1>
       <p class="detail-description">{{ detailedModel.description }}</p>
@@ -14,27 +14,40 @@
       <div class="info-grid">
         <section>
           <h2>Materiales Utilizados</h2>
-          <ul>
+          <ul *ngIf="detailedModel.materials && detailedModel.materials.length > 0; else noMaterials">
             <li *ngFor="let material of detailedModel.materials">{{ material }}</li>
           </ul>
+          <ng-template #noMaterials>
+            <ul>
+              <li>Materiales de alta calidad</li>
+              <li>Consultar disponibilidad</li>
+            </ul>
+          </ng-template>
         </section>
 
         <section>
           <h2>Caracteristicas</h2>
-          <ul>
+          <ul *ngIf="detailedModel.features && detailedModel.features.length > 0; else noFeatures">
             <li *ngFor="let feature of detailedModel.features">{{ feature }}</li>
           </ul>
+          <ng-template #noFeatures>
+            <ul>
+              <li>Elaborado con materiales sostenibles</li>
+              <li>Durabilidad garantizada</li>
+              <li>Hecho a mano con atencion al detalle</li>
+            </ul>
+          </ng-template>
         </section>
       </div>
 
       <div class="purchase-options" aria-label="Opciones de compra">
-        <button type="button" class="option-card" (click)="accessRequested.emit('comprar')">
+        <button type="button" class="option-card" (click)="accessRequested.emit({ mode: 'comprar', model: detailedModel })">
           <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=500&q=80" alt="Maqueta terminada lista para comprar">
           <span>Comprar ya hecha</span>
           <small>Entrega con acabado final</small>
         </button>
-
-        <button type="button" class="option-card" (click)="accessRequested.emit('personalizar')">
+ 
+        <button type="button" class="option-card" (click)="accessRequested.emit({ mode: 'personalizar', model: detailedModel })">
           <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=500&q=80" alt="Personalizacion de maqueta educativa">
           <span>Personalizar</span>
           <small>Ajustes de tamano, colores y detalles</small>

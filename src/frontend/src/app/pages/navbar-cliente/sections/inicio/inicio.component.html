@@ -83,13 +83,13 @@
           Solicita una maqueta única diseñada para tus necesidades
         </p>
 
-        <button class="catalog-link" type="button" (click)="requestAccess.emit('personalizar')">
+        <button class="purple-btn" type="button" (click)="requestAccess.emit('personalizar')">
           Solicitar ahora →
         </button>
 
       </div>
 
-      <div class="card gray">
+      <div class="card gray" *ngIf="!isLoggedIn">
 
         <div class="icon-circle">
           <span class="material-icons">inventory_2</span>
@@ -101,10 +101,28 @@
           Regístrate para hacer seguimiento de tus solicitudes
         </p>
 
-        <button class="btn-primary" type="button" (click)="isLoggedIn ? mostrarAvisoCuenta() : registerClicked.emit()">
+        <button class="gray-btn" type="button" (click)="registerClicked.emit()">
 
-          Registrarse gratis
+          Registrarse gratis →
 
+        </button>
+
+      </div>
+
+      <div class="card card-blue" *ngIf="isLoggedIn">
+
+        <div class="icon-circle">
+          <span class="material-icons">chat_bubble_outline</span>
+        </div>
+
+        <h3>Mis Solicitudes</h3>
+
+        <p>
+          Revisa el estado de tus pedidos y chatea con nosotros
+        </p>
+
+        <button class="blue-btn" type="button" (click)="requestsClicked.emit()">
+          Ver solicitudes →
         </button>
 
       </div>
@@ -272,6 +290,25 @@
 
 </section>
 
+<!-- UBICACION -->
+<section class="location-section" aria-labelledby="locationTitle">
+  <div class="location-inner">
+    <h2 id="locationTitle" class="location-title">Nuestra ubicaci&oacute;n</h2>
+    <p class="location-subtitle">
+      Vis&iacute;tanos y descubre nuestras maquetas educativas en persona. &iexcl;Te esperamos!
+    </p>
+    <div class="map-card">
+      <iframe 
+        src="https://maps.google.com/maps?q=Jir%C3%B3n+Amazonas+500,+Lima&t=&z=16&ie=UTF8&iwloc=&output=embed" 
+        title="Ubicaci&oacute;n de Maquetas Amazonas"
+        allowfullscreen="" 
+        loading="lazy" 
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </div>
+</section>
+
 <!-- CTA FINAL -->
 
 <section class="cta-section">
@@ -284,13 +321,13 @@
 
   <div class="cta-buttons">
 
-    <button class="catalog-link" type="button" (click)="catalogClicked.emit()">
+    <button class="catalog-btn" type="button" (click)="catalogClicked.emit()">
 
       Ver maquetas →
 
     </button>
 
-    <button class="register-btn" type="button" (click)="isLoggedIn ? mostrarAvisoCuenta() : registerClicked.emit()">
+    <button class="register-btn" type="button" *ngIf="!isLoggedIn" (click)="registerClicked.emit()">
 
       Crear Cuenta Gratis
 

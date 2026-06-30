@@ -1,8 +1,16 @@
-/* Container & Header */
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
 .stock-container {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding: 24px 32px 40px;
+  box-sizing: border-box;
 }
 
 .stock-header {

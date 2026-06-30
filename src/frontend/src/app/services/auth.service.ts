@@ -97,10 +97,10 @@ export class AuthService {
       role = this.getRoleFromToken(auth.token) || '';
     }
 
-    localStorage.setItem('auth_token', auth.token);
-    localStorage.setItem('auth_email', auth.email);
-    localStorage.setItem('auth_role', role);
-    localStorage.setItem('auth_nombre', auth.nombre || '');
+    sessionStorage.setItem('auth_token', auth.token);
+    sessionStorage.setItem('auth_email', auth.email);
+    sessionStorage.setItem('auth_role', role);
+    sessionStorage.setItem('auth_nombre', auth.nombre || '');
     
     this.currentUserSubject.next({
       id: '',
@@ -124,9 +124,9 @@ export class AuthService {
 
   loadSession(): void {
     const token = this.getToken();
-    const email = localStorage.getItem('auth_email');
-    const role = localStorage.getItem('auth_role');
-    const nombre = localStorage.getItem('auth_nombre');
+    const email = sessionStorage.getItem('auth_email');
+    const role = sessionStorage.getItem('auth_role');
+    const nombre = sessionStorage.getItem('auth_nombre');
 
     if (token && email && role) {
       // Verificar si el token ya expiro antes de restaurar la sesion
@@ -145,18 +145,18 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('auth_token');
+    return sessionStorage.getItem('auth_token');
   }
 
   getNombre(): string {
-    return localStorage.getItem('auth_nombre') || '';
+    return sessionStorage.getItem('auth_nombre') || '';
   }
 
   logout(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_email');
-    localStorage.removeItem('auth_role');
-    localStorage.removeItem('auth_nombre');
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_email');
+    sessionStorage.removeItem('auth_role');
+    sessionStorage.removeItem('auth_nombre');
     sessionStorage.clear();
     this.currentUserSubject.next(null);
   }
@@ -172,7 +172,7 @@ export class AuthService {
   }
 
   getUserRole(): string | null {
-    return localStorage.getItem('auth_role');
+    return sessionStorage.getItem('auth_role');
   }
 
   forgotPassword(email: string): Observable<any> {

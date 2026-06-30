@@ -13,11 +13,12 @@ import { AuthComponent } from './sections/auth/auth.component';
 import { RequestFormComponent, RequestMode, SavedRequest, SessionUser } from './sections/request-form/request-form.component';
 import { MyRequestsComponent } from './sections/my-requests/my-requests.component';
 import { ResetPasswordComponent } from './sections/reset-password/reset-password.component';
+import { ChatComponent } from './sections/chat/chat.component';
 
 import { MODELS, ModelItem } from '../data/model';
 import { AuthService } from '../../services/auth.service';
 
-type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests' | 'categories' | 'reset-password';
+type PageView = 'inicio' | 'nosotros' | 'catalog' | 'detail' | 'auth' | 'request' | 'requests' | 'categories' | 'reset-password' | 'chat';
 type AuthView = 'login' | 'register';
 
 @Component({
@@ -35,7 +36,8 @@ type AuthView = 'login' | 'register';
     AuthComponent,
     RequestFormComponent,
     MyRequestsComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    ChatComponent
   ],
   templateUrl: './navbar-cliente.component.html',
   styleUrl: './navbar-cliente.component.css'
@@ -58,6 +60,7 @@ export class NavbarClienteComponent implements OnInit, OnDestroy {
   isStandaloneRequest = false;
   tokenToReset = '';
   preselectedCategory = '';
+  selectedRequestIdForChat = '';
 
   ngOnInit(): void {
     // Check for password reset token in URL query params
@@ -123,22 +126,23 @@ export class NavbarClienteComponent implements OnInit, OnDestroy {
     });
   }
 
-  requestAccess(action: RequestMode): void {
+  requestAccess(event: { mode: RequestMode, model: ModelItem }): void {
     this.isStandaloneRequest = false;
-
+    this.selectedModel = event.model;
+ 
     if (this.currentUser) {
-      this.openRequest(action);
+      this.openRequest(event.mode);
       return;
     }
-
+ 
     this.previousPage = this.page === 'auth'
       ? this.previousPage
       : this.page;
-
-    this.accessNotice = action === 'comprar'
+ 
+    this.accessNotice = event.mode === 'comprar'
       ? 'Para comprar una maqueta debes iniciar sesion o registrarte.'
       : 'Para personalizar tu maqueta debes iniciar sesion o registrarte.';
-
+ 
     this.authView = 'login';
     this.page = 'auth';
   }
@@ -164,7 +168,7 @@ export class NavbarClienteComponent implements OnInit, OnDestroy {
   }
 
   showLogin(): void {
-    this.previousPage = 'catalog';
+    this.previousPage = this.page === 'auth' ? this.previousPage : this.page;
     this.accessNotice = '';
     this.authView = 'login';
     this.page = 'auth';
@@ -195,7 +199,7 @@ export class NavbarClienteComponent implements OnInit, OnDestroy {
     if (role === 'ADMIN') {
       this.openVendorPanel.emit();
     } else {
-      this.showCatalog();
+      this.page = this.previousPage;
     }
   }
 
@@ -222,10 +226,18 @@ export class NavbarClienteComponent implements OnInit, OnDestroy {
     this.page = 'requests';
   }
 
+  handleViewChat(requestId: string): void {
+    this.selectedRequestIdForChat = requestId;
+    this.page = 'chat';
+    this.accessNotice = '';
+  }
+
   logout(): void {
     this.authService.logout();
     this.currentUser = null;
-    this.showInicio();
+    if (this.page === 'requests' || this.page === 'request') {
+      this.showInicio();
+    }
   }
 
   handleResetCompleted(): void {

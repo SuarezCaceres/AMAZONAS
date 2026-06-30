@@ -109,7 +109,31 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 			<artifactId>cloudinary-http5</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-</dependencies>
+
+		<!-- =========================================================== -->
+		<!-- MÓDULO DE CHAT Y NEGOCIACIÓN (WebSocket + STOMP)            -->
+		<!-- =========================================================== -->
+
+		<!-- WebSockets con STOMP para comunicación en tiempo real -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<!-- Sanitización HTML segura (OWASP) - previene XSS en mensajes -->
+		<dependency>
+			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+			<artifactId>owasp-java-html-sanitizer</artifactId>
+			<version>20240325.1</version>
+		</dependency>
+
+		<!-- Redis Starter for Caching and Session Management -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+	</dependencies>
 <build>
 <plugins>
 <plugin>

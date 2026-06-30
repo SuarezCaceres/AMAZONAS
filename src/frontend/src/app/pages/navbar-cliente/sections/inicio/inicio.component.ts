@@ -15,11 +15,12 @@ import { BuscadorInteligente } from '../../../shared/components/buscador-intelig
   styleUrl: './inicio.component.css'
 })
 export class InicioComponent {
-  
+
   @Output() requestAccess = new EventEmitter<'personalizar'>();
   @Output() registerClicked = new EventEmitter<void>();
   @Output() modelSelected = new EventEmitter<ModelItem>();
   @Output() catalogClicked = new EventEmitter<void>();
+  @Output() requestsClicked = new EventEmitter<void>();
 
   @ViewChild(BuscadorInteligente) buscador!: BuscadorInteligente;
 

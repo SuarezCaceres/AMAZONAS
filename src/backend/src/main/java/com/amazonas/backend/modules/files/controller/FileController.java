@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/files")
+@RequestMapping("/api/files")
 @RequiredArgsConstructor
 public class FileController {
 

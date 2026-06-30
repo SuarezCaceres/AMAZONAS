@@ -15,23 +15,41 @@ function mapProductToModelItemDetail(product: Product): ModelItem {
     mappedCategory = 'Inclusivo';
   }
 
+  const defaultFeatures = [
+    'Elaborado con materiales sostenibles',
+    product.materialesReciclables ? 'Contiene materiales reciclables' : 'Diseno educativo y didactico',
+    'Durabilidad garantizada',
+    'Hecho a mano con atencion al detalle'
+  ];
+
   return {
     id: product.id,
     title: product.titulo,
     category: mappedCategory,
     level: product.gradoEscolar || 'Escolar',
     imageUrl: product.imageUrl || 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(product.titulo),
-    description: product.descripcion || '',
+    description: product.descripcion || product.descripcionDetallada || '',
     materials: product.materiales || [],
     features: (product.caracteristicas && product.caracteristicas.length > 0)
       ? product.caracteristicas
-      : [
-          'Elaborado con materiales sostenibles',
-          product.materialesReciclables ? 'Contiene materiales reciclables' : 'Diseno educativo y didactico',
-          'Durabilidad garantizada',
-          'Hecho a mano con atencion al detalle'
-        ],
+      : defaultFeatures,
     rawProduct: product
+  };
+}
+
+function ensureCompleteModel(model: ModelItem): ModelItem {
+  const defaultFeatures = [
+    'Elaborado con materiales sostenibles',
+    'Diseno educativo y didactico',
+    'Durabilidad garantizada',
+    'Hecho a mano con atencion al detalle'
+  ];
+
+  return {
+    ...model,
+    description: model.description || '',
+    materials: (model.materials && model.materials.length > 0) ? model.materials : [],
+    features: (model.features && model.features.length > 0) ? model.features : defaultFeatures
   };
 }
 
@@ -45,7 +63,7 @@ function mapProductToModelItemDetail(product: Product): ModelItem {
 export class CatalogDetailComponent implements OnChanges {
   @Input({ required: true }) model!: ModelItem;
   @Output() back = new EventEmitter<void>();
-  @Output() accessRequested = new EventEmitter<'comprar' | 'personalizar'>();
+  @Output() accessRequested = new EventEmitter<{ mode: 'comprar' | 'personalizar', model: ModelItem }>();
   @Output() relatedSelected = new EventEmitter<ModelItem>();
 
   private readonly maquetaService = inject(MaquetaService);
@@ -55,21 +73,33 @@ export class CatalogDetailComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model'] && this.model) {
-      // Iniciar con el modelo actual para evitar parpadeos
-      this.detailedModel = { ...this.model };
+      // Inicializar inmediatamente con el modelo recibido (asegurando campos completos)
+      this.detailedModel = ensureCompleteModel(this.model);
+
+      // Si el modelo ya tiene rawProduct con datos completos, usarlo directamente
+      if (this.model.rawProduct && this.model.rawProduct.id) {
+        this.detailedModel = mapProductToModelItemDetail(this.model.rawProduct);
+      }
+
+      // Intentar cargar datos adicionales del backend (opcional, para enriquecer)
       this.loadFullProduct(this.model.id);
     }
   }
 
   loadFullProduct(id: string): void {
+    if (!id) return;
+
     this.isLoading = true;
     this.maquetaService.getProductById(id).subscribe({
       next: (product) => {
-        this.detailedModel = mapProductToModelItemDetail(product);
+        if (product && product.id) {
+          this.detailedModel = mapProductToModelItemDetail(product);
+        }
         this.isLoading = false;
       },
       error: (err) => {
         console.error('Error loading product details by id', err);
+        // En caso de error, mantener el modelo actual (ya inicializado)
         this.isLoading = false;
       }
     });

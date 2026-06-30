@@ -1,9 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectorRef, inject } from '@angular/core';
 import { DashboardComponent } from './sections/dashboard/dashboard.component';
 import { MaquetaComponent } from './sections/maqueta/maqueta.component';
 import { GestionStockComponent } from './sections/gestion-stock/gestion-stock.component';
+import { SolicitudesComponent } from './sections/solicitudes/solicitudes.component';
 import { MaterialesComponent } from './sections/materiales/materiales.component';
+import { PresupuestosComponent } from './sections/presupuestos/presupuestos.component';
+import { FlujoDePagosComponent } from './sections/flujo-pagos/flujodepagos.component';
 
 export type VendedorTab =
   | 'dashboard'
@@ -23,7 +26,16 @@ export interface NavItem {
 @Component({
   selector: 'app-navbar-vendedor',
   standalone: true,
-  imports: [CommonModule, DashboardComponent, MaquetaComponent, GestionStockComponent, MaterialesComponent],
+  imports: [
+    CommonModule, 
+    DashboardComponent, 
+    MaquetaComponent, 
+    GestionStockComponent, 
+    SolicitudesComponent, 
+    MaterialesComponent, 
+    PresupuestosComponent,
+    FlujoDePagosComponent
+  ],
   templateUrl: './navbar-vendedor.component.html',
   styleUrl: './navbar-vendedor.component.css',
 })
@@ -34,6 +46,9 @@ export class NavbarVendedorComponent {
 
   activeTab: VendedorTab = 'dashboard';
   mobileMenuOpen = false;
+  solicitudIdParaPresupuesto: string | null = null;
+  solicitudIdParaChat: string | null = null;
+  isChatActivo = false;
 
   navItems: NavItem[] = [
     { id: 'dashboard',     label: 'Dashboard',        icon: 'grid'        },
@@ -48,6 +63,44 @@ export class NavbarVendedorComponent {
   setTab(tab: VendedorTab): void {
     this.activeTab = tab;
     this.mobileMenuOpen = false;
+    if (tab !== 'presupuestos') {
+      this.solicitudIdParaPresupuesto = null;
+    }
+    if (tab !== 'solicitudes') {
+      this.solicitudIdParaChat = null;
+      this.isChatActivo = false;
+    }
+  }
+
+  irAPresupuestoConSolicitud(solicitudId: string): void {
+    this.solicitudIdParaPresupuesto = null;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.solicitudIdParaPresupuesto = solicitudId;
+      this.solicitudIdParaChat = solicitudId; // Guardar context para el retorno
+      this.activeTab = 'presupuestos';
+      this.mobileMenuOpen = false;
+      this.cdr.detectChanges();
+    });
+  }
+
+  volverAlChat(): void {
+    this.activeTab = 'solicitudes';
+    this.solicitudIdParaChat = this.solicitudIdParaPresupuesto;
+  }
+
+  selectedPaymentData: any = null;
+
+  navegarAPagos(paymentData: any): void {
+    this.selectedPaymentData = paymentData;
+    this.activeTab = 'pagos';
+  }
+
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  setChatActivo(active: boolean): void {
+    this.isChatActivo = active;
+    this.cdr.detectChanges();
   }
 
   toggleMobileMenu(): void {
@@ -58,3 +111,4 @@ export class NavbarVendedorComponent {
     return this.navItems.find(item => item.id === this.activeTab)?.label ?? '';
   }
 }
+

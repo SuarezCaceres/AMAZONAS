@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import org.springframework.data.jpa.repository.EntityGraph;
 import com.amazonas.backend.modules.requests.model.PurchaseRequest;
 import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
 import com.amazonas.backend.modules.users.model.User;
@@ -46,12 +46,15 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
            "WHERE pr.producto IS NOT NULL " +
            "GROUP BY pr.producto.id, pr.producto.titulo, pr.producto.categoria.nombre, pr.producto.imageUrl " +
            "ORDER BY COUNT(pr) DESC")
-    List<Object[]> countRequestsByProduct();
+     List<Object[]> countRequestsByProduct();
 
     // Métodos adicionales usados por PurchaseRequestServiceImpl
+    @EntityGraph(attributePaths = {"presupuesto", "usuario"})
     List<PurchaseRequest> findByUsuarioOrderByCreatedAtDesc(User usuario);
 
+    @EntityGraph(attributePaths = {"presupuesto", "usuario"})
     List<PurchaseRequest> findByEstadoOrderByCreatedAtDesc(EstadoSolicitud estado);
 
+    @EntityGraph(attributePaths = {"presupuesto", "usuario"})
     List<PurchaseRequest> findAllByOrderByCreatedAtDesc();
 }

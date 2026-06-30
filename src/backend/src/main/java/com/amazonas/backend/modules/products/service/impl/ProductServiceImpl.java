@@ -144,29 +144,56 @@ public class ProductServiceImpl implements ProductService {
                 request.getMaterialesReciclables() != null && request.getMaterialesReciclables());
         product.setStock(request.getStock());
 
-        // ProductMaterial update
+        // ProductMaterial update (Fix: Merge collection to avoid Hibernate duplicate key constraint)
         if (product.getMateriales() == null) {
             product.setMateriales(new ArrayList<>());
-        } else {
-            product.getMateriales().clear();
         }
 
-        if (request.getMateriales() != null) {
+        List<ProductMaterial> existingMaterials = product.getMateriales();
+
+        if (request.getMateriales() == null || request.getMateriales().isEmpty()) {
+            existingMaterials.clear();
+        } else {
+            // 1. Eliminar los materiales que ya no están en el request
+            List<String> requestedMaterialNames = request.getMateriales().stream()
+                    .filter(m -> m.getNombre() != null)
+                    .map(m -> m.getNombre().trim().toLowerCase())
+                    .collect(Collectors.toList());
+
+            existingMaterials.removeIf(pm -> !requestedMaterialNames.contains(pm.getMaterial().getNombre().toLowerCase()));
+
+            // 2. Actualizar los existentes o agregar los nuevos
             for (ProductRequest.ProductMaterialInput input : request.getMateriales()) {
                 if (input.getNombre() == null || input.getNombre().trim().isEmpty()) {
                     continue;
                 }
-                Material material = materialRepository.findByNombreIgnoreCase(input.getNombre().trim())
+                String normalizedName = input.getNombre().trim();
+
+                Material material = materialRepository.findByNombreIgnoreCase(normalizedName)
                         .orElseThrow(() -> new RuntimeException(
                                 "Material no encontrado en inventario: " + input.getNombre()));
 
-                ProductMaterial pm = new ProductMaterial(
-                        product,
-                        material,
-                        input.getCantidadSugerida() != null ? input.getCantidadSugerida() : java.math.BigDecimal.ONE,
-                        input.getEsOpcional() != null ? input.getEsOpcional() : false,
-                        input.getNotas());
-                product.getMateriales().add(pm);
+                // Buscar si este material ya está vinculado al producto
+                ProductMaterial existingPm = existingMaterials.stream()
+                        .filter(pm -> pm.getMaterial().getId().equals(material.getId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (existingPm != null) {
+                    // Si ya existe, solo actualizamos sus valores sugeridos
+                    existingPm.setCantidadSugerida(input.getCantidadSugerida() != null ? input.getCantidadSugerida() : java.math.BigDecimal.ONE);
+                    existingPm.setEsOpcional(input.getEsOpcional() != null ? input.getEsOpcional() : false);
+                    existingPm.setNotas(input.getNotas());
+                } else {
+                    // Si es nuevo, lo agregamos
+                    ProductMaterial pm = new ProductMaterial(
+                            product,
+                            material,
+                            input.getCantidadSugerida() != null ? input.getCantidadSugerida() : java.math.BigDecimal.ONE,
+                            input.getEsOpcional() != null ? input.getEsOpcional() : false,
+                            input.getNotas());
+                    existingMaterials.add(pm);
+                }
             }
         }
     }

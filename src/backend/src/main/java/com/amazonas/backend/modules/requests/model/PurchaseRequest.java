@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.BatchSize;
 
 import com.amazonas.backend.modules.users.model.User;
 import com.amazonas.backend.modules.products.model.Product;
@@ -77,6 +78,12 @@ public class PurchaseRequest {
     @Column(name = "cantidad_personas")
     private Integer cantidadPersonas;
 
+    @Column(name = "grabaciones_urls", columnDefinition = "TEXT")
+    private String grabacionesUrls;
+
+    @Column(name = "archivos_urls", columnDefinition = "TEXT")
+    private String archivosUrls;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -87,15 +94,19 @@ public class PurchaseRequest {
     private LocalDateTime deletedAt;
 
     // Relaciones de la Opción A
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "purchaseRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KitMaqueta> kits = new ArrayList<>();
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "purchaseRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KitCustomizedMaterial> materialesCustomizados = new ArrayList<>();
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "purchaseRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<KitPersonalMaterial> materialesPersonales = new ArrayList<>();
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "purchaseRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RequestPreferredMaterial> materialesPreferidos = new ArrayList<>();
 
@@ -247,6 +258,22 @@ public class PurchaseRequest {
 
     public void setCantidadPersonas(Integer cantidadPersonas) {
         this.cantidadPersonas = cantidadPersonas;
+    }
+
+    public String getGrabacionesUrls() {
+        return grabacionesUrls;
+    }
+
+    public void setGrabacionesUrls(String grabacionesUrls) {
+        this.grabacionesUrls = grabacionesUrls;
+    }
+
+    public String getArchivosUrls() {
+        return archivosUrls;
+    }
+
+    public void setArchivosUrls(String archivosUrls) {
+        this.archivosUrls = archivosUrls;
     }
 
     public LocalDateTime getCreatedAt() {

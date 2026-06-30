@@ -101,6 +101,43 @@ export interface PurchaseRequestResponse {
   materialesPersonales?: KitPersonalMaterialResponse[];
   materialesPreferidos?: RequestPreferredMaterialResponse[];
   tienePresupuesto: boolean;
+  grabacionesUrls?: string[];
+  archivosUrls?: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MaterialPresupuestoDTO {
+  id: string;
+  nombre: string;
+  unidad: string;
+  costoVenta: number;
+  cantidadSugerida: number;
+  esOpcional: boolean;
+}
+
+export interface MaterialSolicitadoDTO {
+  materialId?: string;
+  nombre: string;
+  unidad?: string;
+  costoVenta?: number;
+  razonPreferencia?: string;
+}
+
+export interface SolicitudParaPresupuestoResponse {
+  id: string;
+  productoNombre: string;
+  descripcionPersonalizacion?: string;
+  isCustom: boolean;
+  clienteNombre: string;
+  clienteEmail: string;
+  clienteTelefono?: string;
+  estado: EstadoSolicitud;
+  createdAt: string;
+  materialesProducto: MaterialPresupuestoDTO[];
+  materialesPreferidos: MaterialSolicitadoDTO[];
+  materialesDeseados?: string;
+  solicitarExplicacion?: boolean;
+  tipoEvento?: string;
+  cantidadPersonas?: number;
 }

@@ -8,6 +8,8 @@ import { catchError, throwError } from 'rxjs';
 const PUBLIC_GET_PATTERNS = [
   /^\/api\/products(\/|$)/,
   /^\/api\/products$/,
+  /^\/api\/admin\/materials(\/|$)/,
+  /^\/api\/admin\/material-categories(\/|$)/,
 ];
 
 function isPublicGetRequest(method: string, url: string): boolean {
@@ -21,7 +23,7 @@ function isPublicGetRequest(method: string, url: string): boolean {
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('auth_token');
+  const token = sessionStorage.getItem('auth_token');
 
   // Para rutas publicas de productos: no enviar el token aunque exista.
   // Esto evita que un token expirado/corrupto bloquee la carga del catalogo.
@@ -39,10 +41,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       // Si el backend responde 401, el token es invalido o expiro.
       // Limpiamos el storage completo y forzamos recarga para restablecer estado limpio.
       if (error.status === 401) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_email');
-        localStorage.removeItem('auth_role');
-        localStorage.removeItem('auth_nombre');
+        sessionStorage.removeItem('auth_token');
+        sessionStorage.removeItem('auth_email');
+        sessionStorage.removeItem('auth_role');
+        sessionStorage.removeItem('auth_nombre');
         sessionStorage.clear();
         // Solo redirigimos si no estamos ya en una peticion de login
         if (!req.url.includes('/auth/')) {

@@ -12,6 +12,11 @@ import com.amazonas.backend.modules.vendors.model.Vendor;
 public interface VendorRepository extends JpaRepository<Vendor, UUID> {
     
     Optional<Vendor> findByEmail(String email);
+
+    Optional<Vendor> findByEmailIgnoreCase(String email);
     
     boolean existsByEmail(String email);
+
+    /** Obtiene el primer vendedor activo (usado para asignación automática en MVP) */
+    Optional<Vendor> findFirstByActivoTrue();
 }

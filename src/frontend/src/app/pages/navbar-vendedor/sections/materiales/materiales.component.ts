@@ -1,24 +1,13 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { MaterialService } from '../../../../services/material.service';
 import { MaquetaService } from '../../../../services/maqueta.service';
 import { Material, MaterialCategory, MaterialRequest } from '../../../../models/material.model';
 import { Product } from '../../../../models/product.model';
 
-interface MaterialKit {
-  materialNombre: string;
-  cantidad: number;
-}
 
-interface KitCompleto {
-  id: string;
-  maquetaId: string;
-  maquetaNombre: string;
-  materiales?: MaterialKit[];
-  precioTotal: number;
-  descripcion?: string;
-}
 
 interface PrecioMaqueta {
   id: string;
@@ -35,14 +24,15 @@ interface PrecioMaqueta {
   templateUrl: './materiales.component.html',
   styleUrl: './materiales.component.css'
 })
-export class MaterialesComponent implements OnInit {
+export class MaterialesComponent implements OnInit, OnDestroy {
   private readonly materialService = inject(MaterialService);
   private readonly maquetaService = inject(MaquetaService);
+
+  private triggerSub?: Subscription;
 
   materials: Material[] = [];
   categories: MaterialCategory[] = [];
   products: Product[] = [];
-
   loading = false;
   saving = false;
 
@@ -60,16 +50,6 @@ export class MaterialesComponent implements OnInit {
     activo: true
   };
 
-  // Kits Completos
-  kitsCompletos: KitCompleto[] = [];
-  editingKitId: string | null = null;
-  isAddingKit = false;
-  kitFormData = {
-    maquetaId: '',
-    precioTotal: 0,
-    descripcion: ''
-  };
-  kitMaterialesForm: MaterialKit[] = [];
 
   // Precios de Maquetas
   preciosMaquetas: PrecioMaqueta[] = [];
@@ -81,8 +61,26 @@ export class MaterialesComponent implements OnInit {
     descripcion: ''
   };
 
+  activeTab: 'materiales' | 'kits' | 'precios' = 'materiales';
+
   ngOnInit(): void {
     this.loadAllData();
+    this.triggerSub = this.materialService.triggerAddMaterial$.subscribe(data => {
+      if (data) {
+        this.isAdding = true;
+        this.editingId = null;
+        this.resetMaterialForm();
+        this.formData.nombre = data.nombre;
+        this.formData.unidad = data.unidad || '';
+        this.materialService.clearTriggerAddMaterial();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.triggerSub) {
+      this.triggerSub.unsubscribe();
+    }
   }
 
   loadAllData(): void {
@@ -116,11 +114,7 @@ export class MaterialesComponent implements OnInit {
       error: (err) => console.error('Error al cargar productos de maquetas:', err)
     });
 
-    // Cargar datos locales de Kits y Precios
-    const storedKits = localStorage.getItem('kitsCompletos');
-    if (storedKits) {
-      this.kitsCompletos = JSON.parse(storedKits);
-    }
+
 
     const storedPrecios = localStorage.getItem('preciosMaquetas');
     if (storedPrecios) {
@@ -147,6 +141,11 @@ export class MaterialesComponent implements OnInit {
   handleSave(): void {
     if (!this.formData.nombre || !this.formData.unidad || !this.formData.categoriaId) {
       alert('Por favor, completa los campos obligatorios: Nombre, Unidad y Categoría.');
+      return;
+    }
+
+    if (/\d/.test(this.formData.unidad)) {
+      alert('La unidad de medida no debe contener números (ej. usa "hoja", "kg", "paquete").');
       return;
     }
 
@@ -292,87 +291,6 @@ export class MaterialesComponent implements OnInit {
     this.editingPrecioId = null;
     this.isAddingPrecio = false;
     this.precioFormData = { maquetaId: '', precioCompleta: 0, descripcion: '' };
-  }
-
-  // --- KITS COMPLETOS ---
-  saveKits(updatedKits: KitCompleto[]): void {
-    this.kitsCompletos = updatedKits;
-    localStorage.setItem('kitsCompletos', JSON.stringify(updatedKits));
-  }
-
-  handleEditKit(kit: KitCompleto): void {
-    this.editingKitId = kit.id;
-    this.isAddingKit = false;
-    this.kitFormData = {
-      maquetaId: kit.maquetaId,
-      precioTotal: kit.precioTotal,
-      descripcion: kit.descripcion || ''
-    };
-    this.kitMaterialesForm = kit.materiales || [];
-  }
-
-  handleSaveKit(): void {
-    const maqueta = this.products.find(p => p.id === this.kitFormData.maquetaId);
-    if (!maqueta) {
-      alert('Por favor selecciona una maqueta');
-      return;
-    }
-
-    if (this.editingKitId) {
-      const updated = this.kitsCompletos.map(k =>
-        k.id === this.editingKitId ? {
-          id: this.editingKitId,
-          maquetaId: this.kitFormData.maquetaId,
-          maquetaNombre: maqueta.titulo,
-          precioTotal: this.kitFormData.precioTotal,
-          descripcion: this.kitFormData.descripcion,
-          materiales: this.kitMaterialesForm
-        } : k
-      );
-      this.saveKits(updated);
-      this.editingKitId = null;
-    } else if (this.isAddingKit) {
-      const existingKit = this.kitsCompletos.find(k => k.maquetaId === this.kitFormData.maquetaId);
-      if (existingKit) {
-        alert('Ya existe un kit completo para esta maqueta. Puedes editarlo en lugar de crear uno nuevo.');
-        return;
-      }
-
-      const newKit: KitCompleto = {
-        id: Date.now().toString(),
-        maquetaId: this.kitFormData.maquetaId,
-        maquetaNombre: maqueta.titulo,
-        precioTotal: this.kitFormData.precioTotal,
-        descripcion: this.kitFormData.descripcion,
-        materiales: this.kitMaterialesForm
-      };
-      this.saveKits([...this.kitsCompletos, newKit]);
-      this.isAddingKit = false;
-    }
-
-    this.kitFormData = { maquetaId: '', precioTotal: 0, descripcion: '' };
-    this.kitMaterialesForm = [];
-  }
-
-  handleDeleteKit(id: string): void {
-    if (confirm('¿Estás seguro de eliminar este kit completo?')) {
-      this.saveKits(this.kitsCompletos.filter(k => k.id !== id));
-    }
-  }
-
-  handleCancelKit(): void {
-    this.editingKitId = null;
-    this.isAddingKit = false;
-    this.kitFormData = { maquetaId: '', precioTotal: 0, descripcion: '' };
-    this.kitMaterialesForm = [];
-  }
-
-  agregarMaterialKit(): void {
-    this.kitMaterialesForm.push({ materialNombre: '', cantidad: 1 });
-  }
-
-  eliminarMaterialKit(index: number): void {
-    this.kitMaterialesForm.splice(index, 1);
   }
 
   // --- AUXILIAR / MAPPING ---

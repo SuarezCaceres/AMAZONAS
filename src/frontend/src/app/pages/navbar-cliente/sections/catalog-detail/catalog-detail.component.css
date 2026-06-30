@@ -1,5 +1,7 @@
 .detail-page {
   padding: 28px clamp(18px, 5vw, 70px) 64px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .back-button {
@@ -14,10 +16,10 @@
 }
 
 .detail-layout {
-  display: grid;
-  grid-template-columns: minmax(280px, 0.86fr) minmax(0, 1.14fr);
-  gap: clamp(24px, 4vw, 48px);
-  align-items: start;
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: flex-start;
   transition: opacity 200ms ease;
 }
 
@@ -27,19 +29,24 @@
 }
 
 .detail-media {
+  flex: 0 0 50%;
+  max-width: 50%;
   position: sticky;
   top: 104px;
 }
 
 .detail-media img {
   width: 100%;
-  min-height: 520px;
+  height: auto;
+  max-height: 500px;
   border-radius: 8px;
   object-fit: cover;
   box-shadow: 0 22px 50px rgba(31, 41, 51, 0.16);
 }
 
 .detail-content {
+  flex: 0 0 calc(50% - 32px);
+  max-width: calc(50% - 32px);
   padding: clamp(24px, 4vw, 42px);
   border-radius: 8px;
   background: #ffffff;
@@ -214,15 +221,28 @@ ul {
 
 @media (max-width: 1100px) {
   .detail-layout {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
   .detail-media {
+    flex: 0 0 100%;
+    max-width: 100%;
     position: static;
   }
 
   .detail-media img {
-    min-height: 360px;
+    max-height: 400px;
+  }
+
+  .detail-content {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .detail-media img {
+    max-height: 350px;
   }
 }
 

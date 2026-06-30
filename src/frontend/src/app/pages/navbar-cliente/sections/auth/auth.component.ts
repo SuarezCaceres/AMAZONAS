@@ -91,7 +91,7 @@ export class AuthComponent implements OnChanges {
     const email = this.login.email.trim().toLowerCase();
     const emailKey = `lock_until_${email}`;
     const attemptsKey = `failed_attempts_${email}`;
-    
+
     const localLockUntil = localStorage.getItem(emailKey);
     if (localLockUntil) {
       const lockTime = parseInt(localLockUntil, 10);
@@ -122,7 +122,6 @@ export class AuthComponent implements OnChanges {
         localStorage.removeItem(emailKey);
         localStorage.removeItem(attemptsKey);
 
-        this.successMessage = `Bienvenido, ${response.nombre || response.email}.`;
         this.authenticated.emit({
           name: response.nombre || response.email,
           email: response.email,
@@ -176,7 +175,6 @@ export class AuthComponent implements OnChanges {
     this.authService.register(request).subscribe({
       next: (response: AuthResponse) => {
         this.isLoading = false;
-        this.successMessage = `Cuenta creada. Bienvenido, ${response.nombre || response.email}.`;
         this.authenticated.emit({
           name: response.nombre || response.email,
           email: response.email,
