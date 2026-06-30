@@ -1,1 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8080/api';
+import { environment } from '../../environments/environment.prod';
+
+export const API_BASE_URL = environment.apiUrl;
+

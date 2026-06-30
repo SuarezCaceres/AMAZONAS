@@ -840,14 +840,36 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     }
 
     const codigoOperacionValidado = codigoInput;
-    const total = this.room.agreedPrice || 375.70;
-    const monto = total / 2; // El adelanto es el 50%
 
+    // Buscar presupuesto para obtener el monto de adelanto real
+    const requestId = this.solicitudActiva?.id;
+    if (requestId) {
+      this.budgetService.obtenerPorSolicitud(requestId).subscribe({
+        next: (budget) => {
+          let monto = (this.room!.agreedPrice || 375.70) / 2;
+          if (budget) {
+            monto = Number(budget.adelantoMonto);
+          }
+          this.registrarAdelantoConMonto(monto, codigoOperacionValidado);
+        },
+        error: (err) => {
+          console.error("Error al buscar presupuesto, usando fallback:", err);
+          const total = this.room!.agreedPrice || 375.70;
+          this.registrarAdelantoConMonto(total / 2, codigoOperacionValidado);
+        }
+      });
+    } else {
+      const total = this.room.agreedPrice || 375.70;
+      this.registrarAdelantoConMonto(total / 2, codigoOperacionValidado);
+    }
+  }
+
+  private registrarAdelantoConMonto(monto: number, codigoOperacionValidado: string): void {
     const payload = {
-      clientName: this.room.clientName,
-      clientEmail: this.room.clientEmail,
+      clientName: this.room!.clientName,
+      clientEmail: this.room!.clientEmail,
       clientPhone: this.solicitudActiva?.clienteTelefono || '987654321',
-      roomId: this.room.id,
+      roomId: this.room!.id,
       monto: monto,
       metodoPago: 'ONLINE', // Yape
       tipoAbono: 'ADELANTO',
@@ -923,22 +945,50 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     }
 
     const codigoOperacionValidado = codigoInput;
-    const total = this.room.agreedPrice || 375.70;
 
-    // Determinar si ya se pagó el adelanto en el chat para registrar el saldo restante (50%) o el 100% total
+    // Determinar si ya se pagó el adelanto en el chat para registrar el saldo restante o el 100% total
     const hasAdelanto = this.messages.some(m => 
       m.senderRole === 'SYSTEM' && 
       m.content.includes('pago de adelanto')
     );
 
     const tipoAbono = hasAdelanto ? 'SALDO' : 'TOTAL';
-    const monto = hasAdelanto ? (total / 2) : total;
 
+    // Buscar presupuesto para obtener montos reales de liquidación
+    const requestId = this.solicitudActiva?.id;
+    if (requestId) {
+      this.budgetService.obtenerPorSolicitud(requestId).subscribe({
+        next: (budget) => {
+          let total = this.room!.agreedPrice || 375.70;
+          let monto = hasAdelanto ? (total / 2) : total;
+
+          if (budget) {
+            total = Number(budget.total);
+            monto = hasAdelanto ? (Number(budget.total) - Number(budget.adelantoMonto)) : total;
+          }
+
+          this.registrarPagoFinalConMonto(monto, tipoAbono, codigoOperacionValidado);
+        },
+        error: (err) => {
+          console.error("Error al buscar presupuesto para pago final, usando fallback:", err);
+          const total = this.room!.agreedPrice || 375.70;
+          const monto = hasAdelanto ? (total / 2) : total;
+          this.registrarPagoFinalConMonto(monto, tipoAbono, codigoOperacionValidado);
+        }
+      });
+    } else {
+      const total = this.room.agreedPrice || 375.70;
+      const monto = hasAdelanto ? (total / 2) : total;
+      this.registrarPagoFinalConMonto(monto, tipoAbono, codigoOperacionValidado);
+    }
+  }
+
+  private registrarPagoFinalConMonto(monto: number, tipoAbono: string, codigoOperacionValidado: string): void {
     const payload = {
-      clientName: this.room.clientName,
-      clientEmail: this.room.clientEmail,
+      clientName: this.room!.clientName,
+      clientEmail: this.room!.clientEmail,
       clientPhone: this.solicitudActiva?.clienteTelefono || '987654321',
-      roomId: this.room.id,
+      roomId: this.room!.id,
       monto: monto,
       metodoPago: 'ONLINE', // Yape
       tipoAbono: tipoAbono,
@@ -1024,22 +1074,50 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     }
 
     const total = this.room.agreedPrice || 375.70;
-    const half = total / 2;
 
+    // Buscar si ya se pagó un adelanto para precargar como SALDO o ADELANTO
+    const hasAdelanto = this.messages.some(m => 
+      m.senderRole === 'SYSTEM' && 
+      m.content.includes('pago de adelanto')
+    );
+
+    const kindLabel = hasAdelanto ? 'Saldo restante' : 'Adelanto (50%)';
+
+    const requestId = this.solicitudActiva?.id;
+    if (requestId) {
+      this.budgetService.obtenerPorSolicitud(requestId).subscribe({
+        next: (budget) => {
+          let preloadedAmount = hasAdelanto ? (total / 2) : (total / 2);
+          if (budget) {
+            preloadedAmount = hasAdelanto ? (Number(budget.total) - Number(budget.adelantoMonto)) : Number(budget.adelantoMonto);
+          }
+          this.navegarAPagosConDatos(preloadedAmount, kindLabel, msg, parsedMeta);
+        },
+        error: (err) => {
+          console.error("Error al obtener presupuesto para precarga, usando fallback:", err);
+          this.navegarAPagosConDatos(total / 2, kindLabel, msg, parsedMeta);
+        }
+      });
+    } else {
+      this.navegarAPagosConDatos(total / 2, kindLabel, msg, parsedMeta);
+    }
+  }
+
+  private navegarAPagosConDatos(amount: number, kindLabel: string, msg: ChatMessageResponse, parsedMeta: any): void {
     const paymentData = {
-      client: this.room.clientName,
-      email: this.room.clientEmail,
+      client: this.room!.clientName,
+      email: this.room!.clientEmail,
       phone: this.solicitudActiva?.clienteTelefono || '987654321',
       productType: this.solicitudActiva?.isCustom ? 'Proyecto Personalizado (Maqueta a Medida)' : 'Proyecto Predeterminado (Catalogo)',
       materials: this.solicitudActiva?.materialesDeseados || 'Madera Balsa, PLA, Acrilico',
-      amount: half,
+      amount: amount,
       method: 'Online (Yape / Transferencia)',
-      kind: 'Adelanto (50%)',
+      kind: kindLabel,
       date: new Date().toISOString().substring(0, 16), // Format: yyyy-MM-ddTHH:mm
       operation: '', // Dejar en blanco para que el vendedor ingrese el código real en el formulario
       inventory: true,
-      roomId: this.room.id,
-      solicitudId: this.room.requestId,
+      roomId: this.room!.id,
+      solicitudId: this.room!.requestId,
       messageId: msg.id,
       voucherUrl: parsedMeta.fileUrl || ''
     };

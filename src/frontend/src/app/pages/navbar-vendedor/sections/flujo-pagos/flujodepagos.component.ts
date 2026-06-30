@@ -301,6 +301,12 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
 
     setSubTab(tab: 'dashboard' | 'venta' | 'saldos' | 'auditoria'): void {
         this.activeSubTab = tab;
+        if (tab === 'auditoria' || tab === 'dashboard') {
+            this.loadTransactions();
+            this.loadDailyStats();
+        } else if (tab === 'saldos') {
+            this.loadPendingBalances();
+        }
     }
 
     ngOnInit(): void {
@@ -366,46 +372,62 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                 this.budgetService.listarTodos().subscribe({
                     next: (budgets) => {
                         this.allBudgets = budgets || [];
-                        this.chatService.getAllTransactions().subscribe({
-                            next: (mats) => {
-                                if (mats) {
-                                    this.transactions = mats.map(tx => {
-                                        let projectName = '';
-                                        if (tx.roomId && reqs) {
-                                            const sol = reqs.find(r => r.id === tx.roomId);
-                                            if (sol) {
-                                                projectName = sol.productoNombre || '';
-                                            }
-                                        }
-                                        if (!projectName) {
-                                            projectName = tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo';
-                                        }
+                        this.chatService.getMyRooms().subscribe({
+                            next: (rooms) => {
+                                const chatRooms = rooms || [];
+                                this.chatService.getAllTransactions().subscribe({
+                                    next: (mats) => {
+                                        if (mats) {
+                                            this.transactions = mats.map(tx => {
+                                                let projectName = '';
+                                                let solicitudId = tx.roomId;
 
-                                        return {
-                                            client: tx.clientName,
-                                            email: tx.clientEmail,
-                                            productType: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Personalizada' : 'Predeterminada',
-                                            materials: tx.materiales || 'Materiales estándar',
-                                            method: tx.metodoPago === 'ONLINE' ? 'Online' : 'Fisico',
-                                            kind: tx.tipoAbono === 'ADELANTO' ? 'Adelanto' : tx.tipoAbono === 'SALDO' ? 'Saldo' : 'Total',
-                                            amount: Number(tx.monto),
-                                            operation: tx.codigoOperacion || 'N/A',
-                                            date: new Date(tx.fechaTransaccion).toLocaleDateString('es-PE', {
-                                                day: '2-digit',
-                                                month: 'short',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            }),
-                                            status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
-                                            fechaObj: new Date(tx.fechaTransaccion),
-                                            projectName: projectName,
-                                            solicitudId: tx.roomId
-                                        };
-                                    });
-                                }
+                                                if (tx.roomId) {
+                                                    const room = chatRooms.find(r => r.id === tx.roomId);
+                                                    if (room) {
+                                                        solicitudId = room.requestId;
+                                                    }
+                                                }
+
+                                                if (solicitudId && reqs) {
+                                                    const sol = reqs.find(r => r.id === solicitudId);
+                                                    if (sol) {
+                                                        projectName = sol.productoNombre || '';
+                                                    }
+                                                }
+
+                                                if (!projectName) {
+                                                    projectName = tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo';
+                                                }
+
+                                                return {
+                                                    client: tx.clientName,
+                                                    email: tx.clientEmail,
+                                                    productType: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Personalizada' : 'Predeterminada',
+                                                    materials: tx.materiales || 'Materiales estándar',
+                                                    method: tx.metodoPago === 'ONLINE' ? 'Online' : 'Fisico',
+                                                    kind: tx.tipoAbono === 'ADELANTO' ? 'Adelanto' : tx.tipoAbono === 'SALDO' ? 'Saldo' : 'Total',
+                                                    amount: Number(tx.monto),
+                                                    operation: tx.codigoOperacion || 'N/A',
+                                                    date: new Date(tx.fechaTransaccion).toLocaleDateString('es-PE', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    }),
+                                                    status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
+                                                    fechaObj: new Date(tx.fechaTransaccion),
+                                                    projectName: projectName,
+                                                    solicitudId: solicitudId
+                                                };
+                                            });
+                                        }
+                                    },
+                                    error: (err) => console.error('Error al cargar transacciones reales:', err)
+                                });
                             },
-                            error: (err) => console.error('Error al cargar transacciones reales:', err)
+                            error: (err) => console.error('Error al cargar salas de chat para traducción de roomId:', err)
                         });
                     },
                     error: (err) => console.error('Error al cargar presupuestos en auditoría:', err)
@@ -416,31 +438,45 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                 this.budgetService.listarTodos().subscribe({
                     next: (budgets) => {
                         this.allBudgets = budgets || [];
-                        this.chatService.getAllTransactions().subscribe({
-                            next: (mats) => {
-                                if (mats) {
-                                    this.transactions = mats.map(tx => ({
-                                        client: tx.clientName,
-                                        email: tx.clientEmail,
-                                        productType: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Personalizada' : 'Predeterminada',
-                                        materials: tx.materiales || 'Materiales estándar',
-                                        method: tx.metodoPago === 'ONLINE' ? 'Online' : 'Fisico',
-                                        kind: tx.tipoAbono === 'ADELANTO' ? 'Adelanto' : tx.tipoAbono === 'SALDO' ? 'Saldo' : 'Total',
-                                        amount: Number(tx.monto),
-                                        operation: tx.codigoOperacion || 'N/A',
-                                        date: new Date(tx.fechaTransaccion).toLocaleDateString('es-PE', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        }),
-                                        status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
-                                        fechaObj: new Date(tx.fechaTransaccion),
-                                        projectName: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo',
-                                        solicitudId: tx.roomId
-                                    }));
-                                }
+                        this.chatService.getMyRooms().subscribe({
+                            next: (rooms) => {
+                                const chatRooms = rooms || [];
+                                this.chatService.getAllTransactions().subscribe({
+                                    next: (mats) => {
+                                        if (mats) {
+                                            this.transactions = mats.map(tx => {
+                                                let solicitudId = tx.roomId;
+                                                if (tx.roomId) {
+                                                    const room = chatRooms.find(r => r.id === tx.roomId);
+                                                    if (room) {
+                                                        solicitudId = room.requestId;
+                                                    }
+                                                }
+                                                return {
+                                                    client: tx.clientName,
+                                                    email: tx.clientEmail,
+                                                    productType: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Personalizada' : 'Predeterminada',
+                                                    materials: tx.materiales || 'Materiales estándar',
+                                                    method: tx.metodoPago === 'ONLINE' ? 'Online' : 'Fisico',
+                                                    kind: tx.tipoAbono === 'ADELANTO' ? 'Adelanto' : tx.tipoAbono === 'SALDO' ? 'Saldo' : 'Total',
+                                                    amount: Number(tx.monto),
+                                                    operation: tx.codigoOperacion || 'N/A',
+                                                    date: new Date(tx.fechaTransaccion).toLocaleDateString('es-PE', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    }),
+                                                    status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
+                                                    fechaObj: new Date(tx.fechaTransaccion),
+                                                    projectName: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo',
+                                                    solicitudId: solicitudId
+                                                };
+                                            });
+                                        }
+                                    }
+                                });
                             }
                         });
                     }
@@ -793,11 +829,29 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
             codigoOp += ` (${this.uploadedVoucherName})`;
         }
 
+        // Buscar si existe un roomId (sala de chat) asociada a esta solicitud para mantener el flujo de auditoría unido
+        if (this.cobroVentaId) {
+            this.chatService.getMyRooms().subscribe({
+                next: (rooms) => {
+                    const room = rooms ? rooms.find(r => r.requestId === this.cobroVentaId) : null;
+                    const resolvedRoomId = room ? room.id : null;
+                    this.registrarCobroSaldoConRoomId(resolvedRoomId, codigoOp, metodoPagoTipo, metodoTexto);
+                },
+                error: () => {
+                    this.registrarCobroSaldoConRoomId(null, codigoOp, metodoPagoTipo, metodoTexto);
+                }
+            });
+        } else {
+            this.registrarCobroSaldoConRoomId(null, codigoOp, metodoPagoTipo, metodoTexto);
+        }
+    }
+
+    private registrarCobroSaldoConRoomId(resolvedRoomId: string | null, codigoOp: string, metodoPagoTipo: 'ONLINE' | 'FISICO', metodoTexto: string): void {
         const payload = {
             clientName: this.cobroClienteDisplay,
             clientEmail: this.currentBalanceForModal?.email || `${this.cobroClienteDisplay.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
             clientPhone: '999999999',
-            roomId: null,
+            roomId: resolvedRoomId,
             monto: this.cobroMonto,
             metodoPago: metodoPagoTipo,
             tipoAbono: 'SALDO',
@@ -1284,7 +1338,24 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
 
             this.requestService.crear(reqBody).subscribe({
                 next: (reqRes) => {
-                    registerPaymentPayload(reqRes.id);
+                    this.requestService.actualizarEstado(reqRes.id, { estado: 'PROCESANDO' }).subscribe({
+                        next: () => {
+                            this.chatService.getMyRooms().subscribe({
+                                next: (rooms) => {
+                                    const room = rooms ? rooms.find(r => r.requestId === reqRes.id) : null;
+                                    if (room) {
+                                        (this.paymentForm as any).roomId = room.id;
+                                    }
+                                    registerPaymentPayload(reqRes.id);
+                                },
+                                error: () => registerPaymentPayload(reqRes.id)
+                            });
+                        },
+                        error: (err) => {
+                            console.error('Error al actualizar estado a PROCESANDO en venta directa:', err);
+                            registerPaymentPayload(reqRes.id);
+                        }
+                    });
                 },
                 error: (err) => {
                     console.error('Error al crear solicitud de compra para saldo pendiente:', err);
