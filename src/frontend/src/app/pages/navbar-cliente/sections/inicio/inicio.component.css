@@ -23,7 +23,7 @@ body {
 }
 
 .hero h1 {
-  font-size: 72px;
+  font-size: clamp(2.2rem, 5.5vw + 0.8rem, 4.5rem);
   line-height: 1.1;
   color: #16233c;
   font-weight: 800;
@@ -31,7 +31,7 @@ body {
 
 .hero p {
   margin-top: 20px;
-  font-size: 22px;
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
   color: #4e6480;
   line-height: 1.7;
 }
