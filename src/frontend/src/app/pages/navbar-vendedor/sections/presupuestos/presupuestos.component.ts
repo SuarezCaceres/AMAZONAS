@@ -119,6 +119,18 @@ export class PresupuestosComponent implements OnChanges, OnInit {
   // ── Canal de Venta ─────────────────────────────────────────────────────
   tipoCompra: 'presencial' | 'online' = 'presencial';
 
+  // ── Mobile Summary Floating Modal ───────────────────────────────────────
+  showMobileSummary = false;
+
+  toggleMobileSummary(): void {
+    this.showMobileSummary = !this.showMobileSummary;
+  }
+
+  closeMobileSummary(): void {
+    this.showMobileSummary = false;
+  }
+
+
   // ── Selector de Maqueta Base en Maqueta Personalizada ───────────────────
   busquedaMaquetaBase = '';
   mostrarDropdownMaquetaBase = false;

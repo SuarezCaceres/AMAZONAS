@@ -159,6 +159,12 @@
     }
   </div>
 
+  <!-- Botón flotante para ver resumen en móviles -->
+  <button type="button" class="floating-summary-btn" (click)="toggleMobileSummary()">
+    <span class="material-icons" style="font-size: 20px;">receipt_long</span>
+    <span>Ver Resumen (S/ {{ total.toFixed(2) }})</span>
+  </button>
+
   <div class="content-grid">
 
     <!-- ══════════════════ COLUMNA FORMULARIO ══════════════════ -->
@@ -801,8 +807,9 @@
     </div>
 
     <!-- ══════════════════ COLUMNA RESUMEN ══════════════════ -->
-    <div class="summary-column">
-      <div class="ticket-receipt-card">
+    <div class="summary-column" [class.mobile-open]="showMobileSummary" (click)="closeMobileSummary()">
+      <div class="ticket-receipt-card" (click)="$event.stopPropagation()">
+        <button type="button" class="close-mobile-summary-btn" (click)="closeMobileSummary()">×</button>
         <div class="ticket-receipt-content">
           <h2 class="summary-title">
             <svg viewBox="0 0 24 24" class="summary-title-icon" fill="none" stroke="currentColor" stroke-width="2">

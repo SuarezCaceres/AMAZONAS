@@ -35,6 +35,7 @@ export class MaterialesComponent implements OnInit, OnDestroy {
   products: Product[] = [];
   loading = false;
   saving = false;
+  collapsedCategories: Record<string, boolean> = {};
 
   // Formulario Material
   editingId: string | null = null;
@@ -313,5 +314,17 @@ export class MaterialesComponent implements OnInit, OnDestroy {
   get totalCategoriesCount(): number {
     const categories = new Set(this.materials.map(m => m.categoriaNombre).filter(Boolean));
     return categories.size;
+  }
+
+  toggleCategory(categoryName: string): void {
+    if (this.collapsedCategories[categoryName] === undefined) {
+      this.collapsedCategories[categoryName] = false; // cambiar de colapsado (por defecto) a expandido
+    } else {
+      this.collapsedCategories[categoryName] = !this.collapsedCategories[categoryName];
+    }
+  }
+
+  isCategoryCollapsed(categoryName: string): boolean {
+    return this.collapsedCategories[categoryName] !== false;
   }
 }

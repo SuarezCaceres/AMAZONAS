@@ -950,3 +950,29 @@
   color: #0f172a;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025);
 }
+
+/* ========================================== */
+/* RESPONSIVE DESIGN MEDIA QUERIES (SKILL)    */
+/* ========================================== */
+
+@media (max-width: 640px) {
+  .materials-container {
+    padding: 20px 14px 40px;
+  }
+
+  .materials-header-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .materials-header-section .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .materials-tabs-nav {
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+

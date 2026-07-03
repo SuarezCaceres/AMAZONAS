@@ -549,29 +549,29 @@
 
           <!-- Step Tracker del Prototipo (Misma lógica visual) -->
           <div class="px-4 py-2 border-t border-slate-150/60 bg-white overflow-x-auto select-none">
-            <div class="flex items-center justify-between min-w-[480px] py-1">
+            <div class="flex items-center justify-between min-w-[560px] py-1">
               
               <!-- Step 1: Solicitud -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                   <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                 </div>
-                <span class="text-[10px] font-bold text-slate-800">Solicitud</span>
+                <span class="text-[10px] font-bold text-slate-800 whitespace-nowrap">Solicitud</span>
               </div>
               <div class="flex-1 h-0.5 bg-emerald-500 mx-1.5"></div>
 
               <!-- Step 2: Conversación -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (hasOfferOrBudget()) {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-800">Conversación</span>
+                  <span class="text-[10px] font-bold text-slate-800 whitespace-nowrap">Conversación</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
                     2
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Conversación</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Conversación</span>
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
@@ -580,22 +580,22 @@
               </div>
 
               <!-- Step 3: Presupuesto -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (room?.status === 'AGREED' || room?.status === 'CLOSED') {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-850">Presupuesto</span>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Presupuesto</span>
                 } @else if (hasOfferOrBudget()) {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
                     3
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Presupuesto</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Presupuesto</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
                     3
                   </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Presupuesto</span>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Presupuesto</span>
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
@@ -604,22 +604,22 @@
               </div>
 
               <!-- Step 4: Pago -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado') {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-850">Pago</span>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Pago</span>
                 } @else if (room?.status === 'AGREED') {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
                     4
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Pago</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Pago</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
                     4
                   </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Pago</span>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Pago</span>
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
@@ -628,22 +628,22 @@
               </div>
 
               <!-- Step 5: Producción -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (solicitudActiva.estado === 'completado') {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-850">Producción</span>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Producción</span>
                 } @else if (solicitudActiva.estado === 'procesando') {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
                     5
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Producción</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Producción</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
                     5
                   </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Producción</span>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Producción</span>
                 }
               </div>
 

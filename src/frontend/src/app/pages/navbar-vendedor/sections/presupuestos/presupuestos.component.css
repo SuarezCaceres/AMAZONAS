@@ -2169,6 +2169,140 @@
     font-size: 9px;
     font-weight: 600;
     margin-top: 2px;
+}/* =========================================================================
+   ESTILOS DE BOTÓN FLOTANTE Y MODAL DE RESUMEN EN MÓVIL
+   ========================================================================= */
+.floating-summary-btn {
+  display: none;
 }
 
+.close-mobile-summary-btn {
+  display: none;
+}
+
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ========================================== */
+/* RESPONSIVE DESIGN MEDIA QUERIES (SKILL)    */
+/* ========================================== */
+
+@media (max-width: 980px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .floating-summary-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999;
+    background: #00a982;
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0, 169, 130, 0.35);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .floating-summary-btn:hover {
+    background: #009371;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 169, 130, 0.45);
+  }
+
+  .floating-summary-btn:active {
+    transform: translateY(0);
+  }
+
+  .summary-column {
+    display: none;
+  }
+
+  .summary-column.mobile-open {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  .summary-column.mobile-open .ticket-receipt-card {
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .close-mobile-summary-btn {
+    display: block !important;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    line-height: 32px;
+    text-align: center;
+    color: #64748b;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+  }
+
+  .close-mobile-summary-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+}
+
+@media (max-width: 640px) {
+  .presupuestos-page {
+    padding: 20px 14px 40px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-nuevo {
+    width: 100%;
+    justify-content: center;
+  }
+}
 
