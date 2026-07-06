@@ -58,6 +58,10 @@ public class PaymentServiceImpl implements PaymentService {
                 .materiales(request.materiales())
                 .fechaTransaccion(request.fechaTransaccion())
                 .codigoOperacion(request.codigoOperacion())
+                .montoRecibido(request.montoRecibido())
+                .vuelto(request.vuelto())
+                .codigoSeguridad(request.codigoSeguridad())
+                .voucherUrl(request.voucherUrl())
                 .build();
 
         return paymentRepository.save(transaction);

@@ -907,79 +907,66 @@
                 </button>
 
                 @if (requiereAdelanto) {
-                  <!-- Botón: cobrar adelanto + imprimir boleta parcial -->
-                  <button (click)="imprimirBoletaPresencial('adelanto')" [disabled]="imprimiendoBoleta"
-                    style="background:#d97706;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(217,119,6,.25);transition:background .2s;">
-                    @if (imprimiendoBoleta) {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;" class="spin">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                      </svg>
-                      Preparando boleta...
-                    } @else {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;">
-                        <polyline points="6 9 6 2 18 2 18 9"/>
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                        <rect x="6" y="14" width="12" height="8"/>
-                      </svg>
+                  @if (!adelantoPagado) {
+                    <!-- Botón: cobrar adelanto (50%), descontar stock e imprimir boleta -->
+                    <button (click)="procesarPagoPresencial('adelanto')" [disabled]="guardando"
+                      style="background:#d97706;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(217,119,6,.25);transition:background .2s;font-family:inherit;">
+                      <span class="material-icons" style="font-size: 20px;">payments</span>
                       <div style="text-align:left;">
                         <div>Cobrar Adelanto ({{ porcentajeAdelanto }}%) e Imprimir Boleta</div>
-                        <small style="font-weight:400;opacity:.85;font-size:11px;">Monto: S/ {{ montoAdelanto.toFixed(2) }}</small>
+                        <small style="font-weight:400;opacity:.9;font-size:11px;">Descuenta stock, registra la venta y emite el comprobante (S/ {{ montoAdelanto.toFixed(2) }})</small>
                       </div>
-                    }
-                  </button>
-                  <small class="summary-hint" style="color:#b45309; margin-bottom:8px; display:block;">Saldo pendiente: S/ {{ (total - montoAdelanto).toFixed(2) }}</small>
-                } @else {
-                  <!-- Botón: cobrar total + imprimir boleta completa -->
-                  <button (click)="imprimirBoletaPresencial('completo')" [disabled]="imprimiendoBoleta"
-                    style="background:#059669;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(5,150,105,.25);transition:background .2s;">
-                    @if (imprimiendoBoleta) {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;" class="spin">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                      </svg>
-                      Preparando boleta...
-                    } @else {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;">
-                        <polyline points="6 9 6 2 18 2 18 9"/>
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                        <rect x="6" y="14" width="12" height="8"/>
-                      </svg>
+                    </button>
+                    <small class="summary-hint" style="color:#b45309; margin-bottom:8px; display:block;">Saldo pendiente a liquidar después: S/ {{ (total - montoAdelanto).toFixed(2) }}</small>
+                  } @else {
+                    <!-- Banner de Adelanto Cobrado -->
+                    <div style="margin-top: 8px; padding: 10px 12px; background: #fef3c7; border-radius: 8px; border: 1px solid #fde68a; font-size: 11.5px; color: #b45309; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                      <span class="material-icons" style="font-size: 16px;">check_circle</span>
+                      <span>Adelanto ({{ porcentajeAdelanto }}%) Cobrado (S/ {{ montoAdelanto.toFixed(2) }})</span>
+                    </div>
+
+                    <!-- Botón: cobrar saldo restante (50%) -->
+                    <button (click)="procesarPagoPresencial('saldo')" [disabled]="guardando"
+                      style="background:#2563eb;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(37,99,235,.25);transition:background .2s;font-family:inherit;">
+                      <span class="material-icons" style="font-size: 20px;">price_check</span>
                       <div style="text-align:left;">
-                        <div>Cobrar Pago Completo e Imprimir Boleta</div>
-                        <small style="font-weight:400;opacity:.85;font-size:11px;">Total: S/ {{ total.toFixed(2) }}</small>
+                        <div>Cobrar Saldo Restante (50%) e Imprimir Boleta</div>
+                        <small style="font-weight:400;opacity:.9;font-size:11px;">Registra el cobro final del saldo: S/ {{ (total - montoAdelanto).toFixed(2) }}</small>
                       </div>
-                    }
+                    </button>
+
+                    <!-- Botón para reimprimir boleta de adelanto -->
+                    <button (click)="imprimirBoletaPresencial('adelanto')" type="button"
+                      style="background:transparent;color:#d97706;border:1px solid #d97706;padding:8px 12px;border-radius:8px;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;width:100%;justify-content:center;margin-top:6px;font-family:inherit;">
+                      <span class="material-icons" style="font-size: 16px;">print</span>
+                      Reimprimir Boleta de Adelanto
+                    </button>
+                  }
+                } @else {
+                  <!-- Botón: cobrar total (100%), descontar stock e imprimir boleta -->
+                  <button (click)="procesarPagoPresencial('completo')" [disabled]="guardando"
+                    style="background:#059669;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(5,150,105,.25);transition:background .2s;font-family:inherit;">
+                    <span class="material-icons" style="font-size: 20px;">point_of_sale</span>
+                    <div style="text-align:left;">
+                      <div>Cobrar Pago Completo (100%) e Imprimir Boleta</div>
+                      <small style="font-weight:400;opacity:.9;font-size:11px;">Descuenta stock, registra la venta y emite comprobante (S/ {{ total.toFixed(2) }})</small>
+                    </div>
                   </button>
                   <small class="summary-hint" style="color:#065f46; margin-bottom:8px; display:block;">Pago único completo (100%)</small>
                 }
               }
 
-              <!-- Botón: Pago Completado & Descontar Stock (Siempre visible) -->
-              <button (click)="completarPagoPresencial()" [disabled]="pagoConfirmado"
-                [style.background]="pagoConfirmado ? '#ecfdf5' : '#7c3aed'"
-                [style.color]="pagoConfirmado ? '#047857' : '#ffffff'"
-                [style.border]="pagoConfirmado ? '1.5px solid #a7f3d0' : 'none'"
-                [style.boxShadow]="pagoConfirmado ? 'none' : '0 4px 12px rgba(124,58,237,0.25)'"
-                style="padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;transition:all .2s; font-family: inherit;">
-                <span class="material-icons" style="font-size: 18px;">{{ pagoConfirmado ? 'check_circle' : 'paid' }}</span>
-                <div style="text-align:left;">
-                  <div style="font-weight:700;">{{ pagoConfirmado ? 'Pago Completado (Stock Descontado)' : 'Pago Completado' }}</div>
-                  <small style="font-weight:400;opacity:.85;font-size:10px;display:block;">
-                    {{ pagoConfirmado ? 'Inventario actualizado en el backend' : 'Confirmar pago y descontar materiales del inventario' }}
-                  </small>
-                </div>
-              </button>
-
-              <!-- SI EL PAGO YA HA SIDO CONFIRMADO: Mostrar banner de venta cerrada y botón neutral de Reimprimir -->
+              <!-- SI EL PAGO YA HA SIDO CONFIRMADO: Mostrar banner de venta cerrada y reimprimir boleta final -->
               @if (pagoConfirmado) {
                 <div style="margin-top: 10px; padding: 12px; background: #ecfdf5; border-radius: 8px; border: 1px solid #a7f3d0; font-size: 11.5px; color: #047857; font-weight: 600; text-align: center; display: flex; align-items: center; gap: 8px; justify-content: center;">
                   <span class="material-icons" style="font-size: 16px;">check_circle</span>
-                  <span>Venta Cerrada: Pago verificado y stock descontado.</span>
+                  <span>Venta Completada (100%): Pago registrado y stock descontado.</span>
                 </div>
 
-                <button (click)="imprimirBoletaPresencial(requiereAdelanto ? 'adelanto' : 'completo')"
-                  style="background: #f1f5f9; color: #334155; border: 1.5px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; justify-content: center; margin-top: 8px; transition: all .2s; font-family: inherit;">
-                  <span class="material-icons" style="font-size: 18px;">print</span>
-                  Reimprimir Boleta
+                <button (click)="imprimirBoletaPresencial('completo')" type="button"
+                  style="background:transparent;color:#059669;border:1px solid #059669;padding:8px 12px;border-radius:8px;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;font-family:inherit;">
+                  <span class="material-icons" style="font-size: 16px;">print</span>
+                  Reimprimir Boleta Final (100%)
                 </button>
               }
             }

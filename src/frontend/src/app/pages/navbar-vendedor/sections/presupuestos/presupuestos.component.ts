@@ -141,6 +141,7 @@ export class PresupuestosComponent implements OnChanges, OnInit {
   mostrarSelectorKit = false;
   kitSeleccionadoId = '';
   activeTab: 'calculadora' | 'kits' = 'calculadora';
+  adelantoPagado = false;
   pagoConfirmado = false;
   filtroFechaHistorial = new Date().toISOString().substring(0, 10);
 
@@ -674,6 +675,12 @@ export class PresupuestosComponent implements OnChanges, OnInit {
       } else {
         this.tipoCompra = 'online';
       }
+
+      const key = budget.id || budget.solicitudId || budget.nombre;
+      if (key) {
+        this.adelantoPagado = localStorage.getItem('adelanto_pagado_' + key) === 'true';
+        this.pagoConfirmado = localStorage.getItem('pago_confirmado_' + key) === 'true';
+      }
     }
   }
 
@@ -1083,12 +1090,24 @@ export class PresupuestosComponent implements OnChanges, OnInit {
     }
   }
 
-  irARegistrarPago(): void {
+
+
+  irARegistrarPago(tipoPago: 'adelanto' | 'saldo' | 'completo' = 'completo'): void {
     const materialsStr = this.materialesAgregados
       .map(m => `${m.cantidad}x ${m.nombre}`)
       .join(', ') || 'Sin materiales adicionales';
 
-    const esPresencial = this.tipoCompra === 'presencial';
+    const montoCalculado = tipoPago === 'adelanto' 
+      ? this.montoAdelanto 
+      : tipoPago === 'saldo' 
+        ? Math.max(0, this.total - this.montoAdelanto) 
+        : this.total;
+        
+    const abonoCalculado = tipoPago === 'adelanto' 
+      ? 'Adelanto (50%)' 
+      : tipoPago === 'saldo' 
+        ? 'Saldo Restante (50%)' 
+        : 'Pago Completo (100%)';
 
     const paymentData = {
       client: this.clienteNombre || 'Cliente Presencial',
@@ -1096,12 +1115,12 @@ export class PresupuestosComponent implements OnChanges, OnInit {
       phone: this.clienteTelefono || '999999999',
       productType: this.isMaquetaPersonalizada ? 'Proyecto Personalizado (Maqueta a Medida)' : `Maqueta Estándar: ${this.nombreProyecto}`,
       materials: materialsStr,
-      amount: esPresencial ? this.total : this.montoAdelanto,
-      method: esPresencial ? 'Fisico (Efectivo en persona)' : 'Digital (Yape / Transferencia)',
-      kind: esPresencial ? 'Pago Completo (100%)' : 'Adelanto (50%)',
+      amount: montoCalculado,
+      method: 'Fisico (Efectivo en persona)',
+      kind: abonoCalculado,
       date: new Date().toISOString().substring(0, 16),
       operation: '',
-      inventory: true,
+      inventory: false, // Stock ya fue descontado en presupuestos previamente
       solicitudId: this.solicitudId,
       roomId: this.roomId,
       voucherUrl: '',
@@ -1138,6 +1157,7 @@ export class PresupuestosComponent implements OnChanges, OnInit {
     this.precioExplicacion = 0;
     this.presupuestoGuardado = false;
     this.modoEdicion = false;
+    this.adelantoPagado = false;
     this.pagoConfirmado = false;
     this.roomId = null;
     this.selectedMaquetaId = '';
@@ -1271,7 +1291,7 @@ export class PresupuestosComponent implements OnChanges, OnInit {
     }
   }
 
-  completarPagoPresencial(): void {
+  procesarPagoPresencial(tipoPago: 'adelanto' | 'saldo' | 'completo' = 'completo'): void {
     if (this.materialesAgregados.length === 0) {
       alert('No hay materiales agregados en este presupuesto.');
       return;
@@ -1279,70 +1299,167 @@ export class PresupuestosComponent implements OnChanges, OnInit {
 
     const tieneMaterialSinRegistrar = this.materialesAgregados.some(m => !m.materialId);
     if (tieneMaterialSinRegistrar) {
-      alert('Algunos materiales no están registrados en el inventario. Por favor, regístralos antes de completar el pago para poder descontar el stock.');
+      alert('Algunos materiales no están registrados en el inventario. Por favor, regístralos antes de procesar el pago para poder descontar el stock.');
       return;
     }
 
-    if (confirm('¿Confirmas que el cliente ha completado el pago de esta maqueta/kit presencial? Esto descontará automáticamente los materiales del inventario en el backend.')) {
-      this.guardando = true;
+    if (!this.clienteNombre?.trim()) {
+      alert('Por favor ingresa el nombre del cliente.');
+      return;
+    }
+    if (!this.clienteEmail?.trim()) {
+      alert('Por favor ingresa el email del cliente.');
+      return;
+    }
 
-      // Obtener todos los materiales actuales del backend para asegurarnos de tener el stock fresco
-      this.materialService.getAllMaterials().subscribe({
-        next: (materialsFromBackend) => {
-          let actualizacionesPendientes = this.materialesAgregados.length;
-          let errores = 0;
+    const montoSaldo = Math.max(0, this.total - this.montoAdelanto);
+    const montoCalculado = tipoPago === 'adelanto' 
+      ? this.montoAdelanto 
+      : tipoPago === 'saldo' 
+        ? montoSaldo 
+        : this.total;
 
-          this.materialesAgregados.forEach(item => {
-            const match = materialsFromBackend.find(m => m.id === item.materialId || m.nombre === item.nombre);
-            if (match) {
-              const nuevoStock = Math.max(0, match.stockActual - item.cantidad);
-              const requestPayload = {
-                nombre: match.nombre,
-                unidad: match.unidad,
-                costoCompra: match.costoCompra,
-                costoVenta: match.costoVenta,
-                stockActual: nuevoStock,
-                categoriaId: match.categoriaId,
-                proveedor: match.proveedor,
-                activo: match.activo
-              };
+    const abonoTipo = tipoPago === 'adelanto' 
+      ? 'ADELANTO' 
+      : tipoPago === 'saldo' 
+        ? 'SALDO' 
+        : 'TOTAL';
 
-              this.materialService.updateMaterial(match.id, requestPayload).subscribe({
-                next: () => {
-                  actualizacionesPendientes--;
-                  if (actualizacionesPendientes === 0) {
-                    this.guardando = false;
-                    this.pagoConfirmado = true;
-                    alert('¡Pago completado con éxito! El stock de los materiales utilizados ha sido descontado del inventario backend.');
-                  }
-                },
-                error: (err) => {
-                  console.error('Error al actualizar material:', match.nombre, err);
-                  errores++;
-                  actualizacionesPendientes--;
-                  if (actualizacionesPendientes === 0) {
-                    this.guardando = false;
-                    this.pagoConfirmado = true;
-                    alert(`Pago registrado, pero ocurrieron ${errores} errores al intentar actualizar el stock de algunos materiales.`);
-                  }
-                }
-              });
-            } else {
-              actualizacionesPendientes--;
-              if (actualizacionesPendientes === 0) {
-                this.guardando = false;
-                this.pagoConfirmado = true;
-                alert('Pago registrado. Algunos materiales no se encontraron en el catálogo del backend para actualizar el stock.');
-              }
-            }
-          });
+    const materialsStr = this.materialesAgregados
+      .map(m => `${m.cantidad}x ${m.nombre}`)
+      .join(', ') || 'Sin materiales adicionales';
+
+    const registrarPagoEnBackendYFinalizar = () => {
+      const paymentPayload = {
+        clientName: this.clienteNombre,
+        clientEmail: this.clienteEmail,
+        clientPhone: this.clienteTelefono || '999999999',
+        roomId: this.roomId || null,
+        monto: montoCalculado,
+        metodoPago: 'FISICO',
+        tipoAbono: abonoTipo,
+        tipoMaqueta: this.isMaquetaPersonalizada ? 'PERSONALIZADA' : 'PREDETERMINADA',
+        materiales: materialsStr,
+        fechaTransaccion: new Date().toISOString(),
+        codigoOperacion: `PRESENCIAL-${Date.now()}`
+      };
+
+      this.chatService.registerPayment(paymentPayload).subscribe({
+        next: (res) => {
+          this.guardando = false;
+          const key = this.savedBudgetId || this.solicitudId || this.nombreProyecto;
+
+          if (tipoPago === 'adelanto') {
+            this.adelantoPagado = true;
+            if (key) localStorage.setItem('adelanto_pagado_' + key, 'true');
+          } else {
+            this.pagoConfirmado = true;
+            if (key) localStorage.setItem('pago_confirmado_' + key, 'true');
+          }
+
+          // Imprimir boleta térmica
+          this.imprimirBoletaPresencial(tipoPago === 'adelanto' ? 'adelanto' : 'completo');
+
+          alert(tipoPago === 'adelanto' 
+            ? '¡Cobro de adelanto registrado con éxito! Se ha preparado la boleta térmica para su impresión.'
+            : '¡Pago completado y registrado con éxito! Se ha preparado la boleta térmica para su impresión.');
         },
         error: (err) => {
-          console.error('Error al obtener materiales del backend:', err);
+          console.error('Error al registrar la transacción de pago en backend:', err);
           this.guardando = false;
-          alert('No se pudo conectar con el inventario del backend para descontar el stock.');
+          alert('Error al registrar la transacción de pago en la base de datos.');
         }
       });
+    };
+
+    // Si es saldo, el stock ya se descontó durante el pago del adelanto
+    if (tipoPago === 'saldo') {
+      const confirmSaldoMsg = `¿Confirmas el cobro del saldo restante (50%) de S/ ${montoSaldo.toFixed(2)}? Se registrará en la base de datos y serás redirigido al Panel de Auditoría.`;
+      if (confirm(confirmSaldoMsg)) {
+        this.guardando = true;
+        registrarPagoEnBackendYFinalizar();
+      }
+      return;
     }
+
+    const confirmMsg = tipoPago === 'adelanto'
+      ? `¿Confirmas el cobro del adelanto (${this.porcentajeAdelanto}%) de S/ ${this.montoAdelanto.toFixed(2)}? Se descontará el stock, se registrará la venta en la base de datos y se emitirá la boleta.`
+      : `¿Confirmas el cobro total (100%) de S/ ${this.total.toFixed(2)}? Se descontará el stock, se registrará la venta en la base de datos y se emitirá la boleta.`;
+
+    if (confirm(confirmMsg)) {
+      this.guardando = true;
+
+      const descontarYRegistrar = () => {
+        this.materialService.getAllMaterials().subscribe({
+          next: (materialsFromBackend) => {
+            let actualizacionesPendientes = this.materialesAgregados.length;
+
+            if (actualizacionesPendientes === 0) {
+              registrarPagoEnBackendYFinalizar();
+              return;
+            }
+
+            this.materialesAgregados.forEach(item => {
+              const match = materialsFromBackend.find(m => m.id === item.materialId || m.nombre === item.nombre);
+              if (match) {
+                const nuevoStock = Math.max(0, match.stockActual - item.cantidad);
+                const requestPayload = {
+                  nombre: match.nombre,
+                  unidad: match.unidad,
+                  costoCompra: match.costoCompra,
+                  costoVenta: match.costoVenta,
+                  stockActual: nuevoStock,
+                  categoriaId: match.categoriaId,
+                  proveedor: match.proveedor,
+                  activo: match.activo
+                };
+
+                this.materialService.updateMaterial(match.id, requestPayload).subscribe({
+                  next: () => {
+                    actualizacionesPendientes--;
+                    if (actualizacionesPendientes === 0) {
+                      registrarPagoEnBackendYFinalizar();
+                    }
+                  },
+                  error: (err) => {
+                    console.error('Error al actualizar material:', match.nombre, err);
+                    actualizacionesPendientes--;
+                    if (actualizacionesPendientes === 0) {
+                      registrarPagoEnBackendYFinalizar();
+                    }
+                  }
+                });
+              } else {
+                actualizacionesPendientes--;
+                if (actualizacionesPendientes === 0) {
+                  registrarPagoEnBackendYFinalizar();
+                }
+              }
+            });
+          },
+          error: (err) => {
+            console.error('Error al obtener materiales del backend:', err);
+            this.guardando = false;
+            alert('No se pudo conectar con el inventario del backend para descontar el stock.');
+          }
+        });
+      };
+
+      if (!this.savedBudgetId) {
+        this.guardarPresupuesto();
+        const checkSaved = setInterval(() => {
+          if (!this.guardando) {
+            clearInterval(checkSaved);
+            descontarYRegistrar();
+          }
+        }, 200);
+      } else {
+        descontarYRegistrar();
+      }
+    }
+  }
+
+  completarPagoPresencial(): void {
+    this.procesarPagoPresencial('completo');
   }
 }

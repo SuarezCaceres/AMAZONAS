@@ -41,5 +41,13 @@ public record RegisterPaymentRequest(
     @NotNull(message = "La fecha de transacción es requerida")
     OffsetDateTime fechaTransaccion,
 
-    String codigoOperacion
+    String codigoOperacion,
+
+    BigDecimal montoRecibido,
+
+    BigDecimal vuelto,
+
+    String codigoSeguridad,
+
+    String voucherUrl
 ) {}

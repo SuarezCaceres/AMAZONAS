@@ -52,6 +52,18 @@ public class PaymentTransaction {
     @Column(name = "codigo_operacion", length = 255)
     private String codigoOperacion;
 
+    @Column(name = "monto_recibido", precision = 10, scale = 2)
+    private BigDecimal montoRecibido;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal vuelto;
+
+    @Column(name = "codigo_seguridad", length = 100)
+    private String codigoSeguridad;
+
+    @Column(name = "voucher_url", columnDefinition = "TEXT")
+    private String voucherUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private OffsetDateTime createdAt = OffsetDateTime.now();

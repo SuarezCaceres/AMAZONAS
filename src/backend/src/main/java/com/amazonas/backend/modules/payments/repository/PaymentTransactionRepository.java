@@ -28,7 +28,8 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
 
     @Query("SELECT new com.amazonas.backend.modules.payments.dto.PaymentTransactionResponse(" +
            "p.id, p.clientId, COALESCE(u.nombre, 'Cliente Desconocido'), COALESCE(u.email, 'desconocido@correo.com'), " +
-           "p.roomId, p.monto, p.metodoPago, p.tipoAbono, p.tipoMaqueta, p.materiales, p.fechaTransaccion, p.codigoOperacion) " +
+           "p.roomId, p.monto, p.metodoPago, p.tipoAbono, p.tipoMaqueta, p.materiales, p.fechaTransaccion, p.codigoOperacion, " +
+           "p.montoRecibido, p.vuelto, p.codigoSeguridad, p.voucherUrl) " +
            "FROM PaymentTransaction p " +
            "LEFT JOIN User u ON p.clientId = u.id " +
            "ORDER BY p.fechaTransaccion DESC")

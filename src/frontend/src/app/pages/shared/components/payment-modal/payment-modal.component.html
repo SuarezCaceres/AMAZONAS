@@ -1,0 +1,213 @@
+<div class="modal-backdrop-custom" *ngIf="isOpen">
+    <div class="modal-checkout-box animate-checkout-fade">
+        <button type="button" class="checkout-close-btn" (click)="closeModal()">&times;</button>
+        
+        <div class="checkout-grid">
+            <!-- COLUMNA IZQUIERDA: MÉTODOS DE PAGO -->
+            <div class="checkout-payment-col">
+                <div class="checkout-header">
+                    <span class="material-icons security-icon">verified_user</span>
+                    <h2>{{ title }}</h2>
+                </div>
+
+                <!-- TABS DE MÉTODOS DE PAGO -->
+                <div class="payment-tabs">
+                    <button *ngIf="allowOnlineMethods" type="button" class="payment-tab-btn" 
+                            [class.active]="activePaymentMethod === 'yape'"
+                            (click)="activePaymentMethod = 'yape'">
+                        <span class="material-icons">qr_code_scanner</span>
+                        <strong>YAPE / PLIN</strong>
+                    </button>
+                    <button *ngIf="allowOnlineMethods" type="button" class="payment-tab-btn" 
+                            [class.active]="activePaymentMethod === 'transferencia'"
+                            (click)="activePaymentMethod = 'transferencia'">
+                        <span class="material-icons">account_balance</span>
+                        <strong>TRANSFERENCIA</strong>
+                    </button>
+                    <button *ngIf="allowFisicoMethods" type="button" class="payment-tab-btn" 
+                            [class.active]="activePaymentMethod === 'efectivo'"
+                            (click)="activePaymentMethod = 'efectivo'">
+                        <span class="material-icons">payments</span>
+                        <strong>EFECTIVO</strong>
+                    </button>
+                </div>
+
+                <form (submit)="submitPayment(); $event.preventDefault();" class="checkout-form">
+                    <!-- CONTENIDO DE TABS -->
+                    <div class="tab-content-container">
+                        
+                        <!-- TAB: YAPE / PLIN -->
+                        <div *ngIf="activePaymentMethod === 'yape'" class="tab-pane animate-pane-slide">
+                            <div class="qr-container-box">
+                                <div class="qr-code-wrapper">
+                                    <div class="qr-code-placeholder">
+                                        <span class="material-icons qr-icon">qr_code_2</span>
+                                        <span class="qr-center-logo">AMZ</span>
+                                    </div>
+                                </div>
+                                <span class="qr-caption">ESCANEA PARA PAGAR</span>
+                                <div class="qr-phone-number" (click)="copiarNumeroYape()">
+                                    <strong>923 932 945</strong>
+                                    <span class="material-icons copy-icon" [class.copied]="copiadoExitoso">
+                                        {{ copiadoExitoso ? 'check' : 'content_copy' }}
+                                    </span>
+                                </div>
+                                <span class="qr-holder">A NOMBRE DE: ZHYRO SHOP</span>
+                            </div>
+
+                            <div class="checkout-inputs-row">
+                                <div class="checkout-input-group">
+                                    <label>NÚMERO DE OPERACIÓN <span class="required-star">*</span></label>
+                                    <div class="input-with-icon">
+                                        <span class="material-icons input-icon">tag</span>
+                                        <input type="text" name="pmNumeroOperacion" [(ngModel)]="numeroOperacion" placeholder="Ej: 12345678" required>
+                                    </div>
+                                </div>
+                                <div class="checkout-input-group">
+                                    <label>CÓDIGO DE SEGURIDAD <span class="required-star">*</span></label>
+                                    <div class="input-with-icon">
+                                        <span class="material-icons input-icon">lock</span>
+                                        <input type="text" name="pmCodigoSeguridad" [(ngModel)]="codigoSeguridad" placeholder="Ej: 123" maxlength="4" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: TRANSFERENCIA -->
+                        <div *ngIf="activePaymentMethod === 'transferencia'" class="tab-pane animate-pane-slide">
+                            <div class="transfer-accounts-box">
+                                <p class="accounts-intro">Transfiere a las siguientes cuentas de Amazonas Taller:</p>
+                                <div class="account-card">
+                                    <div class="bank-info">
+                                        <span class="bank-badge bcp">BCP</span>
+                                        <strong>Cuenta Corriente Soles</strong>
+                                    </div>
+                                    <div class="account-details">
+                                        <p>Número: <span>191-99887766-0-12</span></p>
+                                        <p>CCI: <span>002-191-99887766012-54</span></p>
+                                    </div>
+                                </div>
+                                <div class="account-card">
+                                    <div class="bank-info">
+                                        <span class="bank-badge bbva">BBVA</span>
+                                        <strong>Cuenta de Ahorros Soles</strong>
+                                    </div>
+                                    <div class="account-details">
+                                        <p>Número: <span>0011-0320-0200334455</span></p>
+                                        <p>CCI: <span>002-011-03200200334455-89</span></p>
+                                    </div>
+                                </div>
+                                <span class="accounts-holder">TITULAR: TALLER DE MAQUETAS AMAZONAS S.A.C.</span>
+                            </div>
+
+                            <div class="checkout-input-group">
+                                <label>NÚMERO DE OPERACIÓN DE LA TRANSFERENCIA <span class="required-star">*</span></label>
+                                <div class="input-with-icon">
+                                    <span class="material-icons input-icon">receipt_long</span>
+                                    <input type="text" name="pmNumeroOperacion" [(ngModel)]="numeroOperacion" placeholder="Ej: 99887766" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: EFECTIVO -->
+                        <div *ngIf="activePaymentMethod === 'efectivo'" class="tab-pane animate-pane-slide">
+                            <div class="cash-instructions-box">
+                                <span class="material-icons cash-icon">account_balance_wallet</span>
+                                <p>Ingrese el monto en efectivo entregado por el cliente. El cambio se calculará automáticamente en tiempo real.</p>
+                            </div>
+
+                            <div class="checkout-inputs-row">
+                                <div class="checkout-input-group">
+                                    <label>MONTO RECIBIDO S/ <span class="required-star">*</span></label>
+                                    <div class="input-with-icon">
+                                        <span class="material-icons input-icon">payments</span>
+                                        <input type="number" name="pmMontoRecibido" [(ngModel)]="montoRecibido" step="0.01" min="0.01" placeholder="Ej: 50.00" required>
+                                    </div>
+                                </div>
+                                <div class="checkout-input-group">
+                                    <label>VUELTO / CAMBIO S/</label>
+                                    <div class="input-with-icon read-only">
+                                        <span class="material-icons input-icon">change_circle</span>
+                                        <input type="text" [value]="'S/ ' + vuelto" readonly style="background: #f1f5f9; cursor: not-allowed; font-weight: 700; color: #009b79;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- DROPZONE PARA SUBIDA DE COMPROBANTE (Para Yape y Transferencia) -->
+                    <div *ngIf="activePaymentMethod !== 'efectivo'" class="checkout-upload-section">
+                        <label>COMPROBANTE DE TRANSFERENCIA (OPCIONAL)</label>
+                        <div class="checkout-dropzone" (click)="triggerFileUploader()">
+                            <span class="material-icons upload-cloud-icon">cloud_upload</span>
+                            <p *ngIf="!uploadedVoucherName" class="dropzone-text">Arrastra o haz clic para subir comprobante</p>
+                            <p *ngIf="uploadedVoucherName" class="dropzone-success-text">✓ {{ uploadedVoucherName }}</p>
+                            <span class="dropzone-formats">Formatos permitidos: JPG, PNG, PDF (Máx. 5MB)</span>
+                            <input type="file" id="payment-modal-file-input" style="display: none;" (change)="handleFileSelected($event)">
+                        </div>
+                    </div>
+
+                    <!-- BOTÓN PRINCIPAL DE COBRO -->
+                    <button type="submit" class="btn-checkout-submit">
+                        <span class="material-icons">check_circle</span>
+                        Confirmar Pago de S/ {{ amountToPay | number:'1.2-2' }}
+                    </button>
+                </form>
+            </div>
+
+            <!-- COLUMNA DERECHA: RESUMEN DE COMPRA -->
+            <div class="checkout-summary-col">
+                <h3>Resumen de Compra</h3>
+
+                <div class="summary-items-list">
+                    <div class="summary-item-card">
+                        <div class="item-icon-wrapper">
+                            <span class="material-icons">architecture</span>
+                        </div>
+                        <div class="item-info">
+                            <h4>{{ projectName }}</h4>
+                            <p class="item-meta">{{ summaryLabel }}</p>
+                        </div>
+                        <span class="item-price">S/ {{ amountToPay | number:'1.2-2' }}</span>
+                    </div>
+
+                    <div *ngIf="materialsDescription" class="summary-materials-details">
+                        <span class="materials-label">Materiales y Detalle:</span>
+                        <p class="materials-text">{{ materialsDescription }}</p>
+                    </div>
+                </div>
+
+                <div class="summary-totals-box">
+                    <div class="totals-row">
+                        <span>Subtotal</span>
+                        <span>S/ {{ amountToPay | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="totals-row">
+                        <span>Costo de Envío</span>
+                        <span class="free-shipping-badge">GRATUITO</span>
+                    </div>
+                    <hr class="totals-divider">
+                    <div class="totals-row total-pay">
+                        <strong>Total a pagar</strong>
+                        <strong class="total-price-text">S/ {{ amountToPay | number:'1.2-2' }}</strong>
+                    </div>
+                </div>
+
+                <!-- Banners de Seguridad -->
+                <div class="security-badge-card">
+                    <span class="material-icons shield-green-icon">verified</span>
+                    <p>Tu pago está encriptado con seguridad SSL de 256 bits. Garantizamos la confidencialidad de tus datos.</p>
+                </div>
+
+                <!-- Tarjetas de pie de página aliadas -->
+                <div class="checkout-footer-cards">
+                    <span class="payment-logo visa"></span>
+                    <span class="payment-logo mastercard"></span>
+                    <span class="payment-logo bank"></span>
+                    <span class="payment-logo mobile"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -224,517 +224,369 @@
             </div>
         </div>
 
-        <!-- TAB 1: REGISTRAR VENTA -->
-        <div *ngIf="activeSubTab === 'venta'" class="payments-layout">
-            <form class="payment-card register-card" (ngSubmit)="registerTransaction()">
-                <div class="card-title-row">
+
+
+        <!-- TAB 2: SALDOS PENDIENTES MODERN UI -->
+        <div *ngIf="activeSubTab === 'saldos'" class="saldos-page-container" style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <!-- HEADER & TOOLBAR -->
+            <div style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
                     <div>
-                        <h2>Registrar venta directa presencial</h2>
-                        <p>Registra cobros físicos de maquetas y materiales utilizados de forma instantánea.</p>
+                        <h2 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            Saldos Pendientes
+                            <span style="color: #0d9488; font-weight: 600; font-size: 16px;">(Caja Central)</span>
+                        </h2>
+                        <p style="color: #64748b; font-size: 13.5px; margin-top: 4px; margin-bottom: 0;">
+                            Listado de clientes con deudas del 50% de maquetas físicas pendientes por liquidar. Gestione los cobros de manera eficiente.
+                        </p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                        <!-- FECHAS Y ORDENAR POR -->
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <!-- Date Range Picker mockup -->
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label style="font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase;">Rango de Fechas</label>
+                                <div style="display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 13px;">
+                                    <span class="material-icons" style="font-size: 16px; color: #64748b;">calendar_today</span>
+                                    <input type="date" [(ngModel)]="fechaInicioPendientes" style="border: none; background: transparent; font-size: 12px; font-family: inherit; color: #334155; outline: none;">
+                                    <span style="color: #94a3b8;">-</span>
+                                    <input type="date" [(ngModel)]="fechaFinPendientes" style="border: none; background: transparent; font-size: 12px; font-family: inherit; color: #334155; outline: none;">
+                                </div>
+                            </div>
+
+                            <!-- Sort selector -->
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label style="font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase;">Ordenar Por</label>
+                                <select [(ngModel)]="ordenPendientes" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 7.5px 12px; font-size: 13px; font-family: inherit; color: #334155; outline: none; cursor: pointer;">
+                                    <option value="reciente">Fecha (Más reciente)</option>
+                                    <option value="antiguo">Fecha (Más antigua)</option>
+                                    <option value="monto_desc">Monto (Mayor a menor)</option>
+                                    <option value="monto_asc">Monto (Menor a mayor)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Count badge pill -->
+                        <div style="background: #ccfbf1; border: 1px solid #99f6e4; padding: 12px 20px; border-radius: 12px; text-align: center; min-width: 90px;">
+                            <span style="font-size: 22px; font-weight: 800; color: #0d9488; display: block; line-height: 1;">{{ saldosPendientesFiltrados.length }}</span>
+                            <span style="font-size: 9.5px; font-weight: 800; color: #0f766e; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; display: block;">PENDIENTES</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Lock Banner when prefilled from Chat -->
-                <div *ngIf="isPrefilled" class="prefilled-lock-banner">
-                    <span class="material-icons lock-icon">lock</span>
-                    <div class="banner-text">
-                        <strong>Datos importados desde el chat del cliente</strong>
-                        <p>Campos bloqueados para garantizar la integridad del acuerdo. Para registrar una venta manual diferente:</p>
+                <!-- TABS DE FILTRO CANAL (Todos, Presencial, Online) -->
+                <div style="display: flex; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    <button type="button" 
+                            (click)="filtroCanalPendientes = 'todos'"
+                            [style.background]="filtroCanalPendientes === 'todos' ? '#0f172a' : '#f8fafc'"
+                            [style.color]="filtroCanalPendientes === 'todos' ? '#ffffff' : '#475569'"
+                            [style.border-color]="filtroCanalPendientes === 'todos' ? '#0f172a' : '#e2e8f0'"
+                            style="border: 1px solid; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: inherit;">
+                        Todos ({{ pendingBalances.length }})
+                    </button>
+                    <button type="button" 
+                            (click)="filtroCanalPendientes = 'presencial'"
+                            [style.background]="filtroCanalPendientes === 'presencial' ? '#2563eb' : '#f8fafc'"
+                            [style.color]="filtroCanalPendientes === 'presencial' ? '#ffffff' : '#475569'"
+                            [style.border-color]="filtroCanalPendientes === 'presencial' ? '#2563eb' : '#e2e8f0'"
+                            style="border: 1px solid; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">storefront</span>
+                        Presencial (Físico)
+                    </button>
+                    <button type="button" 
+                            (click)="filtroCanalPendientes = 'online'"
+                            [style.background]="filtroCanalPendientes === 'online' ? '#7c3aed' : '#f8fafc'"
+                            [style.color]="filtroCanalPendientes === 'online' ? '#ffffff' : '#475569'"
+                            [style.border-color]="filtroCanalPendientes === 'online' ? '#7c3aed' : '#e2e8f0'"
+                            style="border: 1px solid; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; gap: 6px;">
+                        <span class="material-icons" style="font-size: 16px;">devices</span>
+                        Online (Chat)
+                    </button>
+                </div>
+            </div>
+
+            <!-- CARD LISTING SECTION (Exact Replica of Mockup) -->
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                
+                <div *ngFor="let item of saldosPendientesPaginados" 
+                     style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 20px 24px; display: grid; grid-template-columns: 260px 1fr 220px; align-items: center; gap: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: transform 0.15s, box-shadow 0.15s;"
+                     class="saldos-card-row">
+                    
+                    <!-- COLUMNA 1: CLIENTE E ID -->
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 16px; font-weight: 800; color: #0f172a; text-transform: capitalize;">{{ item.client }}</span>
+                            <!-- BADGE PRESENCIAL O ONLINE -->
+                            <span *ngIf="item.tipoVenta === 'PRESENCIAL'" 
+                                  style="font-size: 10px; font-weight: 800; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                PRESENCIAL
+                            </span>
+                            <span *ngIf="item.tipoVenta === 'ONLINE'" 
+                                  style="font-size: 10px; font-weight: 800; background: #f3e8ff; color: #6b21a8; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase;">
+                                ONLINE
+                            </span>
+                        </div>
+                        <span style="font-size: 13px; color: #64748b;">{{ item.email }}</span>
+                        <span style="font-family: monospace; font-size: 11px; color: #94a3b8;">
+                            ID: {{ item.solicitudId }}
+                        </span>
                     </div>
-                    <button type="button" class="btn-unlock" (click)="resetForm()">
-                        <span class="material-icons">restart_alt</span>
-                        Limpiar / Nuevo
+
+                    <!-- COLUMNA 2: PROYECTO Y MATERIALES EN CHIPS -->
+                    <div style="display: flex; flex-direction: column; gap: 8px; border-left: 1px solid #f1f5f9; padding-left: 24px;">
+                        <div>
+                            <span style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">PROYECTO:</span>
+                            <span style="font-size: 15px; font-weight: 700; color: #1e293b;">{{ item.project }}</span>
+                        </div>
+
+                        <!-- Material Chips -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                            <span *ngFor="let mat of (item.materialItems || []).slice(0, 3)" 
+                                  style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                {{ mat.qty }}x {{ mat.name }}
+                            </span>
+                            <span *ngIf="(item.materialItems || []).length > 3" 
+                                  style="background: #f1f5f9; color: #64748b; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                +{{ (item.materialItems || []).length - 3 }} más
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA 3: PRECIO RED FAT, BADGE & BOTÓN -->
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <span style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">SALDO ADEUDADO (50%)</span>
+                        <span style="font-size: 24px; font-weight: 900; color: #dc2626; line-height: 1;">
+                            S/ {{ item.amount | number:'1.2-2' }}
+                        </span>
+                        
+                        <span style="background: #fee2e2; color: #991b1b; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;">
+                            50% PENDIENTE
+                        </span>
+
+                        <button type="button" 
+                                (click)="openCobroFisicoModal(item)"
+                                style="background: #0d9488; color: #ffffff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 4px; box-shadow: 0 2px 8px rgba(13,148,136,0.25); transition: background 0.2s; font-family: inherit;">
+                            <span class="material-icons" style="font-size: 16px;">payments</span>
+                            Cobrar saldo
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div *ngIf="saldosPendientesFiltrados.length === 0" 
+                     style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 60px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                    <span class="material-icons" style="font-size: 48px; color: #0d9488;">check_circle_outline</span>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">¡No hay saldos pendientes!</h3>
+                    <p style="margin: 0; font-size: 13px; color: #64748b;">No existen registros con el filtro o fecha seleccionada.</p>
+                    <button *ngIf="fechaInicioPendientes || fechaFinPendientes || filtroCanalPendientes !== 'todos'" 
+                            type="button" 
+                            (click)="limpiarFiltrosPendientes()"
+                            style="background: #0d9488; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 8px;">
+                        Restablecer Filtros
                     </button>
                 </div>
 
-                <!-- Voucher Attachment Preview -->
-                <div *ngIf="paymentForm.voucherUrl" class="voucher-preview-section">
-                    <div class="voucher-preview-header">
-                        <span class="material-icons">receipt_long</span>
-                        <strong>Comprobante adjunto por el cliente:</strong>
-                    </div>
-                    <div class="voucher-preview-body">
-                        <a [href]="paymentForm.voucherUrl" target="_blank" class="voucher-link-button">
-                            <span class="material-icons">open_in_new</span>
-                            Ver comprobante completo
-                        </a>
-                        <div class="voucher-image-container" *ngIf="paymentForm.voucherUrl.endsWith('.png') || paymentForm.voucherUrl.endsWith('.jpg') || paymentForm.voucherUrl.endsWith('.jpeg') || paymentForm.voucherUrl.endsWith('.webp') || paymentForm.voucherUrl.includes('image') || paymentForm.voucherUrl.includes('cloudinary')">
-                            <img [src]="paymentForm.voucherUrl" alt="Comprobante de pago" class="voucher-thumbnail">
-                        </div>
-                    </div>
-                </div>
+            </div>
 
-                <!-- 1. DATOS DEL CLIENTE -->
-                <div class="form-grid two">
-                    <label>
-                        Nombre completo del cliente *
-                        <input type="text" name="client" [(ngModel)]="paymentForm.client" [readonly]="isPrefilled" [class.locked-input]="isPrefilled" required placeholder="Ej. Juan Pérez">
-                    </label>
-
-                    <label>
-                        Correo electrónico *
-                        <input type="email" name="email" [(ngModel)]="paymentForm.email" [readonly]="isPrefilled" [class.locked-input]="isPrefilled" required placeholder="Ej. juan@correo.com">
-                    </label>
-
-                    <label>
-                        Teléfono / celular
-                        <input type="tel" name="phone" [(ngModel)]="paymentForm.phone" [readonly]="isPrefilled" [class.locked-input]="isPrefilled" placeholder="Ej. 987654321">
-                    </label>
-
-                    <label>
-                        Categorización Proyecto
-                        <select name="productType" [(ngModel)]="paymentForm.productType" [disabled]="isPrefilled" [class.locked-input]="isPrefilled">
-                            <option value="" disabled>Seleccionar producto...</option>
-                            <option *ngFor="let type of productTypes" [value]="type">{{ type }}</option>
-                        </select>
-                    </label>
-                </div>
-
-                <!-- 2. SELECCIÓN DE MAQUETAS (CATÁLOGO O PERSONALIZADA) -->
-                <div class="wide-label" *ngIf="!isPrefilled">
-                    <label style="font-weight: 700; margin-bottom: 8px; display: block;">Estructura Base de Maqueta *</label>
-                    <div class="option-cards-row">
-                        <button type="button" class="option-btn" [class.selected]="currentMaquetaTipo === 'catalogo'" (click)="selectMaquetaTipo('catalogo')">
-                            <span class="material-icons">storefront</span>
-                            Catálogo de Maquetas
-                        </button>
-                        <button type="button" class="option-btn" [class.selected]="currentMaquetaTipo === 'personalizada'" (click)="selectMaquetaTipo('personalizada')">
-                            <span class="material-icons">architecture</span>
-                            Maqueta Personalizada (Medidas)
-                        </button>
-                    </div>
-
-                    <!-- Selector de catálogo -->
-                    <div *ngIf="currentMaquetaTipo === 'catalogo'" class="catalog-maquetas-grid">
-                        <div *ngFor="let maq of catalogMaquetas" 
-                             class="maqueta-card" 
-                             [class.selected]="selectedMaqueta?.id === maq.id" 
-                             (click)="selectCatalogMaqueta(maq)">
-                            <img *ngIf="maq.imageUrl" [src]="maq.imageUrl" alt="{{ maq.nombre }}" class="card-image">
-                            <span *ngIf="!maq.imageUrl" class="material-icons card-icon">home</span>
-                            <div class="card-name">{{ maq.nombre }}</div>
-                            <div class="card-price">S/ {{ maq.precio | number:'1.2-2' }}</div>
-                            <small class="card-stock" [style.color]="maq.stock > 0 ? '#009b79' : '#ef4444'">Stock: {{ maq.stock }} und</small>
-                        </div>
-                    </div>
-
-                    <!-- Calculadora de medidas personalizada -->
-                    <div *ngIf="currentMaquetaTipo === 'personalizada'">
-                        <div class="form-grid three">
-                            <label>
-                                Alto (cm)
-                                <input type="number" name="maqAlto" [(ngModel)]="maqAlto" min="1" (change)="calculatePersonalizadaPrice()">
-                            </label>
-                            <label>
-                                Ancho (cm)
-                                <input type="number" name="maqAncho" [(ngModel)]="maqAncho" min="1" (change)="calculatePersonalizadaPrice()">
-                            </label>
-                            <label>
-                                Largo (cm)
-                                <input type="number" name="maqLargo" [(ngModel)]="maqLargo" min="1" (change)="calculatePersonalizadaPrice()">
-                            </label>
-                        </div>
-                        <div class="info-alert">
-                            <span class="material-icons">info</span>
-                            <span>Precio estimado de estructura: <strong>S/ {{ selectedPersonalizadaPrice | number:'1.2-2' }}</strong></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. AGREGAR MATERIALES UTILIZADOS -->
-                <div class="materials-section-container" *ngIf="!isPrefilled">
-                    <h3>Añadir Materiales Utilizados</h3>
-                    <div class="materials-input-row">
-                        <select name="selectedMaterialId" [(ngModel)]="selectedMaterialId" (change)="updateMaterialStockLabel()">
-                            <option value="" disabled>Seleccionar material...</option>
-                            <option *ngFor="let mat of catalogMateriales" [value]="mat.id">
-                                {{ mat.nombre }} (S/ {{ mat.costoVenta | number:'1.2-2' }})
-                            </option>
-                        </select>
-
-                        <input type="number" name="selectedMaterialQty" [(ngModel)]="selectedMaterialQty" min="1" placeholder="Cant.">
-
-                        <button type="button" class="btn-add-material" (click)="addMaterialToCart()">
-                            <span class="material-icons">add</span> Agregar
-                        </button>
-                    </div>
-                    <small class="stock-indicator" *ngIf="selectedMaterialStockLabel">{{ selectedMaterialStockLabel }}</small>
-
-                    <!-- Tabla de carrito de materiales -->
-                    <div class="materials-cart-table" *ngIf="cartMaterials.length > 0">
-                        <table>
-                            <thead>
-                                <th>Material</th>
-                                <th>Precio</th>
-                                <th>Cant.</th>
-                                <th>Subtotal</th>
-                                <th></th>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let item of cartMaterials">
-                                    <td>{{ item.name }}</td>
-                                    <td>S/ {{ item.price | number:'1.2-2' }}</td>
-                                    <td>{{ item.qty }}</td>
-                                    <td>S/ {{ (item.price * item.qty) | number:'1.2-2' }}</td>
-                                    <td style="text-align: right;">
-                                        <button type="button" class="btn-delete-item" (click)="removeMaterialFromCart(item.id)">
-                                            <span class="material-icons">delete</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- 4. TOTALES RESUMEN -->
-                <div class="summary-totals-box" *ngIf="!isPrefilled">
-                    <div class="summary-line">
-                        <span>Subtotal Estructura:</span>
-                        <strong>S/ {{ getMaquetaSubtotal() | number:'1.2-2' }}</strong>
-                    </div>
-                    <div class="summary-line" *ngIf="cartMaterials.length > 0">
-                        <span>Subtotal Materiales:</span>
-                        <strong>S/ {{ getMaterialsSubtotal() | number:'1.2-2' }}</strong>
-                    </div>
-                    <div class="summary-line total-line">
-                        <span>Monto Total del Proyecto:</span>
-                        <strong>S/ {{ getTotalVenta() | number:'1.2-2' }}</strong>
-                    </div>
-                </div>
-
-                <!-- 5. TIPO DE COBRO & CONTROLES DE TRANSACCIÓN -->
-                <div class="form-grid three">
-                    <label>
-                        Monto transacción (A Cobrar Hoy)
-                        <input type="number" name="amount" min="0" step="0.01" [(ngModel)]="paymentForm.amount" [readonly]="isPrefilled" [class.locked-input]="isPrefilled" required>
-                    </label>
-
-                    <label>
-                        Método de pago
-                        <select name="method" [(ngModel)]="paymentForm.method" [disabled]="isPrefilled" [class.locked-input]="isPrefilled">
-                            <option value="" disabled>Seleccionar método...</option>
-                            <option *ngFor="let method of paymentMethods" [value]="method">{{ method }}</option>
-                        </select>
-                    </label>
-
-                    <label>
-                        Tipo de abono
-                        <select name="kind" [(ngModel)]="paymentForm.kind" [disabled]="isPrefilled" [class.locked-input]="isPrefilled" (change)="updateTotals()">
-                            <option value="" disabled>Seleccionar abono...</option>
-                            <option *ngFor="let kind of paymentKinds" [value]="kind">{{ kind }}</option>
-                        </select>
-                    </label>
-                </div>
-
-                <!-- Materiales en texto para compatibilidad legacy -->
-                <label class="wide-label">
-                    Resumen de Materiales Comprometidos
-                    <input type="text" name="materials" [(ngModel)]="paymentForm.materials" [readonly]="!isPrefilled" [class.locked-input]="!isPrefilled">
-                </label>
-
-                <label class="inventory-check">
-                    <input type="checkbox" name="inventory" [(ngModel)]="paymentForm.inventory">
-                    <span>
-                        <strong>Descontar automáticamente del inventario</strong>
-                        <small>Actualiza stock de materiales y maquetas al registrar.</small>
-                    </span>
-                </label>
-
-                <div class="form-grid two">
-                    <label>
-                        Fecha transacción
-                        <input type="datetime-local" name="date" [(ngModel)]="paymentForm.date" [readonly]="isPrefilled" [class.locked-input]="isPrefilled">
-                    </label>
-
-                    <label>
-                        Código operación / comentario
-                        <input type="text" name="operation" [(ngModel)]="paymentForm.operation" [readonly]="isPrefilled" [class.locked-input]="isPrefilled" placeholder="Ej. YAPE-01234">
-                    </label>
-                </div>
-
-                <button class="primary-action" type="submit">
-                    <span aria-hidden="true">S/</span>
-                    Registrar Venta e Imprimir Boleta
-                </button>
-            </form>
-
-            <!-- LATERAL CARD - RESUMEN DE LA COMPRA ACTUAL -->
-            <aside class="side-stack">
-                <section class="payment-card" style="position: sticky; top: 20px; background: linear-gradient(135deg, #1e293b, #0f172a); color: #ffffff;">
-                    <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
-                        <h2 style="color: #ffffff; font-size: 16px;">Resumen del Pedido Actual</h2>
-                        <p style="color: #94a3b8; font-size: 11px;">Detalle visualizador de los montos a registrar en caja.</p>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: #94a3b8;">Cliente:</span>
-                            <span style="font-weight: 700;">{{ paymentForm.client || 'Ninguno' }}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: #94a3b8;">Estructura Maqueta:</span>
-                            <span style="font-weight: 700;" *ngIf="currentMaquetaTipo === 'catalogo'">
-                                {{ selectedMaqueta ? selectedMaqueta.nombre : 'Sin seleccionar' }}
-                            </span>
-                            <span style="font-weight: 700;" *ngIf="currentMaquetaTipo === 'personalizada'">
-                                Medida: {{ maqAlto }}x{{ maqAncho }}x{{ maqLargo }}cm
-                            </span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="color: #94a3b8;">Materiales añadidos:</span>
-                            <span style="font-weight: 700;">{{ cartMaterials.length }} items</span>
-                        </div>
-
-                        <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 12px; margin-top: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 14px;">
-                                <span style="color: #94a3b8;">Subtotal Maqueta:</span>
-                                <span>S/ {{ getMaquetaSubtotal() | number:'1.2-2' }}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 14px;" *ngIf="cartMaterials.length > 0">
-                                <span style="color: #94a3b8;">Subtotal Materiales:</span>
-                                <span>S/ {{ getMaterialsSubtotal() | number:'1.2-2' }}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: #00faac; margin-top: 8px;">
-                                <span>Total del Proyecto:</span>
-                                <span>S/ {{ getTotalVenta() | number:'1.2-2' }}</span>
-                            </div>
-                        </div>
-
-                        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-top: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
-                            <span style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 4px;">A COBRAR HOY:</span>
-                            <span style="font-size: 20px; font-weight: 800; color: #ffffff;">S/ {{ (paymentForm.amount || 0) | number:'1.2-2' }}</span>
-                        </div>
-                    </div>
-                </section>
-            </aside>
-        </div>
-
-        <!-- TAB 2: SALDOS PENDIENTES -->
-        <div *ngIf="activeSubTab === 'saldos'" class="payment-card" style="padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 20px;">
-                <div>
-                    <h2>Saldos Pendientes (Caja Central)</h2>
-                    <p style="color: #64748b; font-size: 13px;">Listado de clientes con deudas del 50% de maquetas físicas pendientes por liquidar.</p>
-                </div>
-                <span class="cash-pill" style="margin: 0; background: #e0f2fe; color: #0369a1; border-color: #bae6fd;">
-                    <strong>{{ pendingBalances.length }} pendientes</strong>
+            <!-- PAGINATION FOOTER (Matching Reference Image) -->
+            <div *ngIf="saldosPendientesFiltrados.length > 0" 
+                 style="background: #ffffff; border-radius: 14px; padding: 14px 24px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <span style="font-size: 13px; color: #64748b; font-weight: 500;">
+                    Mostrando <strong style="color: #0f172a;">{{ indiceInicioPendientes }}</strong> a <strong style="color: #0f172a;">{{ indiceFinPendientes }}</strong> de <strong style="color: #0f172a;">{{ saldosPendientesFiltrados.length }}</strong> resultados
                 </span>
+
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" 
+                            (click)="cambiarPaginaPendientes(paginaActualPendientes - 1)" 
+                            [disabled]="paginaActualPendientes === 1"
+                            style="border: 1px solid #e2e8f0; background: #ffffff; color: #475569; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
+                            [style.opacity]="paginaActualPendientes === 1 ? '0.4' : '1'">
+                        <span class="material-icons" style="font-size: 18px;">chevron_left</span>
+                    </button>
+
+                    <button *ngFor="let pag of paginasPendientesArray" 
+                            type="button" 
+                            (click)="cambiarPaginaPendientes(pag)"
+                            [style.background]="paginaActualPendientes === pag ? '#0d9488' : '#ffffff'"
+                            [style.color]="paginaActualPendientes === pag ? '#ffffff' : '#475569'"
+                            [style.border-color]="paginaActualPendientes === pag ? '#0d9488' : '#e2e8f0'"
+                            style="border: 1px solid; min-width: 34px; height: 34px; border-radius: 8px; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-family: inherit;">
+                        {{ pag }}
+                    </button>
+
+                    <button type="button" 
+                            (click)="cambiarPaginaPendientes(paginaActualPendientes + 1)" 
+                            [disabled]="paginaActualPendientes === totalPaginasPendientes"
+                            style="border: 1px solid #e2e8f0; background: #ffffff; color: #475569; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
+                            [style.opacity]="paginaActualPendientes === totalPaginasPendientes ? '0.4' : '1'">
+                        <span class="material-icons" style="font-size: 18px;">chevron_right</span>
+                    </button>
+                </div>
             </div>
 
-            <div class="materials-cart-table">
-                <table style="width: 100%;">
-                    <thead>
-                        <th>Cliente</th>
-                        <th>Proyecto</th>
-                        <th>Materiales Comprometidos</th>
-                        <th>Saldo Adeudado</th>
-                        <th>Vence</th>
-                        <th>Solicitud ID</th>
-                        <th style="text-align: right;">Acción</th>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let balance of pendingBalances">
-                            <td>
-                                <strong>{{ balance.client }}</strong>
-                                <small style="display: block; color: #64748b;">{{ balance.email }}</small>
-                            </td>
-                            <td>{{ balance.project }}</td>
-                            <td>{{ balance.materials }}</td>
-                            <td style="color: #b91c1c; font-weight: 700; font-size: 14px;">S/ {{ balance.amount | number:'1.2-2' }}</td>
-                            <td><span style="background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700;">{{ balance.dueDate }}</span></td>
-                            <td style="font-family: monospace; font-size: 11px; color: #64748b;">{{ balance.solicitudId }}</td>
-                            <td style="text-align: right;">
-                                <button type="button" class="btn-chat-action" style="width: auto; padding: 8px 14px;" (click)="openCobroFisicoModal(balance)">
-                                    <span class="material-icons" style="font-size: 12px; vertical-align: middle; margin-right: 4px;">payments</span> Cobrar saldo
-                                </button>
-                            </td>
-                        </tr>
-                        <tr *ngIf="pendingBalances.length === 0">
-                            <td colspan="7" style="text-align: center; color: #64748b; padding: 40px; font-style: italic;">
-                                ¡Felicidades! No hay saldos de caja pendientes de cobro físico.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
 
 
 
-        <!-- TAB 4: AUDITORÍA -->
-        <div *ngIf="activeSubTab === 'auditoria'" class="payment-card history-card" style="padding: 24px;">
-            <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <!-- TAB 4: AUDITORÍA INTERNA MODERN UI -->
+        <div *ngIf="activeSubTab === 'auditoria'" class="audit-page-wrapper">
+            <!-- Header section -->
+            <div class="audit-header-row">
                 <div>
-                    <h2>Panel de Auditoría Interna</h2>
-                    <p style="color: #64748b; font-size: 13px;">Verificación y consulta del historial de transacciones liquidadas.</p>
+                    <h2 class="audit-title">Panel de Auditoría Interna</h2>
+                    <p class="audit-subtitle">Verificación y consulta del historial de transacciones liquidadas.</p>
                 </div>
-                <button class="export-button" type="button" (click)="exportCsv()">{{ exportLabel }}</button>
+                <button class="audit-btn-export" type="button" (click)="exportCsv()">
+                    <span class="material-icons">file_download</span>
+                    {{ exportLabel }}
+                </button>
             </div>
 
-            <!-- Indicators Row -->
-            <footer class="daily-indicators" style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
-                <div>
-                    <span>Ventas totales</span>
-                    <strong>S/ {{ dailyStats.ventasTotales | number: '1.2-2' }}</strong>
+            <!-- KPI Cards Row (3 Cards) -->
+            <div class="audit-kpi-grid">
+                <!-- Card 1: Ventas Totales (Dark Theme) -->
+                <div class="audit-kpi-card dark">
+                    <div class="audit-kpi-top">
+                        <span class="audit-kpi-label">VENTAS TOTALES</span>
+                        <div class="audit-kpi-icon-box dark-accent">
+                            <span class="material-icons">north_east</span>
+                        </div>
+                    </div>
+                    <strong class="audit-kpi-value">S/ {{ dailyStats.ventasTotales | number: '1.2-2' }}</strong>
+                    <span class="audit-kpi-subtext">Periodo actual</span>
                 </div>
-                <div>
-                    <span>Transacciones Online</span>
-                    <strong>{{ dailyStats.metodoOnlineCount }} registradas</strong>
+
+                <!-- Card 2: Transacciones Online -->
+                <div class="audit-kpi-card">
+                    <div class="audit-kpi-top">
+                        <span class="audit-kpi-label">TRANSACCIONES ONLINE</span>
+                        <div class="audit-kpi-icon-box blue-accent">
+                            <span class="material-icons">language</span>
+                        </div>
+                    </div>
+                    <strong class="audit-kpi-value light-text">{{ dailyStats.metodoOnlineCount }} registrada{{ dailyStats.metodoOnlineCount === 1 ? '' : 's' }}</strong>
+                    <div class="audit-kpi-status">
+                        <span class="status-dot green"></span>
+                        <span>Sistema operativo</span>
+                    </div>
                 </div>
-                <div>
-                    <span>Cobros Físicos</span>
-                    <strong>{{ dailyStats.metodoFisicoCount }} registrados</strong>
+
+                <!-- Card 3: Cobros Físicos -->
+                <div class="audit-kpi-card">
+                    <div class="audit-kpi-top">
+                        <span class="audit-kpi-label">COBROS FÍSICOS</span>
+                        <div class="audit-kpi-icon-box gray-accent">
+                            <span class="material-icons">point_of_sale</span>
+                        </div>
+                    </div>
+                    <strong class="audit-kpi-value muted-text">{{ dailyStats.metodoFisicoCount }} registrado{{ dailyStats.metodoFisicoCount === 1 ? '' : 's' }}</strong>
+                    <span class="audit-kpi-subtext">Sin movimientos hoy</span>
                 </div>
-            </footer>
+            </div>
 
             <!-- Filters Row -->
-            <div class="filters-row" style="margin-bottom: 20px;">
-                <label class="search-control">
-                    <span aria-hidden="true">&#128269;</span>
-                    <input type="search" name="searchTerm" placeholder="Buscar cliente..." [(ngModel)]="searchTerm">
-                </label>
- 
-                <select name="methodFilter" [(ngModel)]="selectedMethodFilter" aria-label="Filtrar metodo">
-                    <option *ngFor="let method of methodFilters" [value]="method.value">{{ method.label }}</option>
-                </select>
- 
-                <select name="kindFilter" [(ngModel)]="selectedKindFilter" aria-label="Filtrar abono">
-                    <option *ngFor="let kind of kindFilters" [value]="kind.value">{{ kind.label }}</option>
-                </select>
+            <div class="audit-filters-row">
+                <div class="audit-search-box">
+                    <span class="material-icons search-icon">search</span>
+                    <input type="search" name="searchTerm" placeholder="Buscar cliente por nombre o número de operación..." [(ngModel)]="searchTerm">
+                </div>
+
+                <div class="audit-filter-select-wrapper">
+                    <select name="methodFilter" [(ngModel)]="selectedMethodFilter" aria-label="Filtrar método">
+                        <option *ngFor="let method of methodFilters" [value]="method.value">{{ method.label }}</option>
+                    </select>
+                </div>
+
+                <div class="audit-filter-select-wrapper">
+                    <select name="kindFilter" [(ngModel)]="selectedKindFilter" aria-label="Filtrar abono">
+                        <option *ngFor="let kind of kindFilters" [value]="kind.value">{{ kind.label }}</option>
+                    </select>
+                </div>
             </div>
- 
-            <div class="transaction-list">
-                <article class="transaction-item animate-checkout-fade" *ngFor="let transaction of filteredTransactions">
-                    <div class="transaction-main">
-                        <div>
-                            <h3>{{ transaction.client }}</h3>
-                            <dl>
-                                <div>
-                                    <dt>Tipo de maqueta</dt>
-                                    <dd>{{ transaction.productType }}</dd>
-                                </div>
-                                <div>
-                                    <dt>Materiales</dt>
-                                    <dd>{{ transaction.materials }}</dd>
-                                </div>
-                            </dl>
-                            <small class="tx-op-code">Op: {{ transaction.operation }}</small>
+
+            <!-- Transactions Cards List -->
+            <div class="audit-cards-list">
+                <div class="audit-tx-card animate-checkout-fade" *ngFor="let transaction of filteredTransactions">
+                    <!-- Top Header Row -->
+                    <div class="audit-card-header">
+                        <div class="audit-client-info">
+                            <div class="client-name-group">
+                                <h3 class="audit-client-name">{{ transaction.client }}</h3>
+                                <span class="audit-pill-badge" [class.online]="transaction.status === 'online'" [class.fisico]="transaction.status === 'fisico'">
+                                    {{ transaction.status === 'online' ? 'ONLINE' : 'PRESENCIAL' }}
+                                </span>
+                            </div>
+                            <span class="audit-op-code">Op: {{ transaction.operation }}</span>
                         </div>
- 
-                        <div class="transaction-payment">
-                            <span [class.online]="transaction.status === 'online'" class="method-badge">{{ transaction.method }}</span>
-                            <strong class="amount-badge">{{ transaction.kind }} (S/ {{ transaction.amount | number: '1.2-2' }})</strong>
+
+                        <div class="audit-amount-info">
+                            <span class="audit-amount-label">
+                                {{ transaction.kind.toLowerCase().includes('saldo') ? 'SALDO PENDIENTE' : 'TOTAL' }}
+                            </span>
+                            <strong class="audit-amount-value" [class.is-saldo]="transaction.kind.toLowerCase().includes('saldo')">
+                                S/ {{ transaction.amount | number: '1.2-2' }}
+                            </strong>
                         </div>
                     </div>
 
-                    <!-- SECCIÓN DINÁMICA DEL FLUJO DE PAGO (TIMELINE) -->
-                    <div class="transaction-flow-wrapper">
-                        <!-- PAGO_UNICO -->
-                        <div *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'PAGO_UNICO'" class="flow-pill-unico">
-                            <span class="material-icons flow-pill-icon">done_all</span>
-                            <span class="flow-pill-text">Flujo: Pago Directo 100% de la venta (S/ {{ transaction.amount | number:'1.2-2' }} registrado)</span>
+                    <!-- Middle Content Grid -->
+                    <div class="audit-card-body">
+                        <div class="audit-detail-col">
+                            <span class="detail-label">TIPO DE MAQUETA</span>
+                            <span class="detail-value">{{ transaction.productType }}</span>
                         </div>
-
-                        <!-- ADELANTO_PENDIENTE -->
-                        <div *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_PENDIENTE'" class="flow-timeline-box">
-                            <div class="flow-header-meta">
-                                <span class="flow-intro-text">Estado del Flujo de Pago:</span>
-                                <span *ngIf="obtenerFlujoTransaccion(transaction).esPresupuestado" class="presupuestado-badge animate-checkout-fade">
-                                    <span class="material-icons badge-icon">receipt</span>
-                                    Monto Presupuestado (Total S/ {{ obtenerFlujoTransaccion(transaction).totalMonto | number:'1.2-2' }})
-                                </span>
-                            </div>
-                            <div class="flow-timeline">
-                                <div class="flow-node active">
-                                    <span class="material-icons node-icon">check_circle</span>
-                                    <div class="node-content">
-                                        <strong>Adelanto Inicial <span *ngIf="!obtenerFlujoTransaccion(transaction).esPresupuestado">(50%)</span></strong>
-                                        <span class="node-amount">S/ {{ obtenerFlujoTransaccion(transaction).adelantoMonto | number:'1.2-2' }}</span>
-                                        <span class="node-status-text success">✓ Cobrado en esta Tx</span>
-                                    </div>
-                                </div>
-                                <div class="flow-connector"></div>
-                                <div class="flow-node pending">
-                                    <span class="material-icons node-icon">hourglass_empty</span>
-                                    <div class="node-content">
-                                        <strong>Saldo Liquidación <span *ngIf="!obtenerFlujoTransaccion(transaction).esPresupuestado">(50%)</span></strong>
-                                        <span class="node-amount">S/ {{ obtenerFlujoTransaccion(transaction).saldoMonto | number:'1.2-2' }}</span>
-                                        <span class="node-status-text warning">⏳ Esperando entrega</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ADELANTO_LIQUIDADO -->
-                        <div *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_LIQUIDADO'" class="flow-timeline-box">
-                            <div class="flow-header-meta">
-                                <span class="flow-intro-text">Estado del Flujo de Pago:</span>
-                                <span *ngIf="obtenerFlujoTransaccion(transaction).esPresupuestado" class="presupuestado-badge animate-checkout-fade">
-                                    <span class="material-icons badge-icon">receipt</span>
-                                    Monto Presupuestado (Total S/ {{ obtenerFlujoTransaccion(transaction).totalMonto | number:'1.2-2' }})
-                                </span>
-                            </div>
-                            <div class="flow-timeline">
-                                <div class="flow-node active">
-                                    <span class="material-icons node-icon">check_circle</span>
-                                    <div class="node-content">
-                                        <strong>Adelanto Inicial <span *ngIf="!obtenerFlujoTransaccion(transaction).esPresupuestado">(50%)</span></strong>
-                                        <span class="node-amount">S/ {{ obtenerFlujoTransaccion(transaction).adelantoMonto | number:'1.2-2' }}</span>
-                                        <span class="node-status-text success">✓ Cobrado en esta Tx</span>
-                                    </div>
-                                </div>
-                                <div class="flow-connector completed"></div>
-                                <div class="flow-node active past">
-                                    <span class="material-icons node-icon">check_circle</span>
-                                    <div class="node-content">
-                                        <strong>Saldo Liquidación <span *ngIf="!obtenerFlujoTransaccion(transaction).esPresupuestado">(50%)</span></strong>
-                                        <span class="node-amount">S/ {{ obtenerFlujoTransaccion(transaction).saldoMonto | number:'1.2-2' }}</span>
-                                        <span class="node-status-text success-dark">✓ Liquidado posteriormente</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SALDO_COMPLETO -->
-                        <div *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'SALDO_COMPLETO'" class="flow-timeline-box">
-                            <div class="flow-header-meta">
-                                <span class="flow-intro-text">Estado del Flujo de Pago:</span>
-                                <span *ngIf="obtenerFlujoTransaccion(transaction).esPresupuestado" class="presupuestado-badge animate-checkout-fade">
-                                    <span class="material-icons badge-icon">receipt</span>
-                                    Monto Presupuestado (Total S/ {{ obtenerFlujoTransaccion(transaction).totalMonto | number:'1.2-2' }})
-                                </span>
-                            </div>
-                            <div class="flow-timeline">
-                                <div class="flow-node active past">
-                                    <span class="material-icons node-icon">check_circle</span>
-                                    <div class="node-content">
-                                        <strong>Adelanto Inicial <span *ngIf="!obtenerFlujoTransaccion(transaction).esPresupuestado">(50%)</span></strong>
-                                        <span class="node-amount">S/ {{ obtenerFlujoTransaccion(transaction).adelantoMonto | number:'1.2-2' }}</span>
-                                        <span class="node-status-text success-dark">✓ Cobrado previamente</span>
-                                    </div>
-                                </div>
-                                <div class="flow-connector completed"></div>
-                                <div class="flow-node active highlight">
-                                    <span class="material-icons node-icon">check_circle</span>
-                                    <div class="node-content">
-                                        <strong>Saldo Liquidación <span *ngIf="!obtenerFlujoTransaccion(transaction).esPresupuestado">(50%)</span></strong>
-                                        <span class="node-amount">S/ {{ obtenerFlujoTransaccion(transaction).saldoMonto | number:'1.2-2' }}</span>
-                                        <span class="node-status-text success">✓ Liquidado en esta Tx</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="audit-detail-col">
+                            <span class="detail-label">MATERIALES</span>
+                            <span class="detail-value">{{ transaction.materials }}</span>
                         </div>
                     </div>
- 
-                    <div class="transaction-actions">
-                        <button type="button" (click)="openReceipt(transaction)">Recibo</button>
-                        <button type="button" style="background: #e0f2fe; color: #0369a1;" (click)="printReceipt(transaction)">Imprimir</button>
-                        <time>{{ transaction.date }}</time>
+
+                    <!-- Bottom Flow & Actions Footer -->
+                    <div class="audit-card-footer">
+                        <!-- Left Flow Pill -->
+                        <div class="audit-flow-pill" [class.success]="obtenerFlujoTransaccion(transaction).tipo === 'PAGO_UNICO' || obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_LIQUIDADO'" [class.info]="obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_PENDIENTE' || obtenerFlujoTransaccion(transaction).tipo === 'SALDO_COMPLETO'">
+                            <span class="material-icons pill-icon" *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'PAGO_UNICO' || obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_LIQUIDADO'">check_circle</span>
+                            <span class="material-icons pill-icon" *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_PENDIENTE' || obtenerFlujoTransaccion(transaction).tipo === 'SALDO_COMPLETO'">info</span>
+                            
+                            <span class="pill-text" *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'PAGO_UNICO'">
+                                Flujo: Pago Directo 100% de la venta (S/ {{ transaction.amount | number:'1.2-2' }} registrado)
+                            </span>
+                            <span class="pill-text" *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_PENDIENTE'">
+                                Flujo: Pago Parcial registrado
+                            </span>
+                            <span class="pill-text" *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'ADELANTO_LIQUIDADO'">
+                                Flujo: Pago Completo Liquidado (Total S/ {{ obtenerFlujoTransaccion(transaction).totalMonto | number:'1.2-2' }})
+                            </span>
+                            <span class="pill-text" *ngIf="obtenerFlujoTransaccion(transaction).tipo === 'SALDO_COMPLETO'">
+                                Flujo: Saldo Final Cobrado (S/ {{ transaction.amount | number:'1.2-2' }})
+                            </span>
+                        </div>
+
+                        <!-- Right Actions & Date -->
+                        <div class="audit-actions-group">
+                            <span class="audit-date-text">{{ transaction.date }}</span>
+                            <button type="button" class="audit-btn-recibo" (click)="openReceipt(transaction)">RECIBO</button>
+                            <button type="button" class="audit-btn-imprimir" (click)="printReceipt(transaction)">IMPRIMIR</button>
+                        </div>
                     </div>
-                </article>
-                <div *ngIf="filteredTransactions.length === 0" style="text-align: center; color: #64748b; padding: 30px; font-style: italic;">
-                    No se encontraron transacciones registradas que coincidan con los filtros.
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="filteredTransactions.length === 0" class="audit-empty-state">
+                    <span class="material-icons empty-icon">search_off</span>
+                    <p>No se encontraron transacciones registradas que coincidan con los filtros.</p>
+                </div>
+            </div>
+
+            <!-- Footer Pagination Bar -->
+            <div class="audit-pagination-bar" *ngIf="filteredTransactions.length > 0">
+                <span class="pagination-info">Mostrando <strong>{{ filteredTransactions.length }}</strong> de <strong>{{ transactions.length }}</strong> resultados</span>
+                <div class="pagination-controls">
+                    <button type="button" class="btn-page-nav" disabled>Anterior</button>
+                    <button type="button" class="btn-page-nav" disabled>Siguiente</button>
                 </div>
             </div>
         </div>
@@ -782,6 +634,18 @@
                 <dt>Fecha Emision:</dt>
                 <dd>{{ selectedReceipt.date }}</dd>
             </div>
+            <div *ngIf="selectedReceipt.codigoSeguridad">
+                <dt>Cod. Seguridad:</dt>
+                <dd>{{ selectedReceipt.codigoSeguridad }}</dd>
+            </div>
+            <div *ngIf="selectedReceipt.montoRecibido">
+                <dt>Monto Recibido:</dt>
+                <dd>S/ {{ selectedReceipt.montoRecibido | number: '1.2-2' }} (Vuelto: S/ {{ (selectedReceipt.vuelto || 0) | number: '1.2-2' }})</dd>
+            </div>
+            <div *ngIf="selectedReceipt.voucherUrl">
+                <dt>Comprobante:</dt>
+                <dd><a [href]="selectedReceipt.voucherUrl" target="_blank" style="color: #0d9488; text-decoration: underline; font-weight: 600;">Ver Voucher Subido</a></dd>
+            </div>
         </dl>
 
         <section class="materials-box">
@@ -804,224 +668,19 @@
 </div>
 
 <!-- ==========================================================================
-     MODAL DE COBRO FÍSICO (SALDOS PENDIENTES)
+     MODAL DE COBRO FÍSICO (COMPONENTE REUTILIZABLE)
      ========================================================================== -->
-<div class="modal-backdrop-custom" *ngIf="showCobroFisicoModal">
-    <div class="modal-checkout-box animate-checkout-fade">
-        <button type="button" class="checkout-close-btn" (click)="closeCobroFisicoModal()">&times;</button>
-        
-        <div class="checkout-grid">
-            <!-- COLUMNA IZQUIERDA: MÉTODOS DE PAGO -->
-            <div class="checkout-payment-col">
-                <div class="checkout-header">
-                    <span class="material-icons security-icon">verified_user</span>
-                    <h2>Seleccione su Método de Pago</h2>
-                </div>
-
-                <!-- TABS DE MÉTODOS DE PAGO -->
-                <div class="payment-tabs">
-                    <button type="button" class="payment-tab-btn" 
-                            [class.active]="activePaymentMethod === 'yape'"
-                            (click)="activePaymentMethod = 'yape'; cobroMetodo = 'Online (Yape / Plin)'">
-                        <span class="material-icons">qr_code_scanner</span>
-                        <strong>YAPE / PLIN</strong>
-                    </button>
-                    <button type="button" class="payment-tab-btn" 
-                            [class.active]="activePaymentMethod === 'transferencia'"
-                            (click)="activePaymentMethod = 'transferencia'; cobroMetodo = 'Online (Transferencia)'">
-                        <span class="material-icons">account_balance</span>
-                        <strong>TRANSFERENCIA</strong>
-                    </button>
-                    <button type="button" class="payment-tab-btn" 
-                            [class.active]="activePaymentMethod === 'efectivo'"
-                            (click)="activePaymentMethod = 'efectivo'; cobroMetodo = 'Fisico (Efectivo en persona)'">
-                        <span class="material-icons">payments</span>
-                        <strong>EFECTIVO</strong>
-                    </button>
-                </div>
-
-                <form (submit)="submitCobroFisico(); $event.preventDefault();" class="checkout-form">
-                    <!-- CONTENIDO DE TABS -->
-                    <div class="tab-content-container">
-                        
-                        <!-- TAB: YAPE / PLIN -->
-                        <div *ngIf="activePaymentMethod === 'yape'" class="tab-pane animate-pane-slide">
-                            <div class="qr-container-box">
-                                <div class="qr-code-wrapper">
-                                    <!-- QR mockup visual compatible con el logo AMZ -->
-                                    <div class="qr-code-placeholder">
-                                        <span class="material-icons qr-icon">qr_code_2</span>
-                                        <span class="qr-center-logo">AMZ</span>
-                                    </div>
-                                </div>
-                                <span class="qr-caption">ESCANEA PARA PAGAR</span>
-                                <div class="qr-phone-number" (click)="copiarNumeroYape()">
-                                    <strong>923 932 945</strong>
-                                    <span class="material-icons copy-icon" [class.copied]="copiadoExitoso">
-                                        {{ copiadoExitoso ? 'check' : 'content_copy' }}
-                                    </span>
-                                </div>
-                                <span class="qr-holder">A NOMBRE DE: ZHYRO SHOP</span>
-                            </div>
-
-                            <div class="checkout-inputs-row">
-                                <div class="checkout-input-group">
-                                    <label>NÚMERO DE OPERACIÓN <span class="required-star">*</span></label>
-                                    <div class="input-with-icon">
-                                        <span class="material-icons input-icon">tag</span>
-                                        <input type="text" name="cobroNumeroOperacion" [(ngModel)]="cobroNumeroOperacion" placeholder="Ej: 12345678" required>
-                                    </div>
-                                </div>
-                                <div class="checkout-input-group">
-                                    <label>CÓDIGO DE SEGURIDAD <span class="required-star">*</span></label>
-                                    <div class="input-with-icon">
-                                        <span class="material-icons input-icon">lock</span>
-                                        <input type="text" name="cobroCodigoSeguridad" [(ngModel)]="cobroCodigoSeguridad" placeholder="Ej: 123" maxlength="4" required>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TAB: TRANSFERENCIA -->
-                        <div *ngIf="activePaymentMethod === 'transferencia'" class="tab-pane animate-pane-slide">
-                            <div class="transfer-accounts-box">
-                                <p class="accounts-intro">Transfiere a las siguientes cuentas de Amazonas Taller:</p>
-                                <div class="account-card">
-                                    <div class="bank-info">
-                                        <span class="bank-badge bcp">BCP</span>
-                                        <strong>Cuenta Corriente Soles</strong>
-                                    </div>
-                                    <div class="account-details">
-                                        <p>Número: <span>191-99887766-0-12</span></p>
-                                        <p>CCI: <span>002-191-99887766012-54</span></p>
-                                    </div>
-                                </div>
-                                <div class="account-card">
-                                    <div class="bank-info">
-                                        <span class="bank-badge bbva">BBVA</span>
-                                        <strong>Cuenta de Ahorros Soles</strong>
-                                    </div>
-                                    <div class="account-details">
-                                        <p>Número: <span>0011-0320-0200334455</span></p>
-                                        <p>CCI: <span>002-011-03200200334455-89</span></p>
-                                    </div>
-                                </div>
-                                <span class="accounts-holder">TITULAR: TALLER DE MAQUETAS AMAZONAS S.A.C.</span>
-                            </div>
-
-                            <div class="checkout-input-group">
-                                <label>NÚMERO DE OPERACIÓN DE LA TRANSFERENCIA <span class="required-star">*</span></label>
-                                <div class="input-with-icon">
-                                    <span class="material-icons input-icon">receipt_long</span>
-                                    <input type="text" name="cobroNumeroOperacion" [(ngModel)]="cobroNumeroOperacion" placeholder="Ej: 99887766" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TAB: EFECTIVO -->
-                        <div *ngIf="activePaymentMethod === 'efectivo'" class="tab-pane animate-pane-slide">
-                            <div class="cash-instructions-box">
-                                <span class="material-icons cash-icon">account_balance_wallet</span>
-                                <p>Ingrese el monto en efectivo entregado por el cliente. El cambio se calculará automáticamente en tiempo real.</p>
-                            </div>
-
-                            <div class="checkout-inputs-row">
-                                <div class="checkout-input-group">
-                                    <label>MONTO RECIBIDO S/ <span class="required-star">*</span></label>
-                                    <div class="input-with-icon">
-                                        <span class="material-icons input-icon">payments</span>
-                                        <input type="number" name="cobroMontoRecibido" [(ngModel)]="cobroMontoRecibido" step="0.01" min="0.01" placeholder="Ej: 50.00" required>
-                                    </div>
-                                </div>
-                                <div class="checkout-input-group">
-                                    <label>VUELTO / CAMBIO S/</label>
-                                    <div class="input-with-icon read-only">
-                                        <span class="material-icons input-icon">change_circle</span>
-                                        <input type="text" [value]="'S/ ' + cobroVuelto" readonly style="background: #f1f5f9; cursor: not-allowed; font-weight: 700; color: #009b79;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- DROPZONE PARA SUBIDA DE COMPROBANTE (Para Yape y Transferencia) -->
-                    <div *ngIf="activePaymentMethod !== 'efectivo'" class="checkout-upload-section">
-                        <label>COMPROBANTE DE TRANSFERENCIA (OPCIONAL)</label>
-                        <div class="checkout-dropzone" (click)="triggerFileUploader()">
-                            <span class="material-icons upload-cloud-icon">cloud_upload</span>
-                            <p *ngIf="!uploadedVoucherName" class="dropzone-text">Arrastra o haz clic para subir comprobante</p>
-                            <p *ngIf="uploadedVoucherName" class="dropzone-success-text">✓ {{ uploadedVoucherName }}</p>
-                            <span class="dropzone-formats">Formatos permitidos: JPG, PNG, PDF (Máx. 5MB)</span>
-                            <input type="file" id="cobro-file-input" style="display: none;" (change)="handleFileSelected($event)">
-                        </div>
-                    </div>
-
-                    <!-- BOTÓN PRINCIPAL DE COBRO -->
-                    <button type="submit" class="btn-checkout-submit">
-                        <span class="material-icons">check_circle</span>
-                        Confirmar Pago de S/ {{ cobroMonto | number:'1.2-2' }}
-                    </button>
-                </form>
-            </div>
-
-            <!-- COLUMNA DERECHA: RESUMEN DE COMPRA -->
-            <div class="checkout-summary-col">
-                <h3>Resumen de Compra</h3>
-
-                <div class="summary-items-list">
-                    <!-- Tarjeta estática del proyecto -->
-                    <div class="summary-item-card">
-                        <div class="item-icon-wrapper">
-                            <span class="material-icons">architecture</span>
-                        </div>
-                        <div class="item-info">
-                            <h4>{{ currentBalanceForModal?.project || 'Proyecto Maqueta' }}</h4>
-                            <p class="item-meta">Liquidación de saldo pendiente</p>
-                        </div>
-                        <span class="item-price">S/ {{ cobroMonto | number:'1.2-2' }}</span>
-                    </div>
-
-                    <!-- Materiales asociados si existen -->
-                    <div *ngIf="currentBalanceForModal?.materials" class="summary-materials-details">
-                        <span class="materials-label">Materiales y Detalle:</span>
-                        <p class="materials-text">{{ currentBalanceForModal.materials }}</p>
-                    </div>
-                </div>
-
-                <div class="summary-totals-box">
-                    <div class="totals-row">
-                        <span>Subtotal</span>
-                        <span>S/ {{ cobroMonto | number:'1.2-2' }}</span>
-                    </div>
-                    <div class="totals-row">
-                        <span>Costo de Envío</span>
-                        <span class="free-shipping-badge">GRATUITO</span>
-                    </div>
-                    <hr class="totals-divider">
-                    <div class="totals-row total-pay">
-                        <strong>Total a pagar</strong>
-                        <strong class="total-price-text">S/ {{ cobroMonto | number:'1.2-2' }}</strong>
-                    </div>
-                </div>
-
-                <!-- Banners de Seguridad -->
-                <div class="security-badge-card">
-                    <span class="material-icons shield-green-icon">verified</span>
-                    <p>Tu pago está encriptado con seguridad SSL de 256 bits. Garantizamos la confidencialidad de tus datos.</p>
-                </div>
-
-                <!-- Tarjetas de pie de página aliadas -->
-                <div class="checkout-footer-cards">
-                    <span class="payment-logo visa"></span>
-                    <span class="payment-logo mastercard"></span>
-                    <span class="payment-logo bank"></span>
-                    <span class="payment-logo mobile"></span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<app-payment-modal
+    [isOpen]="showCobroFisicoModal"
+    [clientName]="cobroClienteDisplay"
+    [amountToPay]="cobroMonto"
+    [title]="'Registrar Cobro de Saldo Pendiente'"
+    [projectName]="currentBalanceForModal?.project || 'Proyecto Maqueta'"
+    [materialsDescription]="currentBalanceForModal?.materials || ''"
+    [summaryLabel]="'Liquidación de saldo pendiente'"
+    (close)="closeCobroFisicoModal()"
+    (confirm)="onConfirmarCobroDesdeComponente($event)">
+</app-payment-modal>
 
 <!-- ==========================================================================
      PLANTILLA OCULTA DE IMPRESIÓN (TICKET TÉRMICO 80mm)
