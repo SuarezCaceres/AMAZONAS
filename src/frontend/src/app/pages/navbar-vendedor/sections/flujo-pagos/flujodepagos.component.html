@@ -182,16 +182,18 @@
                         <table class="recent-transactions-table">
                             <thead>
                                 <tr>
+                                    <th>#</th>
                                     <th>Fecha</th>
                                     <th>Descripción</th>
                                     <th class="text-right">Venta</th>
-                                    <th class="text-right">Ganancia (30%)</th>
+                                    <th class="text-right">Ganancia</th>
                                     <th>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let tx of transaccionesFiltradasDashboard.slice(0, 5)">
-                                    <td class="tx-date-td">{{ tx.date.split(' ')[0] || tx.date }}</td>
+                                <tr *ngFor="let tx of transaccionesFiltradasDashboard.slice(0, 5); let i = index">
+                                    <td class="tx-index-td">{{ i + 1 }}</td>
+                                    <td class="tx-date-td">{{ tx.date }}</td>
                                     <td>
                                         <div class="tx-desc-wrapper">
                                             <strong class="tx-client-name">{{ tx.client }}</strong>
@@ -201,8 +203,8 @@
                                     <td class="text-right font-bold tx-amount-td">
                                         S/ {{ tx.amount | number:'1.2-2' }}
                                     </td>
-                                    <td class="text-right font-bold tx-profit-td">
-                                        S/ {{ (tx.amount * 0.3) | number:'1.2-2' }}
+                                    <td class="text-right font-bold tx-profit-td" style="color: #059669;">
+                                        S/ {{ (tx.realProfit || 0) | number:'1.2-2' }}
                                     </td>
                                     <td>
                                         <span class="status-pill-modern" [class.status-online]="tx.method.toLowerCase().includes('online') || tx.status === 'online'" [class.status-fisico]="tx.method.toLowerCase().includes('fisico') || tx.status === 'fisico'">
@@ -211,7 +213,7 @@
                                     </td>
                                 </tr>
                                 <tr *ngIf="transaccionesFiltradasDashboard.length === 0">
-                                    <td colspan="5" class="empty-tx-td">
+                                    <td colspan="6" class="empty-tx-td">
                                         No hay transacciones registradas.
                                     </td>
                                 </tr>

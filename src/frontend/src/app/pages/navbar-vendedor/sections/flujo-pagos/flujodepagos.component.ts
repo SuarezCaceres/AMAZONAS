@@ -50,6 +50,7 @@ interface Transaction {
     status: 'online' | 'fisico';
     projectName?: string;
     solicitudId?: string;
+    realProfit?: number;
 }
 
 @Component({
@@ -194,19 +195,43 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     }
 
     get gananciaHoy(): number {
-        return this.totalHoy * 0.3;
+        const hoy = new Date();
+        return this.transactions
+            .filter(tx => {
+                const f = (tx as any).fechaObj;
+                return f && f.getDate() === hoy.getDate() &&
+                       f.getMonth() === hoy.getMonth() &&
+                       f.getFullYear() === hoy.getFullYear();
+            })
+            .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
     }
 
     get gananciaSemana(): number {
-        return this.totalSemana * 0.3;
+        const hoy = new Date();
+        return this.transactions
+            .filter(tx => {
+                const f = (tx as any).fechaObj;
+                if (!f) return false;
+                const diffTime = Math.abs(hoy.getTime() - f.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays <= 7;
+            })
+            .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
     }
 
     get gananciaMes(): number {
-        return this.totalMes * 0.3;
+        const hoy = new Date();
+        return this.transactions
+            .filter(tx => {
+                const f = (tx as any).fechaObj;
+                return f && f.getMonth() === hoy.getMonth() &&
+                       f.getFullYear() === hoy.getFullYear();
+            })
+            .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
     }
 
     get totalGananciaAcumulada(): number {
-        return this.transactions.reduce((sum, tx) => sum + tx.amount, 0) * 0.3;
+        return this.transactions.reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
     }
 
     get chartData() {
@@ -220,14 +245,14 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                 d.setDate(hoy.getDate() - i);
                 const label = d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
                 
-                const daySum = this.transactions
+                const daySumProfit = this.transactions
                     .filter(tx => {
                         const f = (tx as any).fechaObj;
                         return f && f.getDate() === d.getDate() && f.getMonth() === d.getMonth() && f.getFullYear() === d.getFullYear();
                     })
-                    .reduce((sum, tx) => sum + tx.amount, 0);
+                    .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
 
-                intervals.push({ label, value: daySum * 0.3 });
+                intervals.push({ label, value: daySumProfit });
             }
         } else if (this.chartPeriodFilter === 'semanas') {
             // Últimas 6 semanas
@@ -238,14 +263,14 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                 end.setDate(hoy.getDate() - (i * 7));
                 const label = `Sem -${i}`;
                 
-                const weekSum = this.transactions
+                const weekSumProfit = this.transactions
                     .filter(tx => {
                         const f = (tx as any).fechaObj;
                         return f && f >= start && f <= end;
                     })
-                    .reduce((sum, tx) => sum + tx.amount, 0);
+                    .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
 
-                intervals.push({ label, value: weekSum * 0.3 });
+                intervals.push({ label, value: weekSumProfit });
             }
         } else {
             // Últimos 6 meses
@@ -253,14 +278,14 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                 const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
                 const label = d.toLocaleDateString('es-ES', { month: 'short' });
                 
-                const monthSum = this.transactions
+                const monthSumProfit = this.transactions
                     .filter(tx => {
                         const f = (tx as any).fechaObj;
                         return f && f.getMonth() === d.getMonth() && f.getFullYear() === d.getFullYear();
                     })
-                    .reduce((sum, tx) => sum + tx.amount, 0);
+                    .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
 
-                intervals.push({ label, value: monthSum * 0.3 });
+                intervals.push({ label, value: monthSumProfit });
             }
         }
 
@@ -527,7 +552,8 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                                                     status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
                                                     fechaObj: new Date(tx.fechaTransaccion),
                                                     projectName: projectName,
-                                                    solicitudId: solicitudId
+                                                    solicitudId: solicitudId,
+                                                    realProfit: this.calculateRealProfit(Number(tx.monto), solicitudId)
                                                 };
                                             });
                                         }
@@ -579,7 +605,8 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                                                     status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
                                                     fechaObj: new Date(tx.fechaTransaccion),
                                                     projectName: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo',
-                                                    solicitudId: solicitudId
+                                                    solicitudId: solicitudId,
+                                                    realProfit: this.calculateRealProfit(Number(tx.monto), solicitudId)
                                                 };
                                             });
                                         }
@@ -639,6 +666,39 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
             },
             error: (err) => console.error('Error al cargar saldos pendientes reales:', err)
         });
+    }
+
+    // Helper method to calculate real profit from budget
+    private calculateRealProfit(transactionAmount: number, solicitudId?: string): number {
+        const DEFAULT_PROFIT_RATIO = 3 / 13; // Approx 23.07% of final price for a 30% markup
+
+        if (!solicitudId || !this.allBudgets) {
+            return transactionAmount * DEFAULT_PROFIT_RATIO;
+        }
+
+        const budget = this.allBudgets.find(b => b.solicitudId === solicitudId);
+        if (!budget || !budget.total) {
+            return transactionAmount * DEFAULT_PROFIT_RATIO;
+        }
+
+        let exactProfit = budget.ganancia || 0; // The 30% margin applied on top
+        exactProfit += budget.manoDeObra || 0;
+        
+        if (budget.servicioExplicacion && budget.servicioExplicacion.incluido) {
+            exactProfit += (budget.servicioExplicacion.precio || 0);
+        }
+
+        if (budget.items && budget.items.length > 0 && this.catalogMateriales && this.catalogMateriales.length > 0) {
+            budget.items.forEach((item: any) => {
+                const mat = this.catalogMateriales.find(m => m.id === item.materialId);
+                if (mat && mat.costoVenta !== undefined && mat.costoCompra !== undefined) {
+                    exactProfit += (mat.costoVenta - mat.costoCompra) * item.cantidad;
+                }
+            });
+        }
+
+        const profitPercentage = exactProfit / budget.total;
+        return transactionAmount * profitPercentage;
     }
 
     loadDailyStats(): void {
