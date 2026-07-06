@@ -135,6 +135,7 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     // =========================================================================
     activeSubTab: 'dashboard' | 'venta' | 'saldos' | 'auditoria' = 'dashboard';
     filtroPeriodoDashboard: 'hoy' | 'semana' | 'mes' = 'mes';
+    chartPeriodFilter: 'semanas' | 'meses' | 'dias' = 'meses';
 
     get transaccionesFiltradasDashboard(): Transaction[] {
         const hoy = new Date();
@@ -206,6 +207,113 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
 
     get totalGananciaAcumulada(): number {
         return this.transactions.reduce((sum, tx) => sum + tx.amount, 0) * 0.3;
+    }
+
+    get chartData() {
+        const hoy = new Date();
+        const intervals: { label: string; value: number }[] = [];
+
+        if (this.chartPeriodFilter === 'dias') {
+            // Últimos 7 días
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(hoy);
+                d.setDate(hoy.getDate() - i);
+                const label = d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
+                
+                const daySum = this.transactions
+                    .filter(tx => {
+                        const f = (tx as any).fechaObj;
+                        return f && f.getDate() === d.getDate() && f.getMonth() === d.getMonth() && f.getFullYear() === d.getFullYear();
+                    })
+                    .reduce((sum, tx) => sum + tx.amount, 0);
+
+                intervals.push({ label, value: daySum * 0.3 });
+            }
+        } else if (this.chartPeriodFilter === 'semanas') {
+            // Últimas 6 semanas
+            for (let i = 5; i >= 0; i--) {
+                const start = new Date(hoy);
+                start.setDate(hoy.getDate() - (i * 7 + 6));
+                const end = new Date(hoy);
+                end.setDate(hoy.getDate() - (i * 7));
+                const label = `Sem -${i}`;
+                
+                const weekSum = this.transactions
+                    .filter(tx => {
+                        const f = (tx as any).fechaObj;
+                        return f && f >= start && f <= end;
+                    })
+                    .reduce((sum, tx) => sum + tx.amount, 0);
+
+                intervals.push({ label, value: weekSum * 0.3 });
+            }
+        } else {
+            // Últimos 6 meses
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                const label = d.toLocaleDateString('es-ES', { month: 'short' });
+                
+                const monthSum = this.transactions
+                    .filter(tx => {
+                        const f = (tx as any).fechaObj;
+                        return f && f.getMonth() === d.getMonth() && f.getFullYear() === d.getFullYear();
+                    })
+                    .reduce((sum, tx) => sum + tx.amount, 0);
+
+                intervals.push({ label, value: monthSum * 0.3 });
+            }
+        }
+
+        // Encontrar valor máximo para escalar el gráfico
+        const maxVal = Math.max(...intervals.map(item => item.value), 100);
+        const yMax = Math.ceil(maxVal / 100) * 100; // redondear al siguiente centenar para la escala
+
+        const width = 500;
+        const height = 200;
+        const paddingLeft = 20;
+        const paddingRight = 20;
+        const paddingTop = 20;
+        const paddingBottom = 20;
+
+        const points = intervals.map((item, index) => {
+            const x = paddingLeft + (index / (intervals.length - 1)) * (width - paddingLeft - paddingRight);
+            const y = height - paddingBottom - (item.value / yMax) * (height - paddingTop - paddingBottom);
+            return {
+                label: item.label,
+                value: item.value,
+                x,
+                y
+            };
+        });
+
+        // Construir trayectorias SVG (Bezier suavizado)
+        let linePath = '';
+        let areaPath = '';
+
+        if (points.length > 0) {
+            linePath = `M ${points[0].x},${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                const cpX1 = points[i - 1].x + (points[i].x - points[i - 1].x) / 2;
+                const cpY1 = points[i - 1].y;
+                const cpX2 = points[i - 1].x + (points[i].x - points[i - 1].x) / 2;
+                const cpY2 = points[i].y;
+                linePath += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${points[i].x},${points[i].y}`;
+            }
+
+            areaPath = `${linePath} L ${points[points.length - 1].x},${height - paddingBottom} L ${points[0].x},${height - paddingBottom} Z`;
+        }
+
+        const yLabels: string[] = [];
+        for (let i = 5; i >= 0; i--) {
+            yLabels.push(`S/ ${(yMax * i / 5).toFixed(0)}`);
+        }
+
+        return {
+            points,
+            linePath,
+            areaPath,
+            yLabels
+        };
     }
 
     get maquetasVendidasStats(): { pred: number, custom: number } {

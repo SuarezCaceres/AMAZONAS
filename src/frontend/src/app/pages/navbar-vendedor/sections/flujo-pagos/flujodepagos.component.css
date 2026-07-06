@@ -1616,75 +1616,296 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.kpi-grid {
+/* =========================================================================
+   ESTILOS PREMIUM MODERNOS - DASHBOARD DE FLUJO DE PAGOS (Mockup)
+   ========================================================================= */
+.kpi-grid-modern {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 28px;
 }
 
-.kpi-card {
+@media (max-width: 900px) {
+    .kpi-grid-modern {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+.kpi-card-modern {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
+    justify-content: space-between;
     position: relative;
     overflow: hidden;
+    min-height: 180px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.kpi-card:hover {
+.kpi-card-modern:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
 }
 
-.kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
+.kpi-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 2;
 }
 
-.kpi-card.purple::before { background: #8b5cf6; }
-.kpi-card.blue::before { background: #3b82f6; }
-.kpi-card.emerald::before { background: #10b981; }
-.kpi-card.gold::before { background: #f59e0b; }
+.kpi-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 
-.kpi-label {
+.kpi-label-modern {
     font-size: 13px;
     font-weight: 600;
     color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-.kpi-value {
-    font-size: 26px;
-    font-weight: 800;
-    color: #0f172a;
+.kpi-value-modern {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.15;
 }
 
-.kpi-subtext {
+.kpi-trend-modern {
     font-size: 12px;
-    color: #64748b;
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.dashboard-columns {
+.kpi-trend-modern.success {
+    color: #10b981;
+}
+
+.kpi-icon-badge {
+    width: 36px;
+    height: 36px;
+    background: #2563eb;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 13px;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.arrow-text {
+    line-height: 1;
+}
+
+.kpi-chart-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 55px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.kpi-wave-chart {
+    width: 100%;
+    height: 100%;
+}
+
+/* Gráfico Histórico y Transacciones */
+.modern-dashboard-columns {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
     gap: 24px;
 }
 
 @media (max-width: 1024px) {
-    .dashboard-columns {
+    .modern-dashboard-columns {
         grid-template-columns: 1fr;
     }
+}
+
+.modern-chart-card, 
+.recent-transactions-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.chart-header,
+.transactions-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.chart-title,
+.transactions-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.chart-select {
+    padding: 6px 12px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    background: #ffffff;
+    cursor: pointer;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+.chart-select:hover {
+    border-color: #94a3b8;
+}
+
+.chart-body {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding-left: 55px;
+}
+
+.y-axis-labels {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: calc(100% - 24px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-align: right;
+    width: 45px;
+}
+
+.chart-svg-container {
+    width: 100%;
+    height: 180px;
+}
+
+.historical-line-chart {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.x-axis-labels {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+/* Tabla de Transacciones Recientes */
+.transactions-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.recent-transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.recent-transactions-table th {
+    text-align: left;
+    color: #94a3b8;
+    font-weight: 600;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.recent-transactions-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+    vertical-align: middle;
+}
+
+.recent-transactions-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.tx-date-td {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.tx-desc-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tx-client-name {
+    color: #1e293b;
+    font-size: 13px;
+}
+
+.tx-project-name {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.tx-amount-td {
+    color: #0f172a;
+    font-size: 13px;
+}
+
+.tx-amount-td.negative {
+    color: #ef4444;
+}
+
+.status-pill-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.status-pill-modern.status-online {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.status-pill-modern.status-fisico {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.empty-tx-td {
+    text-align: center;
+    color: #94a3b8;
+    padding: 32px !important;
+    font-style: italic;
 }
 
 .distribution-item:hover {
@@ -2647,4 +2868,335 @@
         width: 100%;
     }
 }
+
+/* ========================================================================= */
+/* MODERN ANALYTICS DASHBOARD STYLES                                         */
+/* ========================================================================= */
+.payments-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dashboard-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.dashboard-header-row h2 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.period-selector {
+    display: flex;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 8px;
+    gap: 2px;
+}
+
+.period-selector button {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.period-selector button.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* KPI Grid */
+.kpi-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.kpi-card-modern {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+
+.kpi-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.kpi-label-modern {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.kpi-value-modern {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+}
+
+.kpi-trend-modern {
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.kpi-trend-modern.success {
+    color: #16a34a;
+}
+
+.kpi-icon-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+}
+
+.kpi-chart-container {
+    height: 40px;
+    margin-top: 12px;
+    margin-bottom: -10px;
+    margin-left: -20px;
+    margin-right: -20px;
+    position: relative;
+}
+
+.kpi-wave-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Dashboard 2-column layout */
+.modern-dashboard-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: stretch;
+}
+
+.modern-chart-card,
+.recent-transactions-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-header,
+.transactions-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.chart-title,
+.transactions-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.chart-select {
+    padding: 6px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #475569;
+    background: #ffffff;
+    cursor: pointer;
+    outline: none;
+}
+
+.chart-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    justify-content: space-between;
+}
+
+.y-axis-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 600;
+    padding: 0 4px;
+}
+
+.chart-svg-container {
+    height: 180px;
+    width: 100%;
+    position: relative;
+}
+
+.historical-line-chart {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.x-axis-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    padding: 0 10px;
+}
+
+/* Recent Transactions Table */
+.transactions-table-wrapper {
+    overflow-x: auto;
+    flex: 1;
+}
+
+.recent-transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.recent-transactions-table th {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.recent-transactions-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.recent-transactions-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.tx-date-td {
+    color: #64748b;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.tx-desc-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tx-client-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.tx-project-name {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.tx-amount-td {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.tx-profit-td {
+    color: #16a34a;
+    font-weight: 700;
+}
+
+.status-pill-modern {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.status-pill-modern.status-online {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.status-pill-modern.status-fisico {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.empty-tx-td {
+    text-align: center;
+    padding: 30px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+@media (max-width: 1024px) {
+    .kpi-grid-modern {
+        grid-template-columns: 1fr;
+    }
+
+    .modern-dashboard-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
 

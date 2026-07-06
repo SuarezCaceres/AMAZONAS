@@ -41,120 +41,182 @@
                 </div>
             </div>
 
-            <!-- KPI Cards Grid -->
-            <div class="kpi-grid">
-                <div class="kpi-card purple">
-                    <span class="kpi-label">Ingresos de Hoy</span>
-                    <strong class="kpi-value">S/ {{ totalHoy | number:'1.2-2' }}</strong>
-                    <span class="kpi-subtext">Ganancia Estimada: S/ {{ gananciaHoy | number:'1.2-2' }} (30%)</span>
+            <!-- KPI Cards Grid Premium -->
+            <div class="kpi-grid-modern">
+                <!-- Card 1: Daily -->
+                <div class="kpi-card-modern color-blue">
+                    <div class="kpi-card-header">
+                        <div class="kpi-title-block">
+                            <span class="kpi-label-modern">Ganancia Acumulada Diaria</span>
+                            <strong class="kpi-value-modern">S/ {{ gananciaHoy | number:'1.2-2' }}</strong>
+                            <span class="kpi-trend-modern success">Ventas del día: S/ {{ totalHoy | number:'1.2-2' }}</span>
+                        </div>
+                        <div class="kpi-icon-badge">
+                            <span class="arrow-text">↑$</span>
+                        </div>
+                    </div>
+                    <div class="kpi-chart-container">
+                        <svg viewBox="0 0 100 30" class="kpi-wave-chart" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="wave-grad-1" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"/>
+                                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M0,25 C15,22 30,28 45,15 C60,5 75,18 90,8 C95,5 98,6 100,5 L100,30 L0,30 Z" fill="url(#wave-grad-1)"/>
+                            <path d="M0,25 C15,22 30,28 45,15 C60,5 75,18 90,8 C95,5 98,6 100,5" fill="none" stroke="#2563eb" stroke-width="1.8"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="kpi-card blue">
-                    <span class="kpi-label">Ingresos de la Semana</span>
-                    <strong class="kpi-value">S/ {{ totalSemana | number:'1.2-2' }}</strong>
-                    <span class="kpi-subtext">Ganancia Estimada: S/ {{ gananciaSemana | number:'1.2-2' }} (30%)</span>
+
+                <!-- Card 2: Weekly -->
+                <div class="kpi-card-modern color-blue">
+                    <div class="kpi-card-header">
+                        <div class="kpi-title-block">
+                            <span class="kpi-label-modern">Ganancia Acumulada Semanal</span>
+                            <strong class="kpi-value-modern">S/ {{ gananciaSemana | number:'1.2-2' }}</strong>
+                            <span class="kpi-trend-modern success">Ventas semana: S/ {{ totalSemana | number:'1.2-2' }}</span>
+                        </div>
+                        <div class="kpi-icon-badge">
+                            <span class="arrow-text">↑$</span>
+                        </div>
+                    </div>
+                    <div class="kpi-chart-container">
+                        <svg viewBox="0 0 100 30" class="kpi-wave-chart" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="wave-grad-2" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"/>
+                                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M0,25 C20,15 40,25 60,10 C80,2 90,12 100,6 L100,30 L0,30 Z" fill="url(#wave-grad-2)"/>
+                            <path d="M0,25 C20,15 40,25 60,10 C80,2 90,12 100,6" fill="none" stroke="#2563eb" stroke-width="1.8"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="kpi-card emerald">
-                    <span class="kpi-label">Ingresos del Mes</span>
-                    <strong class="kpi-value">S/ {{ totalMes | number:'1.2-2' }}</strong>
-                    <span class="kpi-subtext">Ganancia Estimada: S/ {{ gananciaMes | number:'1.2-2' }} (30%)</span>
-                </div>
-                <div class="kpi-card gold">
-                    <span class="kpi-label">Ganancia Acumulada</span>
-                    <strong class="kpi-value">S/ {{ totalGananciaAcumulada | number:'1.2-2' }}</strong>
-                    <span class="kpi-subtext">Margen Histórico (30%)</span>
+
+                <!-- Card 3: Monthly -->
+                <div class="kpi-card-modern color-blue">
+                    <div class="kpi-card-header">
+                        <div class="kpi-title-block">
+                            <span class="kpi-label-modern">Ganancia Acumulada Mensual</span>
+                            <strong class="kpi-value-modern">S/ {{ gananciaMes | number:'1.2-2' }}</strong>
+                            <span class="kpi-trend-modern success">Ventas mes: S/ {{ totalMes | number:'1.2-2' }}</span>
+                        </div>
+                        <div class="kpi-icon-badge">
+                            <span class="arrow-text">↑$</span>
+                        </div>
+                    </div>
+                    <div class="kpi-chart-container">
+                        <svg viewBox="0 0 100 30" class="kpi-wave-chart" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="wave-grad-3" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"/>
+                                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M0,22 C15,20 30,12 45,22 C60,28 75,10 90,6 C95,5 98,4 100,3 L100,30 L0,30 Z" fill="url(#wave-grad-3)"/>
+                            <path d="M0,22 C15,20 30,12 45,22 C60,28 75,10 90,6 C95,5 98,4 100,3" fill="none" stroke="#2563eb" stroke-width="1.8"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-            <!-- Analítica Layout -->
-            <div class="dashboard-columns">
-                <!-- Columna Izquierda: Clientes & Pagos -->
-                <div class="dashboard-column-left">
-                    <div class="payment-card">
-                        <div class="card-header-row" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
-                            <h3 style="font-size: 15px; font-weight: 700; color: #1e293b;">Pagos del Período ({{ filtroPeriodoDashboard === 'hoy' ? 'Hoy' : filtroPeriodoDashboard === 'semana' ? 'Esta Semana' : 'Este Mes' }})</h3>
-                            <span class="stats-badge" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700;">{{ transaccionesFiltradasDashboard.length }} cobros</span>
+            <!-- Modern Analytics Layout -->
+            <div class="modern-dashboard-columns">
+                <!-- Columna Izquierda: Historical Margin -->
+                <div class="modern-chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">Margen Histórico (Ganancia 30%)</h3>
                         </div>
-                        <div class="materials-cart-table" style="max-height: 400px; overflow-y: auto;">
-                            <table style="width: 100%;">
-                                <thead>
-                                    <th>Cliente / Correo</th>
-                                    <th>Tipo Maqueta</th>
-                                    <th>Abono</th>
-                                    <th>Monto</th>
-                                    <th>Fecha</th>
-                                </thead>
-                                <tbody>
-                                    <tr *ngFor="let tx of transaccionesFiltradasDashboard">
-                                        <td>
-                                            <strong>{{ tx.client }}</strong>
-                                            <span style="display: block; color: #6366f1; font-size: 11px; font-weight: 600;">{{ tx.projectName }}</span>
-                                            <small style="display: block; color: #64748b; font-size: 10px;">{{ tx.email }}</small>
-                                        </td>
-                                        <td>
-                                            <span class="type-pill" [style.background]="tx.productType === 'Personalizada' ? '#ecfdf5' : '#f0f9ff'" [style.color]="tx.productType === 'Personalizada' ? '#047857' : '#0369a1'" style="padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600;">
-                                                {{ tx.productType }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span style="font-size: 11px; font-weight: 500; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 2px 6px; border-radius: 4px;">
-                                                {{ tx.kind }}
-                                            </span>
-                                        </td>
-                                        <td style="font-weight: 700; color: #0f172a; font-size: 14px;">S/ {{ tx.amount | number:'1.2-2' }}</td>
-                                        <td style="font-size: 11px; color: #64748b; white-space: nowrap;">{{ tx.date }}</td>
-                                    </tr>
-                                    <tr *ngIf="transaccionesFiltradasDashboard.length === 0">
-                                        <td colspan="5" style="text-align: center; color: #64748b; padding: 40px; font-style: italic;">
-                                            No se registran transacciones en este período.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="chart-actions">
+                            <select class="chart-select" [(ngModel)]="chartPeriodFilter">
+                                <option value="meses">Últimos meses</option>
+                                <option value="semanas">Últimas semanas</option>
+                                <option value="dias">Últimos días</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <div class="y-axis-labels">
+                            <span *ngFor="let label of chartData.yLabels">{{ label }}</span>
+                        </div>
+                        <div class="chart-svg-container">
+                            <svg viewBox="0 0 500 200" class="historical-line-chart" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15"/>
+                                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- Horizontal Grid Lines -->
+                                <line x1="0" y1="30" x2="500" y2="30" stroke="#f1f5f9" stroke-width="1"/>
+                                <line x1="0" y1="65" x2="500" y2="65" stroke="#f1f5f9" stroke-width="1"/>
+                                <line x1="0" y1="100" x2="500" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+                                <line x1="0" y1="135" x2="500" y2="135" stroke="#f1f5f9" stroke-width="1"/>
+                                <line x1="0" y1="170" x2="500" y2="170" stroke="#f1f5f9" stroke-width="1"/>
+
+                                <!-- Area under path -->
+                                <path [attr.d]="chartData.areaPath" fill="url(#chart-area-grad)"/>
+
+                                <!-- Smooth Line Curve -->
+                                <path [attr.d]="chartData.linePath" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+
+                                <!-- Data point dots -->
+                                <circle *ngFor="let p of chartData.points" [attr.cx]="p.x" [attr.cy]="p.y" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div class="x-axis-labels">
+                            <span *ngFor="let p of chartData.points">{{ p.label }}</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Columna Derecha: Maquetas & Materiales -->
-                <div class="dashboard-column-right">
-                    <!-- Distribución de Maquetas -->
-                    <div class="payment-card" style="margin-bottom: 20px; padding: 20px;">
-                        <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 14px;">Distribución de Maquetas Vendidas</h3>
-                        <div class="maqueta-distribution-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                            <div class="distribution-item" style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 10px;">
-                                <span class="material-icons" style="color: #0369a1; font-size: 24px;">storefront</span>
-                                <div>
-                                    <div class="item-value" style="font-size: 20px; font-weight: 800; color: #0369a1;">{{ maquetasVendidasStats.pred }}</div>
-                                    <div class="item-label" style="font-size: 11px; color: #64748b; font-weight: 500;">Catálogo (Estándar)</div>
-                                </div>
-                            </div>
-                            <div class="distribution-item" style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 10px;">
-                                <span class="material-icons" style="color: #047857; font-size: 24px;">architecture</span>
-                                <div>
-                                    <div class="item-value" style="font-size: 20px; font-weight: 800; color: #047857;">{{ maquetasVendidasStats.custom }}</div>
-                                    <div class="item-label" style="font-size: 11px; color: #64748b; font-weight: 500;">Personalizadas</div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Columna Derecha: Recent Transactions -->
+                <div class="recent-transactions-card">
+                    <div class="transactions-card-header">
+                        <h3 class="transactions-title">Transacciones Recientes</h3>
                     </div>
-
-                    <!-- Materiales Consumidos -->
-                    <div class="payment-card" style="padding: 20px;">
-                        <h3 style="font-size: 15px; font-weight: 700; color: #1e293b;">Materiales Consumidos</h3>
-                        <p style="color: #64748b; font-size: 12px; margin-bottom: 14px;">Insumos utilizados en la elaboración de proyectos en este período.</p>
-                        <div class="materials-consumed-list" style="max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-                            <div class="material-consumed-item" *ngFor="let mat of materialesConsumidos">
-                                <div class="material-info-row" style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
-                                    <span class="material-name" style="font-weight: 600; color: #334155;">{{ mat.nombre }}</span>
-                                    <span class="material-qty" style="color: #64748b; font-weight: 700;">{{ mat.cantidad }} und</span>
-                                </div>
-                                <div class="progress-bar-container" style="background: #f1f5f9; height: 6px; border-radius: 99px; overflow: hidden; width: 100%;">
-                                    <div class="progress-bar" [style.width.%]="(mat.cantidad / (materialesConsumidos[0]?.cantidad || 1)) * 100" style="background: linear-gradient(90deg, #6366f1, #4f46e5); height: 100%; border-radius: 99px;"></div>
-                                </div>
-                            </div>
-                            <div *ngIf="materialesConsumidos.length === 0" style="text-align: center; color: #64748b; padding: 20px; font-style: italic; font-size: 12px;">
-                                No se registra consumo de materiales en este período.
-                            </div>
-                        </div>
+                    <div class="transactions-table-wrapper">
+                        <table class="recent-transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th class="text-right">Venta</th>
+                                    <th class="text-right">Ganancia (30%)</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let tx of transaccionesFiltradasDashboard.slice(0, 5)">
+                                    <td class="tx-date-td">{{ tx.date.split(' ')[0] || tx.date }}</td>
+                                    <td>
+                                        <div class="tx-desc-wrapper">
+                                            <strong class="tx-client-name">{{ tx.client }}</strong>
+                                            <span class="tx-project-name">{{ tx.projectName }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-right font-bold tx-amount-td">
+                                        S/ {{ tx.amount | number:'1.2-2' }}
+                                    </td>
+                                    <td class="text-right font-bold tx-profit-td">
+                                        S/ {{ (tx.amount * 0.3) | number:'1.2-2' }}
+                                    </td>
+                                    <td>
+                                        <span class="status-pill-modern" [class.status-online]="tx.method.toLowerCase().includes('online') || tx.status === 'online'" [class.status-fisico]="tx.method.toLowerCase().includes('fisico') || tx.status === 'fisico'">
+                                            {{ (tx.method.toLowerCase().includes('online') || tx.status === 'online') ? 'Online' : 'Físico' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="transaccionesFiltradasDashboard.length === 0">
+                                    <td colspan="5" class="empty-tx-td">
+                                        No hay transacciones registradas.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
