@@ -8,9 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.transaction.annotation.Transactional;
 import com.amazonas.backend.modules.requests.model.PurchaseRequest;
 import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
 import com.amazonas.backend.modules.users.model.User;
@@ -57,4 +59,9 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
 
     @EntityGraph(attributePaths = {"presupuesto", "usuario"})
     List<PurchaseRequest> findAllByOrderByCreatedAtDesc();
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM PurchaseRequest pr WHERE pr.id = :id")
+    void forceDelete(@Param("id") UUID id);
 }

@@ -1,61 +1,140 @@
-<section class="requests-page">
+<section class="requests-page" aria-labelledby="page-title">
   <header class="requests-heading">
-    <div>
-      <h1>Mis Solicitudes</h1>
-      <p>Revisa el estado de tus solicitudes y comunicaciones con el vendedor.</p>
+    <div class="heading-wrapper">
+      <div class="heading-accent"></div>
+      <div>
+        <h1 id="page-title">Mis Solicitudes</h1>
+        <p>Revisa el estado de tus solicitudes y comunicaciones con el taller en tiempo real.</p>
+      </div>
     </div>
   </header>
 
   <!-- Empty State si no hay ninguna solicitud en absoluto -->
-  <section class="empty-state" *ngIf="requests.length === 0">
-    <h2>Aun no tienes solicitudes</h2>
-    <p>Cuando envies una compra o personalizacion, aparecera aqui.</p>
+  <section class="empty-state" *ngIf="requests.length === 0" aria-label="Sin solicitudes">
+    <div class="empty-icon-wrapper">
+      <span class="material-icons empty-icon">receipt_long</span>
+    </div>
+    <h2>Aún no tienes solicitudes</h2>
+    <p>Cuando solicites una compra o personalización, aparecerá en esta sección con su estado de avance.</p>
   </section>
 
+  <!-- Barra de Filtros -->
+  <div class="filters-bar" *ngIf="requests.length > 0">
+    <!-- Filtro: Estado -->
+    <div class="filter-group">
+      <span class="filter-group-label">Estado</span>
+      <div class="filter-chips">
+        <button class="filter-chip" [class.filter-chip--active]="filtroEstado === 'todos'" (click)="setFiltroEstado('todos')">Todos</button>
+        <button class="filter-chip" [class.filter-chip--active]="filtroEstado === 'PENDIENTE'" (click)="setFiltroEstado('PENDIENTE')">
+          <span class="chip-dot chip-dot--pending"></span>
+          Pendiente
+        </button>
+        <button class="filter-chip" [class.filter-chip--active]="filtroEstado === 'PROCESANDO'" (click)="setFiltroEstado('PROCESANDO')">
+          <span class="chip-dot chip-dot--processing"></span>
+          En Proceso
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtro: Tipo -->
+    <div class="filter-group">
+      <span class="filter-group-label">Tipo</span>
+      <div class="filter-chips">
+        <button class="filter-chip" [class.filter-chip--active]="filtroTipo === 'todos'" (click)="setFiltroTipo('todos')">Todos</button>
+        <button class="filter-chip" [class.filter-chip--active]="filtroTipo === 'comprar'" (click)="setFiltroTipo('comprar')">
+          <span class="material-icons chip-icon">shopping_bag</span>
+          Catálogo
+        </button>
+        <button class="filter-chip" [class.filter-chip--active]="filtroTipo === 'personalizar'" (click)="setFiltroTipo('personalizar')">
+          <span class="material-icons chip-icon">architecture</span>
+          Personalizada
+        </button>
+      </div>
+    </div>
+
+    <!-- Ordenar -->
+    <div class="filter-group">
+      <span class="filter-group-label">Ordenar por</span>
+      <div class="filter-chips">
+        <button class="filter-chip filter-chip--order" [class.filter-chip--active]="ordenActivo === 'notificaciones'" (click)="setOrden('notificaciones')">
+          <span class="material-icons chip-icon">notifications</span>
+          Notificaciones
+        </button>
+        <button class="filter-chip filter-chip--order" [class.filter-chip--active]="ordenActivo === 'reciente'" (click)="setOrden('reciente')">
+          <span class="material-icons chip-icon">schedule</span>
+          Más reciente
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Listado de Solicitudes Activas (Pendiente y En Proceso) -->
-  <div class="requests-list" *ngIf="requests.length > 0 && activeRequests.length > 0">
-    <article class="request-card" *ngFor="let request of activeRequests">
-      <div class="card-header" style="position: relative;">
-        <h2 style="display: flex; align-items: center; gap: 8px;">
-          {{ request.modelTitle }}
-          <span *ngIf="request.unreadCount && request.unreadCount > 0" style="background: #ef4444; color: white; border-radius: 99px; min-width: 18px; height: 18px; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">
+  <div class="requests-list" *ngIf="requests.length > 0 && filteredActiveRequests.length > 0" role="list">
+    <article 
+      class="request-card" 
+      *ngFor="let request of filteredActiveRequests; let i = index" 
+      [style.animation-delay.ms]="i * 60"
+      role="listitem"
+    >
+      <div class="card-header">
+        <div class="title-section">
+          <h2>{{ request.modelTitle }}</h2>
+          <span 
+            *ngIf="request.unreadCount && request.unreadCount > 0" 
+            class="unread-badge" 
+            [attr.aria-label]="request.unreadCount + ' mensajes no leídos'"
+          >
             {{ request.unreadCount }}
           </span>
-        </h2>
+        </div>
         <span class="status-badge" [ngClass]="{
           'pending': !request.status || request.status === 'PENDIENTE',
           'procesando': request.status === 'PROCESANDO',
-          'completado': request.status === 'COMPLETADO'
+          'completado': request.status === 'COMPLETADO',
+          'rechazado': request.status === 'RECHAZADO'
         }">
-          {{ !request.status || request.status === 'PENDIENTE' ? 'Pendiente' : request.status === 'PROCESANDO' ? 'En Proceso' : 'Completado' }}
+          <span class="status-dot"></span>
+          {{ 
+            !request.status || request.status === 'PENDIENTE' 
+              ? 'Pendiente' 
+              : request.status === 'PROCESANDO' 
+                ? 'En Proceso' 
+                : request.status === 'COMPLETADO'
+                  ? 'Completado'
+                  : 'Rechazado' 
+          }}
         </span>
       </div>
 
       <div class="card-meta">
         <span class="type-badge" [class.compra]="request.mode === 'comprar'" [class.personalizar]="request.mode === 'personalizar'">
-          {{ request.mode === 'personalizar' ? 'Maqueta Personalizada' : 'Maqueta Ya Hecha' }}
+          <span class="material-icons badge-icon">{{ request.mode === 'personalizar' ? 'architecture' : 'shopping_bag' }}</span>
+          {{ request.mode === 'personalizar' ? 'Maqueta Personalizada' : 'Maqueta de Catálogo' }}
         </span>
       </div>
 
       <div class="card-date">
-        <span class="date-icon">&#128197;</span>
+        <span class="date-icon material-icons">calendar_today</span>
         <span>Solicitado el {{ request.date | date:'d \'de\' MMMM \'de\' yyyy' }}</span>
       </div>
 
       <p class="card-description" *ngIf="request.detail">
-        <strong>Descripcion:</strong> {{ request.detail }}
+        <strong>Detalles:</strong> {{ request.detail }}
       </p>
 
-      <small *ngIf="request.selectedMaterials?.length">
-        Materiales: {{ request.selectedMaterials?.join(', ') }}
-      </small>
+      <div class="materials-list" *ngIf="request.selectedMaterials?.length">
+        <span class="materials-label">Materiales seleccionados:</span>
+        <div class="materials-chips">
+          <span class="material-chip" *ngFor="let mat of request.selectedMaterials">{{ mat }}</span>
+        </div>
+      </div>
 
-      <div class="card-info">
-        <span class="info-icon" style="font-size: 14px;">&#9201;</span>
+      <div class="card-info" *ngIf="request.status !== 'RECHAZADO'">
+        <span class="info-icon material-icons">hourglass_empty</span>
         <span>
           {{ 
             !request.status || request.status === 'PENDIENTE' 
-              ? 'Estamos revisando tu solicitud. Pronto recibirás una respuesta.' 
+              ? 'Estamos revisando tu solicitud. Pronto recibirás una propuesta de presupuesto.' 
               : request.status === 'PROCESANDO' 
                 ? 'Tu maqueta está siendo construida y el pago de adelanto fue verificado.' 
                 : '¡Tu maqueta ha sido fabricada y entregada con éxito!'
@@ -63,9 +142,32 @@
         </span>
       </div>
 
+      <div class="card-info card-info--rejected" *ngIf="request.status === 'RECHAZADO'">
+        <span class="info-icon material-icons">error_outline</span>
+        <span>
+          <strong>Solicitud rechazada:</strong>
+          {{ request.motivoCancelacion || 'El vendedor ha rechazado esta solicitud sin especificar un motivo.' }}
+        </span>
+      </div>
+
       <div class="card-actions" *ngIf="request.backendId">
-        <button class="btn-conversation btn-chat" type="button" (click)="onViewChat(request.backendId)">
-          <svg viewBox="0 0 24 24" class="btn-chat-icon" fill="none" stroke="currentColor" stroke-width="2">
+        <button 
+          *ngIf="request.status === 'PENDIENTE' || request.status === 'RECHAZADO'"
+          class="btn-cancel" 
+          type="button" 
+          (click)="confirmarCancelacion(request.backendId)"
+          [attr.aria-label]="request.status === 'RECHAZADO' ? 'Eliminar solicitud' : 'Cancelar y eliminar solicitud'"
+        >
+          <span class="material-icons btn-cancel-icon">delete_forever</span>
+          {{ request.status === 'RECHAZADO' ? 'Eliminar' : 'Cancelar' }}
+        </button>
+        <button 
+          class="btn-chat" 
+          type="button" 
+          (click)="onViewChat(request.backendId)"
+          aria-label="Ver conversación de chat"
+        >
+          <svg viewBox="0 0 24 24" class="btn-chat-icon" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
           Ver conversación
@@ -74,52 +176,87 @@
     </article>
   </div>
 
+  <!-- Empty state cuando los filtros no coinciden con ninguna solicitud activa -->
+  <div class="no-results-inline" *ngIf="requests.length > 0 && activeRequests.length > 0 && filteredActiveRequests.length === 0">
+    <span class="material-icons no-results-icon">filter_alt_off</span>
+    <p>No se encontraron solicitudes con los filtros aplicados.</p>
+    <button class="filter-chip filter-chip--active" (click)="filtroEstado = 'todos'; filtroTipo = 'todos'">Limpiar filtros</button>
+  </div>
+
   <!-- Empty state si solo hay solicitudes completadas pero ninguna activa -->
-  <div *ngIf="requests.length > 0 && activeRequests.length === 0" class="empty-state-active" style="text-align: center; padding: 30px; background: #f8fafc; border-radius: 12px; border: 1px dashed #e2e8f0; color: #64748b; font-size: 13px; font-weight: 500; margin-bottom: 24px;">
-    No tienes solicitudes activas (pendientes o en proceso) en este momento.
+  <div *ngIf="requests.length > 0 && activeRequests.length === 0" class="empty-state-active">
+    <span class="material-icons empty-state-active-icon">check_circle</span>
+    <p>No tienes solicitudes activas (pendientes o en proceso) en este momento.</p>
   </div>
 
   <!-- Historial de Proyectos Completados (Acordeón colapsable) -->
-  <div class="completed-history-container" *ngIf="requests.length > 0 && completedRequests.length > 0" style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-    <button type="button" class="completed-accordion-trigger" (click)="toggleCompletedHistory()" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 14px 20px; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 700; color: #334155; font-family: inherit;">
-      <span class="trigger-left" style="display: flex; align-items: center; gap: 8px;">
-        <span class="material-icons" style="font-size: 18px; color: #475569;">history</span>
+  <div class="completed-history-container" *ngIf="requests.length > 0 && completedRequests.length > 0">
+    <button 
+      type="button" 
+      class="completed-accordion-trigger" 
+      (click)="toggleCompletedHistory()"
+      [attr.aria-expanded]="showCompletedHistory"
+      aria-controls="completed-history-content"
+    >
+      <span class="trigger-left">
+        <span class="material-icons trigger-icon">history</span>
         Historial de Proyectos Completados ({{ completedRequests.length }})
       </span>
-      <span class="material-icons arrow-icon" style="color: #475569;">{{ showCompletedHistory ? 'expand_less' : 'expand_more' }}</span>
+      <span class="material-icons arrow-icon">{{ showCompletedHistory ? 'expand_less' : 'expand_more' }}</span>
     </button>
 
-    <div class="completed-accordion-content" *ngIf="showCompletedHistory" style="margin-top: 16px; animation: slideDown 0.25s ease-out;">
-      <div class="requests-list">
-        <article class="request-card request-card--completed" *ngFor="let request of completedRequests" style="opacity: 0.85; border-color: #cbd5e1;">
+    <div 
+      id="completed-history-content"
+      class="completed-accordion-content" 
+      *ngIf="showCompletedHistory"
+      role="region"
+    >
+      <div class="requests-list" role="list">
+        <article 
+          class="request-card request-card--completed" 
+          *ngFor="let request of completedRequests; let i = index" 
+          [style.animation-delay.ms]="i * 60"
+          role="listitem"
+        >
           <div class="card-header">
-            <h2 style="color: #475569;">{{ request.modelTitle }}</h2>
-            <span class="status-badge completado" style="background: #e2e8f0; color: #475569;">Completado</span>
+            <div class="title-section">
+              <h2>{{ request.modelTitle }}</h2>
+            </div>
+            <span class="status-badge completado">
+              <span class="status-dot"></span>
+              Completado
+            </span>
           </div>
 
           <div class="card-meta">
-            <span class="type-badge" style="background: #f1f5f9; color: #475569;">
-              {{ request.mode === 'personalizar' ? 'Maqueta Personalizada' : 'Maqueta Ya Hecha' }}
+            <span class="type-badge completado">
+              <span class="material-icons badge-icon">{{ request.mode === 'personalizar' ? 'architecture' : 'shopping_bag' }}</span>
+              {{ request.mode === 'personalizar' ? 'Maqueta Personalizada' : 'Maqueta de Catálogo' }}
             </span>
           </div>
 
           <div class="card-date">
-            <span class="date-icon">&#128197;</span>
-            <span style="color: #64748b;">Completado el {{ request.date | date:'d \'de\' MMMM \'de\' yyyy' }}</span>
+            <span class="date-icon material-icons">calendar_today</span>
+            <span>Completado el {{ request.date | date:'d \'de\' MMMM \'de\' yyyy' }}</span>
           </div>
 
-          <p class="card-description" *ngIf="request.detail" style="color: #64748b;">
-            <strong>Descripcion:</strong> {{ request.detail }}
+          <p class="card-description" *ngIf="request.detail">
+            <strong>Detalles:</strong> {{ request.detail }}
           </p>
 
-          <div class="card-info card-info--completed" style="background: #f8fafc; border-color: #cbd5e1; color: #475569;">
-            <span class="info-icon" style="color: #475569;">&#10004;</span>
+          <div class="card-info card-info--completed">
+            <span class="info-icon material-icons">task_alt</span>
             <span>¡Tu maqueta ha sido fabricada y entregada con éxito!</span>
           </div>
 
           <div class="card-actions" *ngIf="request.backendId">
-            <button class="btn-conversation btn-chat" type="button" (click)="onViewChat(request.backendId)">
-              <svg viewBox="0 0 24 24" class="btn-chat-icon" fill="none" stroke="currentColor" stroke-width="2">
+            <button 
+              class="btn-chat" 
+              type="button" 
+              (click)="onViewChat(request.backendId)"
+              aria-label="Ver conversación de chat"
+            >
+              <svg viewBox="0 0 24 24" class="btn-chat-icon" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
               Ver conversación

@@ -27,6 +27,7 @@ import com.amazonas.backend.modules.users.repository.UserRepository;
 import com.amazonas.backend.modules.vendors.repository.VendorRepository;
 import com.amazonas.backend.modules.chat.repository.ChatRoomRepository;
 import com.amazonas.backend.modules.chat.enums.ChatRoomStatus;
+import com.amazonas.backend.modules.budgets.repository.BudgetRepository;
 
 @Service
 @Transactional
@@ -38,6 +39,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     private final UserRepository userRepository;
     private final VendorRepository vendorRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final BudgetRepository budgetRepository;
 
     public PurchaseRequestServiceImpl(
             PurchaseRequestRepository purchaseRequestRepository,
@@ -45,13 +47,15 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             MaterialRepository materialRepository,
             UserRepository userRepository,
             VendorRepository vendorRepository,
-            ChatRoomRepository chatRoomRepository) {
+            ChatRoomRepository chatRoomRepository,
+            BudgetRepository budgetRepository) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.productRepository = productRepository;
         this.materialRepository = materialRepository;
         this.userRepository = userRepository;
         this.vendorRepository = vendorRepository;
         this.chatRoomRepository = chatRoomRepository;
+        this.budgetRepository = budgetRepository;
     }
 
     // ─────────────────────────────────────────────────────────
@@ -426,6 +430,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         resp.setTienePresupuesto(s.getPresupuesto() != null);
         resp.setCreatedAt(s.getCreatedAt());
         resp.setUpdatedAt(s.getUpdatedAt());
+        resp.setMotivoCancelacion(s.getMotivoCancelacion());
 
         // Kits
         resp.setKits(s.getKits().stream().map(k -> {
@@ -511,6 +516,61 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
 
         PurchaseRequest saved = purchaseRequestRepository.save(solicitud);
+        return toResponse(saved);
+    }
+
+    @Override
+    public void eliminar(UUID id, String usuarioEmail) {
+        PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
+
+        // Validar que la solicitud sea del usuario actual O que el usuario que ejecuta sea ADMIN o VENDEDOR
+        boolean isOwner = solicitud.getUsuario().getEmail().equalsIgnoreCase(usuarioEmail);
+        boolean isAdmin = userRepository.findByEmail(usuarioEmail)
+                .map(u -> u.getRole().name().equals("ADMIN"))
+                .orElse(false);
+        boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
+
+        if (!isOwner && !isAdmin && !isVendor) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para cancelar esta solicitud.");
+        }
+
+        // Buscar si existe un presupuesto asociado y eliminarlo
+        budgetRepository.findBySolicitudId(id).ifPresent(budget -> {
+            budgetRepository.delete(budget);
+            budgetRepository.flush();
+        });
+
+        // Forzar eliminación física de la solicitud
+        purchaseRequestRepository.forceDelete(id);
+    }
+
+    @Override
+    public PurchaseRequestResponse rechazar(UUID id, RejectRequest req, String usuarioEmail) {
+        PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
+
+        // Validar que el usuario que ejecuta sea ADMIN o VENDEDOR
+        boolean isAdmin = userRepository.findByEmail(usuarioEmail)
+                .map(u -> u.getRole().name().equals("ADMIN"))
+                .orElse(false);
+        boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
+
+        if (!isAdmin && !isVendor) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para rechazar esta solicitud.");
+        }
+
+        solicitud.setEstado(EstadoSolicitud.RECHAZADO);
+        solicitud.setMotivoCancelacion(req.getMotivo());
+
+        PurchaseRequest saved = purchaseRequestRepository.save(solicitud);
+
+        // Cerrar la sala de chat
+        chatRoomRepository.findByRequestId(id).ifPresent(room -> {
+            room.setStatus(ChatRoomStatus.CLOSED);
+            chatRoomRepository.save(room);
+        });
+
         return toResponse(saved);
     }
 }

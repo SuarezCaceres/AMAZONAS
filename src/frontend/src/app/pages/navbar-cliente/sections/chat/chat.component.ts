@@ -837,4 +837,25 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     }
     return 'text-slate-400';
   }
+
+  confirmarCancelacion(requestId?: string): void {
+    if (!requestId) return;
+
+    const confirm = window.confirm(
+      '¿Estás seguro de que deseas cancelar y eliminar esta solicitud? ' +
+      'Esta acción borrará permanentemente la conversación, presupuestos y todo el historial relacionado.'
+    );
+
+    if (confirm) {
+      this.purchaseRequestService.eliminar(requestId).subscribe({
+        next: () => {
+          this.closeChat.emit();
+        },
+        error: (err) => {
+          console.error('Error al eliminar la solicitud desde chat', err);
+          alert('Hubo un error al cancelar la solicitud. Por favor, intente de nuevo.');
+        }
+      });
+    }
+  }
 }

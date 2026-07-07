@@ -13,6 +13,7 @@ import com.amazonas.backend.modules.requests.dto.PurchaseRequestResponse;
 import com.amazonas.backend.modules.requests.dto.RequestFilesUpdateRequest;
 import com.amazonas.backend.modules.requests.dto.SolicitudParaPresupuestoResponse;
 import com.amazonas.backend.modules.requests.dto.UpdateEstadoRequest;
+import com.amazonas.backend.modules.requests.dto.RejectRequest;
 import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
 import com.amazonas.backend.modules.requests.service.PurchaseRequestService;
 
@@ -86,6 +87,18 @@ public class PurchaseRequestController {
         return ResponseEntity.ok(purchaseRequestService.obtenerPorId(id, principal.getName()));
     }
 
+    /**
+     * DELETE /api/purchase-requests/{id}
+     * Cancela y elimina físicamente una solicitud del usuario autenticado.
+     */
+    @DeleteMapping("/api/purchase-requests/{id}")
+    public ResponseEntity<Void> eliminar(
+            @PathVariable UUID id,
+            Principal principal) {
+        purchaseRequestService.eliminar(id, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
+
     // ─── Endpoints para Administradores/Vendedores ─────────────
 
     /**
@@ -121,5 +134,18 @@ public class PurchaseRequestController {
     public ResponseEntity<SolicitudParaPresupuestoResponse> obtenerParaPresupuesto(
             @PathVariable UUID id) {
         return ResponseEntity.ok(purchaseRequestService.obtenerParaPresupuesto(id));
+    }
+
+    /**
+     * PUT /api/admin/purchase-requests/{id}/reject
+     * Rechaza una solicitud guardando el motivo.
+     * Accesible por administradores y vendedores.
+     */
+    @PutMapping("/api/admin/purchase-requests/{id}/reject")
+    public ResponseEntity<PurchaseRequestResponse> rechazar(
+            @PathVariable UUID id,
+            @RequestBody RejectRequest request,
+            Principal principal) {
+        return ResponseEntity.ok(purchaseRequestService.rechazar(id, request, principal.getName()));
     }
 }

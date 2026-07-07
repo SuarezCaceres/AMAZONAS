@@ -2,97 +2,64 @@
 
   <!-- BRAND -->
   <button class="brand" type="button" (click)="catalogClicked.emit(); closeMenu()" aria-label="Ir al inicio">
-
     <span class="brand-mark">MA</span>
-
     <span class="brand-copy">
       <strong>Maquetas Amazonas</strong>
       <small>Lima, Perú</small>
     </span>
-
   </button>
 
   <!-- HAMBURGUESA -->
-  <button class="hamburger" type="button" (click)="toggleMenu()">
-
-    ☰
+  <button class="hamburger" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen" aria-label="Navegación móvil">
+    {{ menuOpen ? '✕' : '☰' }}
   </button>
 
-  <!-- NAV -->
-  <nav class="main-nav" [class.open]="menuOpen" aria-label="Navegacion principal">
-
-    <!-- INICIO -->
-    <button type="button" [class.active]="activePage === 'inicio'" (click)="inicioClicked.emit(); closeMenu()">
-
-      Inicio
-    </button>
-
-    <!-- NOSOTROS -->
-    <button type="button" [class.active]="activePage === 'nosotros'" (click)="nosotrosClicked.emit(); closeMenu()">
-
-      Nosotros
-    </button>
-
-    <!-- CATEGORIAS -->
-    <button
-      type="button"
-      [class.active]="activePage === 'categories'"
-      (click)="categoriesClicked.emit(); closeMenu()">
-      Categorías
-    </button>
-
-    <!-- CATALOGO -->
-    <button type="button" [class.active]="activePage === 'catalog' || activePage === 'detail'"
-      (click)="catalogClicked.emit(); closeMenu()">
-
-      Catálogo
-    </button>
-
-    <!-- MIS SOLICITUDES -->
-    <button type="button" *ngIf="isLoggedIn" [class.active]="activePage === 'requests'"
-      (click)="requestsClicked.emit(); closeMenu()">
-
-      Mis Solicitudes
-    </button>
-
-  </nav>
-
-  <!-- AUTH INVITADO -->
-  <div class="auth-actions" [class.open]="menuOpen" *ngIf="!isLoggedIn; else loggedActions">
-
-    <button class="login-button" type="button" (click)="loginClicked.emit(); closeMenu()">
-
-      Iniciar Sesión
-    </button>
-
-    <button class="register-button" type="button" (click)="registerClicked.emit(); closeMenu()">
-
-      Registrarse
-    </button>
-
-  </div>
-
-  <!-- AUTH USUARIO LOGUEADO -->
-  <ng-template #loggedActions>
-
-    <div class="auth-actions logged-actions" [class.open]="menuOpen">
-
-      <span class="user-chip" aria-label="Usuario conectado">
-
-        &#128100; {{ userName }}
-      </span>
-
-      <button class="login-button" type="button" (click)="logoutClicked.emit(); closeMenu()">
-
-        Salir
+  <!-- NAV DRAWER (DESPLEGABLE UNIFICADO) -->
+  <div class="nav-drawer" [class.open]="menuOpen">
+    <!-- NAV -->
+    <nav class="main-nav" aria-label="Navegacion principal">
+      <button type="button" [class.active]="activePage === 'inicio'" (click)="inicioClicked.emit(); closeMenu()">
+        Inicio
       </button>
+      <button type="button" [class.active]="activePage === 'nosotros'" (click)="nosotrosClicked.emit(); closeMenu()">
+        Nosotros
+      </button>
+      <button type="button" [class.active]="activePage === 'categories'" (click)="categoriesClicked.emit(); closeMenu()">
+        Categorías
+      </button>
+      <button type="button" [class.active]="activePage === 'catalog' || activePage === 'detail'" (click)="catalogClicked.emit(); closeMenu()">
+        Catálogo
+      </button>
+      <button type="button" *ngIf="isLoggedIn" [class.active]="activePage === 'requests'" (click)="requestsClicked.emit(); closeMenu()">
+        Mis Solicitudes
+      </button>
+    </nav>
 
+    <!-- AUTH INVITADO -->
+    <div class="auth-actions" *ngIf="!isLoggedIn; else loggedActions">
+      <button class="login-button" type="button" (click)="loginClicked.emit(); closeMenu()">
+        Iniciar Sesión
+      </button>
+      <button class="register-button" type="button" (click)="registerClicked.emit(); closeMenu()">
+        Registrarse
+      </button>
     </div>
 
-  </ng-template>
+    <!-- AUTH USUARIO LOGUEADO -->
+    <ng-template #loggedActions>
+      <div class="auth-actions logged-actions">
+        <span class="user-chip" aria-label="Usuario conectado">
+          &#128100; {{ userName }}
+        </span>
+        <button class="login-button" type="button" (click)="logoutClicked.emit(); closeMenu()">
+          Salir
+        </button>
+      </div>
+    </ng-template>
+  </div>
 
 </header>
 
 <!-- BACKDROP -->
-<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()">
-</div>
+<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>
+

@@ -54,26 +54,31 @@
             <p class="text-[10px] text-slate-400 truncate mt-0.5">Asesor: {{ room.vendorName }}</p>
             <div class="flex items-center justify-between mt-1">
               <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
-                [class.bg-yellow-50]="room.requestStatus === 'PENDING' && room.status !== 'AGREED'"
-                [class.text-yellow-700]="room.requestStatus === 'PENDING' && room.status !== 'AGREED'"
-                [class.border-yellow-250]="room.requestStatus === 'PENDING' && room.status !== 'AGREED'"
-                [class.bg-emerald-55]="room.status === 'AGREED' && room.requestStatus === 'PENDING'"
-                [class.text-emerald-800]="room.status === 'AGREED' && room.requestStatus === 'PENDING'"
-                [class.border-emerald-200]="room.status === 'AGREED' && room.requestStatus === 'PENDING'"
+                [class.bg-yellow-50]="room.requestStatus === 'PENDIENTE' && room.status !== 'AGREED'"
+                [class.text-yellow-700]="room.requestStatus === 'PENDIENTE' && room.status !== 'AGREED'"
+                [class.border-yellow-250]="room.requestStatus === 'PENDIENTE' && room.status !== 'AGREED'"
+                [class.bg-emerald-55]="room.status === 'AGREED' && room.requestStatus === 'PENDIENTE'"
+                [class.text-emerald-800]="room.status === 'AGREED' && room.requestStatus === 'PENDIENTE'"
+                [class.border-emerald-200]="room.status === 'AGREED' && room.requestStatus === 'PENDIENTE'"
                 [class.bg-blue-50]="room.requestStatus === 'PROCESANDO'"
                 [class.text-blue-700]="room.requestStatus === 'PROCESANDO'"
                 [class.border-blue-200]="room.requestStatus === 'PROCESANDO'"
                 [class.bg-emerald-500]="room.requestStatus === 'COMPLETADO'"
                 [class.text-white]="room.requestStatus === 'COMPLETADO'"
-                [class.border-none]="room.requestStatus === 'COMPLETADO'">
+                [class.border-none]="room.requestStatus === 'COMPLETADO'"
+                [class.bg-rose-50]="room.requestStatus === 'RECHAZADO'"
+                [class.text-rose-700]="room.requestStatus === 'RECHAZADO'"
+                [class.border-rose-200]="room.requestStatus === 'RECHAZADO'">
                 {{ 
                   room.requestStatus === 'COMPLETADO' 
                     ? 'Completado' 
                     : room.requestStatus === 'PROCESANDO' 
                       ? 'En Fabricación' 
-                      : room.status === 'AGREED' 
-                        ? 'Acordado' 
-                        : 'Negociando' 
+                      : room.requestStatus === 'RECHAZADO'
+                        ? 'Rechazada'
+                        : room.status === 'AGREED' 
+                          ? 'Acordado' 
+                          : 'Negociando' 
                 }}
               </span>
               <span class="text-[9px] text-slate-400">{{ room.lastMessageAt | date:'shortTime' }}</span>
@@ -169,34 +174,51 @@
                   <div class="flex items-center gap-2">
                     <h2 class="font-bold text-slate-800 text-xs">Canal de Negociación</h2>
                     <span class="px-2 py-0.5 text-[9px] font-bold rounded"
-                      [class.bg-yellow-50]="selectedRoom.requestStatus === 'PENDING' && selectedRoom.status !== 'AGREED'"
-                      [class.text-yellow-750]="selectedRoom.requestStatus === 'PENDING' && selectedRoom.status !== 'AGREED'"
-                      [class.border-yellow-100]="selectedRoom.requestStatus === 'PENDING' && selectedRoom.status !== 'AGREED'"
-                      [class.bg-emerald-50]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDING'"
-                      [class.text-emerald-700]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDING'"
-                      [class.border-emerald-100]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDING'"
+                      [class.bg-yellow-50]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
+                      [class.text-yellow-750]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
+                      [class.border-yellow-100]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
+                      [class.bg-emerald-55]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDIENTE'"
+                      [class.text-emerald-700]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDIENTE'"
+                      [class.border-emerald-100]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDIENTE'"
                       [class.bg-blue-50]="selectedRoom.requestStatus === 'PROCESANDO'"
                       [class.text-blue-700]="selectedRoom.requestStatus === 'PROCESANDO'"
                       [class.border-blue-100]="selectedRoom.requestStatus === 'PROCESANDO'"
                       [class.bg-emerald-500]="selectedRoom.requestStatus === 'COMPLETADO'"
-                      [class.text-white]="selectedRoom.requestStatus === 'COMPLETADO'">
+                      [class.text-white]="selectedRoom.requestStatus === 'COMPLETADO'"
+                      [class.bg-rose-50]="selectedRoom.requestStatus === 'RECHAZADO'"
+                      [class.text-rose-700]="selectedRoom.requestStatus === 'RECHAZADO'"
+                      [class.border-rose-200]="selectedRoom.requestStatus === 'RECHAZADO'">
                       {{ 
                         selectedRoom.requestStatus === 'COMPLETADO' 
                           ? 'Completado' 
                           : selectedRoom.requestStatus === 'PROCESANDO' 
                             ? 'En Producción' 
-                            : selectedRoom.status === 'AGREED' 
-                              ? 'Presupuesto Aceptado' 
-                              : 'Cotización en Revisión' 
+                            : selectedRoom.requestStatus === 'RECHAZADO'
+                              ? 'Rechazada'
+                              : selectedRoom.status === 'AGREED' 
+                                ? 'Presupuesto Aceptado' 
+                                : 'Cotización en Revisión' 
                       }}
                     </span>
                   </div>
                   <p class="text-[10px] text-slate-500 m-0">Chat activo con {{ selectedRoom.vendorName }}</p>
                 </div>
               </div>
-              <div class="text-right">
-                <span class="text-[9px] text-slate-400 block uppercase font-bold">Monto Total</span>
-                <span class="font-extrabold text-slate-900 text-sm font-outfit">{{ getTotalBudget() | currency:'S/ ':'code':'1.2-2' }}</span>
+              <div class="flex items-center gap-4">
+                <!-- Botón Cancelar Solicitud (Solo visible si está PENDIENTE) -->
+                <button 
+                  *ngIf="selectedRoom.requestStatus === 'PENDIENTE'"
+                  (click)="confirmarCancelacion(selectedRoom.requestId)" 
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all border border-rose-200 cursor-pointer active:scale-95 shrink-0"
+                >
+                  <span class="material-icons text-sm" style="font-size: 16px;">delete_forever</span>
+                  Cancelar Solicitud
+                </button>
+
+                <div class="text-right">
+                  <span class="text-[9px] text-slate-400 block uppercase font-bold">Monto Total</span>
+                  <span class="font-extrabold text-slate-900 text-sm font-outfit">{{ getTotalBudget() | currency:'S/ ':'code':'1.2-2' }}</span>
+                </div>
               </div>
             </div>
 
@@ -569,9 +591,13 @@
 
           <!-- Barra de entrada de mensajes -->
           <div class="border-t border-slate-150 p-3 bg-white shrink-0">
-            @if (selectedRoom.status === 'CLOSED' || selectedRoom.status === 'ARCHIVED') {
+            @if (selectedRoom.status === 'CLOSED' || selectedRoom.status === 'ARCHIVED' || selectedRoom.requestStatus === 'RECHAZADO') {
               <div class="text-center p-2.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold">
-                La negociación ha finalizado. El precio acordado es de {{ selectedRoom.agreedPrice | currency:'S/ ':'code':'1.2-2' }}.
+                @if (selectedRoom.requestStatus === 'RECHAZADO') {
+                  La solicitud ha sido rechazada por el vendedor. El chat está en modo de solo lectura.
+                } @else {
+                  La negociación ha finalizado. El precio acordado es de {{ selectedRoom.agreedPrice | currency:'S/ ':'code':'1.2-2' }}.
+                }
               </div>
             } @else {
               @if (selectedRoom.requestStatus === 'PROCESANDO') {

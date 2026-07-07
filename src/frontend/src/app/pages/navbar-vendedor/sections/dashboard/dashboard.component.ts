@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, OnInit, inject } from '@angular/core';
 import { VendedorTab } from '../../navbar-vendedor.component';
 import { MaquetaService } from '../../../../services/maqueta.service';

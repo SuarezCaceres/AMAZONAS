@@ -397,3 +397,10 @@
     flex-direction: column;
   }
 }
+
+@media (max-width: 400px) {
+  .extras-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

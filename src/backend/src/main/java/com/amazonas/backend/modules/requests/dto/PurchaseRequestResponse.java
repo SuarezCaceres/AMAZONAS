@@ -49,6 +49,8 @@ public class PurchaseRequestResponse {
     private List<String> grabacionesUrls;
     private List<String> archivosUrls;
 
+    private String motivoCancelacion;
+
     // Timestamps
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -128,4 +130,7 @@ public class PurchaseRequestResponse {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getMotivoCancelacion() { return motivoCancelacion; }
+    public void setMotivoCancelacion(String motivoCancelacion) { this.motivoCancelacion = motivoCancelacion; }
 }

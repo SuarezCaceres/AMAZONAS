@@ -199,12 +199,19 @@
         <div class="categories-list-wrapper">
           @for (group of getGroupedMaterials(); track group.key) {
             <div class="category-materials-block">
-              <div class="category-block-header">
-                <h3 class="category-block-title">{{ group.key }}</h3>
+              <div class="category-block-header" (click)="toggleCategory(group.key)" style="cursor: pointer; user-select: none;">
+                <div class="flex-between" style="gap: 8px; justify-content: flex-start; flex: 1;">
+                  <span class="material-icons text-slate-400" style="font-size: 20px; transition: transform 0.2s;" [style.transform]="isCategoryCollapsed(group.key) ? 'rotate(0deg)' : 'rotate(90deg)'">
+                    chevron_right
+                  </span>
+                  <h3 class="category-block-title">{{ group.key }}</h3>
+                </div>
                 <span class="category-block-badge">{{ group.value.length }} materiales</span>
               </div>
-              <div class="table-responsive">
-                <table class="data-table">
+              
+              @if (!isCategoryCollapsed(group.key)) {
+                <div class="table-responsive">
+                  <table class="data-table">
                   <thead>
                     <tr>
                       <th>Material</th>
@@ -259,6 +266,7 @@
                   </tbody>
                 </table>
               </div>
+            }
             </div>
           }
         </div>

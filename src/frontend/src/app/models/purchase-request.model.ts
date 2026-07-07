@@ -1,4 +1,4 @@
-export type EstadoSolicitud = 'PENDIENTE' | 'PROCESANDO' | 'COMPLETADO';
+export type EstadoSolicitud = 'PENDIENTE' | 'PROCESANDO' | 'COMPLETADO' | 'RECHAZADO';
 
 export interface KitMaquetaRequest {
   productId: string;
@@ -103,6 +103,7 @@ export interface PurchaseRequestResponse {
   tienePresupuesto: boolean;
   grabacionesUrls?: string[];
   archivosUrls?: string[];
+  motivoCancelacion?: string;
   createdAt: string;
   updatedAt: string;
 }

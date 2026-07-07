@@ -18,5 +18,9 @@ public record PaymentTransactionResponse(
     String tipoMaqueta,
     String materiales,
     OffsetDateTime fechaTransaccion,
-    String codigoOperacion
+    String codigoOperacion,
+    BigDecimal montoRecibido,
+    BigDecimal vuelto,
+    String codigoSeguridad,
+    String voucherUrl
 ) {}

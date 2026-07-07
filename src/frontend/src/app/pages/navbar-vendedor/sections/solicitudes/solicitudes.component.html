@@ -53,50 +53,137 @@
         </div>
         <span class="stat-badge">{{ completados }}</span>
       </div>
+      <div class="stat-card stat-card--rejected">
+        <div class="stat-card-icon">
+          <span class="material-icons" style="font-size:22px;">cancel</span>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Rechazados</span>
+          <span class="stat-value">{{ rechazados }}</span>
+        </div>
+        <span class="stat-badge">{{ rechazados }}</span>
+      </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters-section">
+    <!-- ═══════ PANEL DE FILTROS UNIFICADO ═══════ -->
+    <div class="filter-panel">
+      <!-- Barra de búsqueda -->
       <div class="search-box">
         <span class="material-icons search-icon" style="font-size:18px;">search</span>
         <input type="text" placeholder="Buscar por producto, cliente o correo..."
           [(ngModel)]="searchTerm">
-      </div>
-      <div class="filter-tabs">
-        <button [class.active]="activeFilter === 'todos'" (click)="setFilter('todos')">Todos</button>
-        <button [class.active]="activeFilter === 'pendientes'" (click)="setFilter('pendientes')">Pendientes</button>
-        <button [class.active]="activeFilter === 'procesando'" (click)="setFilter('procesando')">Procesando</button>
-        <button [class.active]="activeFilter === 'completados'" (click)="setFilter('completados')">Completados</button>
+        @if (searchTerm) {
+          <button class="search-clear" (click)="searchTerm = ''" aria-label="Limpiar búsqueda">
+            <span class="material-icons" style="font-size:16px;">close</span>
+          </button>
+        }
       </div>
 
-      <!-- Filtro de rango de fechas -->
-      <div class="date-filter-row" style="display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 4px; align-items: center;">
-        <span style="font-size: 10px; font-weight: 700; color: #64748b; margin-right: 6px; white-space: nowrap;">FILTRO FECHA:</span>
-        <button type="button" [class.active]="activeDateFilter === 'todos'" (click)="setDateFilter('todos')" class="date-filter-btn">Todos</button>
-        <button type="button" [class.active]="activeDateFilter === 'hoy'" (click)="setDateFilter('hoy')" class="date-filter-btn">Hoy</button>
-        <button type="button" [class.active]="activeDateFilter === 'ayer'" (click)="setDateFilter('ayer')" class="date-filter-btn">Ayer</button>
-        <button type="button" [class.active]="activeDateFilter === 'semana'" (click)="setDateFilter('semana')" class="date-filter-btn">Últimos 7 días</button>
-        <button type="button" [class.active]="activeDateFilter === 'mes'" (click)="setDateFilter('mes')" class="date-filter-btn">Este mes</button>
-      </div>
-    </div>
+      <!-- Filas de filtros -->
+      <div class="filter-rows">
+        <!-- Estado -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">tune</span>
+            Estado
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc" [class.fc--active]="activeFilter === 'todos'" (click)="setFilter('todos')">Todos</button>
+            <button class="fc" [class.fc--active]="activeFilter === 'pendientes'" (click)="setFilter('pendientes')">
+              <span class="fc-dot fc-dot--pending"></span>
+              Pendientes
+            </button>
+            <button class="fc" [class.fc--active]="activeFilter === 'procesando'" (click)="setFilter('procesando')">
+              <span class="fc-dot fc-dot--processing"></span>
+              Procesando
+            </button>
+            <button class="fc" [class.fc--active]="activeFilter === 'completados'" (click)="setFilter('completados')">
+              <span class="fc-dot fc-dot--completed"></span>
+              Completados
+            </button>
+            <button class="fc" [class.fc--active]="activeFilter === 'rechazados'" (click)="setFilter('rechazados')">
+              <span class="fc-dot fc-dot--rejected"></span>
+              Rechazados
+            </button>
+          </div>
+        </div>
 
-    <!-- Expand controls -->
-    <div class="expand-controls">
-      <button (click)="expandAll()">
-        <span class="material-icons" style="font-size:14px;">unfold_more</span>
-        Expandir Todo
-      </button>
-      <button (click)="collapseAll()">
-        <span class="material-icons" style="font-size:14px;">unfold_less</span>
-        Colapsar Todo
-      </button>
+        <!-- Tipo de Maqueta -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">category</span>
+            Tipo
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc" [class.fc--active]="filtroTipo === 'todos'" (click)="setFiltroTipo('todos')">Todos</button>
+            <button class="fc" [class.fc--active]="filtroTipo === 'catalogo'" (click)="setFiltroTipo('catalogo')">
+              <span class="material-icons fc-icon">shopping_bag</span>
+              Catálogo
+            </button>
+            <button class="fc" [class.fc--active]="filtroTipo === 'personalizada'" (click)="setFiltroTipo('personalizada')">
+              <span class="material-icons fc-icon">architecture</span>
+              Personalizada
+            </button>
+          </div>
+        </div>
+
+        <!-- Fecha -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">calendar_today</span>
+            Fecha
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc" [class.fc--active]="activeDateFilter === 'todos'" (click)="setDateFilter('todos')">Todos</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'hoy'" (click)="setDateFilter('hoy')">Hoy</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'ayer'" (click)="setDateFilter('ayer')">Ayer</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'semana'" (click)="setDateFilter('semana')">7 días</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'mes'" (click)="setDateFilter('mes')">Este mes</button>
+          </div>
+        </div>
+
+        <!-- Ordenar -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">sort</span>
+            Ordenar
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc fc--order" [class.fc--active]="ordenActivo === 'notificaciones'" (click)="setOrden('notificaciones')">
+              <span class="material-icons fc-icon">notifications</span>
+              No leídos primero
+            </button>
+            <button class="fc fc--order" [class.fc--active]="ordenActivo === 'reciente'" (click)="setOrden('reciente')">
+              <span class="material-icons fc-icon">schedule</span>
+              Más reciente
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controles de expansión + contador de resultados -->
+      <div class="filter-footer">
+        <span class="filter-result-count">
+          {{ filteredSolicitudes.length }} solicitud{{ filteredSolicitudes.length !== 1 ? 'es' : '' }}
+        </span>
+        <div class="filter-footer-actions">
+          <button class="fc-expand" (click)="expandAll()">
+            <span class="material-icons" style="font-size:15px;">unfold_more</span>
+            Expandir
+          </button>
+          <button class="fc-expand" (click)="collapseAll()">
+            <span class="material-icons" style="font-size:15px;">unfold_less</span>
+            Colapsar
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Lista de cards -->
     <div class="solicitudes-list" *ngIf="!isLoading">
       
       <!-- Renderizado de Solicitudes en Lista Principal (según pestaña de filtro) -->
-      <ng-container *ngIf="activeFilter !== 'completados'">
+      <ng-container *ngIf="activeFilter !== 'completados' && activeFilter !== 'rechazados'">
         <article class="solicitud-card" *ngFor="let solicitud of activeSolicitudes" [class.expanded]="solicitud.expanded">
           <div class="card-header" (click)="toggleExpand(solicitud)">
             <div class="card-header-left">
@@ -253,6 +340,89 @@
         </div>
       </ng-container>
 
+      <!-- Si la pestaña es Rechazados, renderizar todas las rechazadas en el listado principal -->
+      <ng-container *ngIf="activeFilter === 'rechazados'">
+        <article class="solicitud-card solicitud-card--rejected" *ngFor="let solicitud of rejectedSolicitudes" [class.expanded]="solicitud.expanded" style="opacity: 0.85; border-color: #fca5a5;">
+          <div class="card-header" (click)="toggleExpand(solicitud)">
+            <div class="card-header-left">
+              <div class="card-avatar" style="background: linear-gradient(135deg, #ef4444, #991b1b);">
+                {{ solicitud.productoNombre.substring(0,2).toUpperCase() || 'SL' }}
+              </div>
+              <div>
+                <h2 style="color: #991b1b;">{{ solicitud.productoNombre }}</h2>
+                <span class="card-client-name">
+                  <span class="material-icons" style="font-size:12px;vertical-align:middle;">person</span>
+                  {{ solicitud.clienteNombre }}
+                </span>
+              </div>
+            </div>
+            <div class="header-right">
+              <span class="status-badge rechazado" style="background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2;">
+                Rechazado
+              </span>
+              <span class="expand-icon material-icons" style="font-size:18px;">
+                {{ solicitud.expanded ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="card-content" *ngIf="solicitud.expanded">
+            <div class="client-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">person_outline</span>
+                <span class="info-label">Cliente:</span>
+                <span class="info-value">{{ solicitud.clienteNombre }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">calendar_today</span>
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">{{ solicitud.fecha | date:"d 'de' MMMM 'de' yyyy" }}</span>
+              </div>
+            </div>
+
+            <div class="contact-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">mail_outline</span>
+                <span class="info-label">Email:</span>
+                <span class="info-value email">{{ solicitud.clienteEmail }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">phone</span>
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{ solicitud.clienteTelefono }}</span>
+              </div>
+              @if (solicitud.detalle) {
+                <div class="info-row full-width">
+                  <span class="material-icons info-icon" style="font-size:16px;">chat_bubble_outline</span>
+                  <span class="info-label">Mensaje:</span>
+                  <span class="info-value">{{ solicitud.detalle }}</span>
+                </div>
+              }
+              <!-- Display Rejection Reason -->
+              <div class="info-row full-width" style="margin-top: 12px; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fee2e2; color: #991b1b; display: flex; align-items: center; gap: 6px;">
+                <span class="material-icons info-icon" style="font-size:16px; color: #dc2626; margin: 0;">error_outline</span>
+                <span class="info-label" style="font-weight: 700; color: #991b1b; margin: 0;">Motivo de cancelación:</span>
+                <span class="info-value" style="color: #b91c1c; margin: 0;">{{ solicitud.motivoCancelacion || 'No especificado.' }}</span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-communicate" (click)="abrirChat(solicitud)">
+                <span class="material-icons" style="font-size:16px;">forum</span>
+                Ver Historial de Chat
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Empty state si no hay solicitudes rechazadas -->
+        <div class="empty-state" *ngIf="rejectedSolicitudes.length === 0">
+          <span class="material-icons empty-state-icon">cancel</span>
+          <p class="empty-state-title">Sin solicitudes rechazadas</p>
+          <p class="empty-state-desc">No se encontraron solicitudes con estado rechazado.</p>
+        </div>
+      </ng-container>
+
       <!-- Historial Colapsable de Completadas (solo visible en pestaña "Todos") -->
       <div class="completed-history-container completed-history-container--vendor" *ngIf="activeFilter === 'todos' && completedSolicitudes.length > 0" style="margin-top: 24px; border-top: 1px solid #cbd5e1; padding-top: 20px;">
         <button type="button" class="completed-accordion-trigger completed-accordion-trigger--vendor" (click)="showCompletedHistory = !showCompletedHistory" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; border: 1.5px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 12px; font-weight: 750; color: #475569; font-family: inherit;">
@@ -358,6 +528,14 @@
       </div>
 
       <div class="flex items-center gap-3">
+
+        <!-- Botón Cancelar Solicitud (Solo visible si no está COMPLETADO) -->
+        @if (solicitudActiva.estado !== 'completado') {
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors cursor-pointer" (click)="confirmarCancelar()">
+            <span class="material-icons" style="font-size: 16px;">cancel</span>
+            Cancelar
+          </button>
+        }
 
         <span class="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider" 
           [class.bg-yellow-50]="solicitudActiva.estado === 'pendiente'"
@@ -549,29 +727,29 @@
 
           <!-- Step Tracker del Prototipo (Misma lógica visual) -->
           <div class="px-4 py-2 border-t border-slate-150/60 bg-white overflow-x-auto select-none">
-            <div class="flex items-center justify-between min-w-[480px] py-1">
+            <div class="flex items-center justify-between min-w-[560px] py-1">
               
               <!-- Step 1: Solicitud -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                   <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                 </div>
-                <span class="text-[10px] font-bold text-slate-800">Solicitud</span>
+                <span class="text-[10px] font-bold text-slate-800 whitespace-nowrap">Solicitud</span>
               </div>
               <div class="flex-1 h-0.5 bg-emerald-500 mx-1.5"></div>
 
               <!-- Step 2: Conversación -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (hasOfferOrBudget()) {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-800">Conversación</span>
+                  <span class="text-[10px] font-bold text-slate-800 whitespace-nowrap">Conversación</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
                     2
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Conversación</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Conversación</span>
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
@@ -580,22 +758,22 @@
               </div>
 
               <!-- Step 3: Presupuesto -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (room?.status === 'AGREED' || room?.status === 'CLOSED') {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-850">Presupuesto</span>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Presupuesto</span>
                 } @else if (hasOfferOrBudget()) {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
                     3
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Presupuesto</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Presupuesto</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
                     3
                   </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Presupuesto</span>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Presupuesto</span>
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
@@ -604,22 +782,22 @@
               </div>
 
               <!-- Step 4: Pago -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado') {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-850">Pago</span>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Pago</span>
                 } @else if (room?.status === 'AGREED') {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
                     4
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Pago</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Pago</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
                     4
                   </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Pago</span>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Pago</span>
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
@@ -628,22 +806,22 @@
               </div>
 
               <!-- Step 5: Producción -->
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-1.5 shrink-0">
                 @if (solicitudActiva.estado === 'completado') {
                   <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     <span class="material-icons text-xs" style="font-size: 12px;">check</span>
                   </div>
-                  <span class="text-[10px] font-bold text-slate-850">Producción</span>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Producción</span>
                 } @else if (solicitudActiva.estado === 'procesando') {
                   <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
                     5
                   </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Producción</span>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Producción</span>
                 } @else {
                   <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
                     5
                   </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Producción</span>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Producción</span>
                 }
               </div>
 
@@ -663,8 +841,9 @@
             </div>
           } @else {
             @for (msg of messages; track msg.id) {
-              @if (msg.messageType === 'SYSTEM') {
-                <div class="flex justify-center my-1">
+              @if (!isMensajeDescartado(msg.id)) {
+                @if (msg.messageType === 'SYSTEM') {
+                  <div class="flex justify-center my-1">
                   <div class="bg-white px-3.5 py-1.5 rounded-full border border-slate-200/60 shadow-sm text-center max-w-[85%]">
                     <p class="text-[10px] font-semibold text-slate-500 flex items-center justify-center gap-1.5 m-0 leading-tight">
                       <span class="material-icons text-teal-600 text-xs" style="font-size: 13px;">notifications</span>
@@ -767,11 +946,21 @@
                               <span class="material-icons text-[12px]">zoom_in</span>
                               Ver Detalle
                             </button>
-                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                            <button type="button" (click)="descartarComprobante(msg.id)" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 text-[10px] font-bold py-1.5 rounded-lg border border-rose-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
+                              <span class="material-icons text-[12px]">cancel</span>
+                              Rechazar
+                            </button>
+                            <button *ngIf="activeBudget?.adelantoRequerido && !isAdelantoPagado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
                               <span class="material-icons text-[12px]">payments</span>
                               Confirmar Adelanto
                             </button>
-                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                            
+                            <button *ngIf="activeBudget?.adelantoRequerido && isAdelantoPagado(activeBudget?.codigoReferencia) && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                              <span class="material-icons text-[12px]">payments</span>
+                              Completar Pago
+                            </button>
+
+                            <button *ngIf="!activeBudget?.adelantoRequerido && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
                               <span class="material-icons text-[12px]">payment</span>
                               Confirmar Pago
                             </button>
@@ -890,10 +1079,27 @@
                               }
                             </div>
 
-                            <div class="flex gap-2 pt-1 border-t border-slate-100">
-                              <button type="button" (click)="irAPresupuesto()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none">
+                            <div class="flex flex-col gap-1.5 pt-1 border-t border-slate-100">
+                              <button type="button" (click)="irAPresupuesto()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none">
                                 Actualizar Presupuesto (Ir a Calculadora)
                               </button>
+                              
+                              @if (isPagoConfirmado(budgetData.budgetId)) {
+                                <div class="w-full bg-emerald-50 text-emerald-700 text-[10px] font-bold py-1.5 rounded-lg text-center border border-emerald-200 flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">check_circle</span>
+                                  Pago Completado (100%)
+                                </div>
+                              } @else if (isAdelantoPagado(budgetData.budgetId)) {
+                                <button type="button" (click)="confirmarPagoDesdeChat(msg)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none flex items-center justify-center gap-1 shadow-sm">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Registrar Pago de Saldo
+                                </button>
+                              } @else {
+                                <button type="button" (click)="confirmarAdelantoDesdeChat(msg)" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none flex items-center justify-center gap-1 shadow-sm">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Registrar Pago / Adelanto
+                                </button>
+                              }
                             </div>
                           </div>
                         </div>
@@ -918,7 +1124,8 @@
               }
             }
           }
-        </div>
+        }
+      </div>
 
         <!-- Entrada del mensaje footer -->
         <div class="border-t border-slate-150 bg-white shrink-0">
@@ -926,6 +1133,11 @@
             <div class="text-center p-3.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold m-3 flex items-center justify-center gap-2 shadow-sm">
               <span class="material-icons text-emerald-600 text-sm">lock</span>
               <span>Esta solicitud ha sido completada y el chat está en modo de solo lectura.</span>
+            </div>
+          } @else if (solicitudActiva.estado === 'rechazado') {
+            <div class="text-center p-3.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold m-3 flex items-center justify-center gap-2 shadow-sm">
+              <span class="material-icons text-rose-600 text-sm">lock</span>
+              <span>Esta solicitud ha sido rechazada y el chat está en modo de solo lectura.</span>
             </div>
           } @else if (room?.status === 'CLOSED' || room?.status === 'ARCHIVED') {
             <div class="text-center p-2.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold m-3">
@@ -1161,14 +1373,68 @@
         <button (click)="closeVoucherZoom()" class="flex-1 bg-white hover:bg-slate-100 text-slate-650 font-bold py-2.5 rounded-xl border border-slate-250 transition-all cursor-pointer text-xs">
           Cerrar Vista
         </button>
-        <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+        <button type="button" (click)="descartarComprobante(currentVoucherMessage!.id)" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 font-bold py-2.5 rounded-xl border border-rose-250 transition-all cursor-pointer text-xs flex items-center justify-center gap-1">
+          <span class="material-icons text-sm" style="font-size: 16px;">cancel</span>
+          Rechazar
+        </button>
+        <button *ngIf="activeBudget?.adelantoRequerido && !isAdelantoPagado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
           <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
           Confirmar Adelanto
         </button>
-        <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+        <button *ngIf="activeBudget?.adelantoRequerido && isAdelantoPagado(activeBudget?.codigoReferencia) && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+          <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
+          Completar Pago
+        </button>
+        <button *ngIf="!activeBudget?.adelantoRequerido && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
           <span class="material-icons text-sm" style="font-size: 16px;">task_alt</span>
           Confirmar Pago
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de Pago Reutilizable (Simulador de Auditoría/Chat) -->
+<app-payment-modal
+    [isOpen]="mostrarModalPago"
+    [clientName]="clienteCobro"
+    [amountToPay]="montoCobro"
+    [title]="tipoCobro === 'adelanto' ? 'Registrar Adelanto Online' : tipoCobro === 'saldo' ? 'Registrar Pago de Saldo' : 'Registrar Pago Completo'"
+    [projectName]="proyectoCobro"
+    [materialsDescription]="materialesCobro"
+    [summaryLabel]="tipoCobro === 'adelanto' ? 'Adelanto del ' + (selectedBudgetMetadata?.porcentajeAdelanto || 50) + '%' : tipoCobro === 'saldo' ? 'Saldo Restante (50%)' : 'Liquidación Completa (100%)'"
+    [allowOnlineMethods]="true"
+    [allowFisicoMethods]="true"
+    [prefilledVoucherUrl]="prefilledVoucherUrl"
+    (close)="mostrarModalPago = false"
+    (confirm)="onConfirmarPagoDesdeChat($event)">
+</app-payment-modal>
+
+<!-- Modal de Cancelación/Rechazo de Solicitud -->
+@if (mostrarModalCancelacion) {
+  <div class="cancelation-modal-overlay">
+    <div class="cancelation-modal-card">
+      <div class="cancelation-modal-header">
+        <span class="material-icons" style="color: #dc2626; font-size: 24px;">error_outline</span>
+        <h3 class="cancelation-modal-title">Cancelar Solicitud</h3>
+      </div>
+      <div class="cancelation-modal-body">
+        <p class="cancelation-modal-text">
+          ¿Estás seguro de que deseas cancelar la solicitud <strong>{{ solicitudActiva?.numeroSolicitud }}</strong> para <strong>{{ solicitudActiva?.productoNombre }}</strong>?
+        </p>
+        <p class="cancelation-modal-text" style="font-size: 13px; color: #64748b; margin-top: -12px;">
+          Esta acción cerrará el chat de negociación y el cliente verá el motivo de la cancelación.
+        </p>
+        <textarea 
+          class="cancelation-textarea" 
+          placeholder="Escribe el motivo del rechazo o cancelación aquí (opcional)..." 
+          [(ngModel)]="motivoCancelacionText"
+          maxlength="250">
+        </textarea>
+      </div>
+      <div class="cancelation-modal-footer">
+        <button class="btn-cancelation-back" (click)="cerrarModalCancelacion()">Volver</button>
+        <button class="btn-cancelation-confirm" (click)="confirmarRechazo()">Confirmar Cancelación</button>
       </div>
     </div>
   </div>

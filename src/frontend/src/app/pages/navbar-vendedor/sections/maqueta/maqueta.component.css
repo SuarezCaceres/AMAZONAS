@@ -1297,4 +1297,13 @@
     flex-direction: column;
     gap: 16px;
   }
+
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .maqueta-wrapper {
+    padding: 20px 14px 40px;
+  }
 }
+
