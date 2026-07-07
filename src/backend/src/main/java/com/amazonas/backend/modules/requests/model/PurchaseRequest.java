@@ -93,6 +93,9 @@ public class PurchaseRequest {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "motivo_cancelacion", columnDefinition = "TEXT")
+    private String motivoCancelacion;
+
     // Relaciones de la Opción A
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "purchaseRequest", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -338,5 +341,13 @@ public class PurchaseRequest {
 
     public void setPresupuesto(Budget presupuesto) {
         this.presupuesto = presupuesto;
+    }
+
+    public String getMotivoCancelacion() {
+        return motivoCancelacion;
+    }
+
+    public void setMotivoCancelacion(String motivoCancelacion) {
+        this.motivoCancelacion = motivoCancelacion;
     }
 }

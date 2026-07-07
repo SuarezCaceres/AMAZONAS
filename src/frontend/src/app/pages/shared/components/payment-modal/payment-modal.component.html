@@ -142,7 +142,13 @@
                         <div class="checkout-dropzone" (click)="triggerFileUploader()">
                             <span class="material-icons upload-cloud-icon">cloud_upload</span>
                             <p *ngIf="!uploadedVoucherName" class="dropzone-text">Arrastra o haz clic para subir comprobante</p>
-                            <p *ngIf="uploadedVoucherName" class="dropzone-success-text">✓ {{ uploadedVoucherName }}</p>
+                            <div *ngIf="uploadedVoucherName" class="dropzone-file-info" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px;">
+                                <span class="dropzone-success-text" style="margin: 0; color: #0f172a; font-weight: 600;">✓ {{ uploadedVoucherName }}</span>
+                                <button type="button" (click)="clearPrefilledVoucher($event)" style="background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 2px;">
+                                    <span class="material-icons" style="font-size: 12px;">delete</span>
+                                    Quitar
+                                </button>
+                            </div>
                             <span class="dropzone-formats">Formatos permitidos: JPG, PNG, PDF (Máx. 5MB)</span>
                             <input type="file" id="payment-modal-file-input" style="display: none;" (change)="handleFileSelected($event)">
                         </div>

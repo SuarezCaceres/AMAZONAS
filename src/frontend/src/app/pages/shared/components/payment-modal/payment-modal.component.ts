@@ -12,6 +12,7 @@ export interface PaymentConfirmPayload {
     codigoSeguridad: string | null;
     voucherFile: File | null;
     voucherName: string;
+    prefilledVoucherUrl?: string;
 }
 
 @Component({
@@ -31,6 +32,7 @@ export class PaymentModalComponent {
     @Input() summaryLabel = 'Liquidación de saldo pendiente';
     @Input() allowOnlineMethods = true;
     @Input() allowFisicoMethods = true;
+    @Input() prefilledVoucherUrl = '';
 
     @Output() close = new EventEmitter<void>();
     @Output() confirm = new EventEmitter<PaymentConfirmPayload>();
@@ -60,8 +62,14 @@ export class PaymentModalComponent {
             this.codigoSeguridad = '';
             this.montoRecibido = 0;
             this.copiadoExitoso = false;
-            this.uploadedVoucherName = '';
-            this.uploadedVoucherFile = null;
+            
+            if (this.prefilledVoucherUrl) {
+                this.uploadedVoucherName = 'Comprobante enviado por cliente';
+                this.uploadedVoucherFile = null;
+            } else {
+                this.uploadedVoucherName = '';
+                this.uploadedVoucherFile = null;
+            }
         }
     }
 
@@ -83,6 +91,13 @@ export class PaymentModalComponent {
             this.uploadedVoucherFile = file;
             this.uploadedVoucherName = file.name;
         }
+    }
+
+    clearPrefilledVoucher(event: Event): void {
+        event.stopPropagation();
+        this.uploadedVoucherName = '';
+        this.uploadedVoucherFile = null;
+        this.prefilledVoucherUrl = '';
     }
 
     submitPayment(): void {
@@ -142,7 +157,8 @@ export class PaymentModalComponent {
             vuelto: vuelto,
             codigoSeguridad: codigoSeguridadVal,
             voucherFile: this.uploadedVoucherFile,
-            voucherName: this.uploadedVoucherName
+            voucherName: this.uploadedVoucherName,
+            prefilledVoucherUrl: this.prefilledVoucherUrl
         });
     }
 

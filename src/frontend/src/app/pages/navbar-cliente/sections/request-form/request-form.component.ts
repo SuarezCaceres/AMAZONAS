@@ -32,6 +32,7 @@ export interface SavedRequest {
   explanationModel?: string;
   explanationPeople?: number;
   status?: string;
+  motivoCancelacion?: string;
   unreadCount?: number;
   lastMessageAt?: string;
 }

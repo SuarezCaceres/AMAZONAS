@@ -8,6 +8,7 @@ import { MaterialService } from '../../../../services/material.service';
 import { MaquetaService } from '../../../../services/maqueta.service';
 import { Material } from '../../../../models/material.model';
 import { Product } from '../../../../models/product.model';
+import { FileService } from '../../../../services/file.service';
 
 interface MaterialItem {
   id: number;
@@ -46,6 +47,7 @@ export class PresupuestosComponent implements OnChanges, OnInit {
   private readonly budgetService = inject(BudgetService);
   private readonly materialService = inject(MaterialService);
   private readonly maquetaService = inject(MaquetaService);
+  private readonly fileService = inject(FileService);
 
   // ── Datos de solicitud ────────────────────────────────────────────────────
   nombreProyecto = '';
@@ -889,7 +891,7 @@ export class PresupuestosComponent implements OnChanges, OnInit {
 
     const tieneMaterialSinRegistrar = this.materialesAgregados.some(m => !m.materialId);
     if (tieneMaterialSinRegistrar) {
-      alert('Tienes materiales en la lista que no están registrados en el inventario. Por favor, regístralos o selecciónalos del buscador antes de guardar y enviar.');
+      alert('Tienes materiales en la lista que no están registrados in el inventario. Por favor, regístralos o selecciónalos del buscador antes de guardar y enviar.');
       return;
     }
 
@@ -967,14 +969,27 @@ export class PresupuestosComponent implements OnChanges, OnInit {
         this.modoEdicion = false;
         this.cargarHistorial();
 
+        const key = savedBudget.id || savedBudget.codigoReferencia;
+        if (key) {
+          if (this.adelantoPagado) {
+            localStorage.setItem('adelanto_pagado_' + key, 'true');
+          }
+          if (this.pagoConfirmado) {
+            localStorage.setItem('pago_confirmado_' + key, 'true');
+          }
+        }
+
         this.chatService.connect();
 
+        const pagoStatusTexto = this.pagoConfirmado
+          ? `\n✅ PAGO CONFIRMADO (100%): S/ ${this.total.toFixed(2)}`
+          : this.adelantoPagado
+            ? `\n✅ ADELANTO CONFIRMADO (${this.porcentajeAdelanto}%): S/ ${this.montoAdelanto.toFixed(2)}`
+            : this.requiereAdelanto
+              ? `\n⚠ ADELANTO REQUERIDO:\nPara iniciar la fabricación de tu maqueta personalizada, necesitamos un adelanto del ${this.porcentajeAdelanto}%:\nMonto del adelanto: S/ ${this.montoAdelanto.toFixed(2)}\n\nUna vez confirmado el pago del adelanto, comenzaremos con la elaboración.`
+              : '';
 
-        const adelantoTexto = this.requiereAdelanto
-          ? `\n⚠ ADELANTO REQUERIDO:\nPara iniciar la fabricación de tu maqueta personalizada, necesitamos un adelanto del ${this.porcentajeAdelanto}%:\nMonto del adelanto: S/ ${this.montoAdelanto.toFixed(2)}\n\nUna vez confirmado el pago del adelanto, comenzaremos con la elaboración.`
-          : '';
-
-        const mensaje = `Hola ${this.clienteEmail}, hemos actualizado el presupuesto para tu maqueta "${this.nombreProyecto}".\n\nPrecio Total: S/ ${this.total.toFixed(2)}\n\nIncluye materiales de calidad y mano de obra especializada.${adelantoTexto}\n\n¿Tienes alguna pregunta?`;
+        const mensaje = `Hola ${this.clienteEmail}, hemos registrado el presupuesto para tu maqueta "${this.nombreProyecto}".\n\nPrecio Total: S/ ${this.total.toFixed(2)}\n\nIncluye materiales de calidad y mano de obra especializada.${pagoStatusTexto}\n\n¿Tienes alguna pregunta?`;
 
         const materialesMetadata = this.materialesAgregados.map(m => ({
           nombre: m.nombre,
@@ -992,7 +1007,9 @@ export class PresupuestosComponent implements OnChanges, OnInit {
           requiereAdelanto: this.requiereAdelanto,
           manoDeObra: this.manoDeObra,
           margenGanancia: this.margenGanancia,
-          materiales: materialesMetadata
+          materiales: materialesMetadata,
+          adelantoPagado: this.adelantoPagado,
+          pagoConfirmado: this.pagoConfirmado
         });
 
         // Conectar WS y esperar conexión para enviar
@@ -1001,6 +1018,8 @@ export class PresupuestosComponent implements OnChanges, OnInit {
           if (connected && this.roomId) {
             this.chatService.sendMessage(this.roomId, mensaje, 'BUDGET', metadata);
             this.enviando = false;
+            // Redirigir de vuelta al chat del cliente
+            this.volverEvent.emit();
             setTimeout(() => {
               if (sub) {
                 sub.unsubscribe();
@@ -1014,6 +1033,8 @@ export class PresupuestosComponent implements OnChanges, OnInit {
           if (this.enviando && this.roomId) {
             this.chatService.sendMessage(this.roomId, mensaje, 'BUDGET', metadata);
             this.enviando = false;
+            // Redirigir de vuelta al chat del cliente
+            this.volverEvent.emit();
             if (sub) {
               sub.unsubscribe();
             }
@@ -1026,7 +1047,9 @@ export class PresupuestosComponent implements OnChanges, OnInit {
         this.enviando = false;
       }
     });
-  }  // ── Modal adelanto ────────────────────────────────────────────────────────
+  }
+
+  // ── Modal adelanto ────────────────────────────────────────────────────────
 
   abrirModalAdelanto(): void {
     this.showAdelantoModal = true;

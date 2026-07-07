@@ -67,4 +67,17 @@ export class PurchaseRequestService {
       `${this.API_URL}/purchase-requests/${id}/files`, files
     );
   }
+
+  eliminar(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.API_URL}/purchase-requests/${id}`
+    );
+  }
+
+  rechazar(id: string, motivo: string | null): Observable<PurchaseRequestResponse> {
+    return this.http.put<PurchaseRequestResponse>(
+      `${this.API_URL}/admin/purchase-requests/${id}/reject`,
+      { motivo }
+    );
+  }
 }

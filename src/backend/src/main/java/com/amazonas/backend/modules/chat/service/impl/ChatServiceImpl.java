@@ -423,9 +423,8 @@ public class ChatServiceImpl implements ChatService {
         validateRoomAccess(room, currentEmail);
 
         ChatSenderRole role = getSenderRole(currentEmail, room);
-        // Marcar como leídos los mensajes del otro lado (los que me llegan a mí)
-        ChatSenderRole oppositeRole = (role == ChatSenderRole.CLIENT) ? ChatSenderRole.VENDOR : ChatSenderRole.CLIENT;
-        chatMessageRepository.markAllAsRead(roomId, oppositeRole);
+        // Marcar como leídos todos los mensajes que no sean del rol actual (incluye el rol opuesto y los del sistema)
+        chatMessageRepository.markAllAsRead(roomId, role);
     }
 
     @Override
