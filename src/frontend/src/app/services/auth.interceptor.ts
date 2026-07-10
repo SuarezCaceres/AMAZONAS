@@ -1,6 +1,7 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, throwError, from, switchMap } from 'rxjs';
+import { ClerkService } from './clerk.service';
 
 // Rutas publicas que NO deben llevar el token en la cabecera.
 // Si el backend recibe un token expirado/invalido incluso en rutas permitidas,
@@ -23,30 +24,31 @@ function isPublicGetRequest(method: string, url: string): boolean {
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = sessionStorage.getItem('auth_token');
+  const clerkService = inject(ClerkService);
 
   // Para rutas publicas de productos: no enviar el token aunque exista.
   // Esto evita que un token expirado/corrupto bloquee la carga del catalogo.
   const skipToken = isPublicGetRequest(req.method, req.url);
 
-  let outReq = req;
-  if (token && !skipToken && !req.headers.has('Authorization')) {
-    outReq = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
-    });
+  if (skipToken || req.headers.has('Authorization')) {
+    return next(req);
   }
 
-  return next(outReq).pipe(
+  return from(clerkService.getToken()).pipe(
+    switchMap(token => {
+      let outReq = req;
+      if (token) {
+        outReq = req.clone({
+          setHeaders: { Authorization: `Bearer ${token}` }
+        });
+      }
+      return next(outReq);
+    }),
     catchError((error: HttpErrorResponse) => {
       // Si el backend responde 401, el token es invalido o expiro.
-      // Limpiamos el storage completo y forzamos recarga para restablecer estado limpio.
+      // Solicitamos cerrar sesión en Clerk.
       if (error.status === 401) {
-        sessionStorage.removeItem('auth_token');
-        sessionStorage.removeItem('auth_email');
-        sessionStorage.removeItem('auth_role');
-        sessionStorage.removeItem('auth_nombre');
-        sessionStorage.clear();
-        // Solo redirigimos si no estamos ya en una peticion de login
+        from(clerkService.signOut()).subscribe();
         if (!req.url.includes('/auth/')) {
           window.location.href = '/';
         }

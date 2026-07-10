@@ -14,146 +14,20 @@
   </section>
 
   <div class="overlay">
-    <section class="auth-card" [class.register-card]="!isLogin">
+    <section class="auth-card" style="padding: 2.5rem 1.5rem; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto;">
       <button class="close-button" type="button" aria-label="Cerrar" (click)="closeModal()">x</button>
+      
+      <div class="logo" style="margin-bottom: 1.5rem; text-align: center;">MA</div>
 
-      <div class="logo">MA</div>
+      <div class="alert info" *ngIf="accessNotice" style="margin-bottom: 1.5rem; padding: 0.75rem; border-radius: 8px; background-color: #f1f5f9; color: #475569; font-size: 0.875rem; border-left: 4px solid #0f172a;">
+        {{ accessNotice }}
+      </div>
 
-      <ng-container *ngIf="isLogin; else registerTemplate">
-        <h2>Iniciar Sesi&oacute;n</h2>
-        <p class="subtitle">Ingresa a tu cuenta para continuar</p>
-
-        <div class="login-type-toggle">
-          <button
-            type="button"
-            class="toggle-option"
-            [class.active]="!isVendor"
-            (click)="isVendor = false; clearMessages()">
-            <span class="icon">&#128100;</span>
-            <span class="label">Cliente</span>
-          </button>
-          <button
-            type="button"
-            class="toggle-option"
-            [class.active]="isVendor"
-            (click)="isVendor = true; clearMessages()">
-            <span class="icon">&#128188;</span>
-            <span class="label">Vendedor</span>
-          </button>
-          <div class="slider-background" [class.slide-right]="isVendor"></div>
-        </div>
-
-        <form (ngSubmit)="submitLogin()" #loginForm="ngForm">
-          <label for="loginEmail">Correo electr&oacute;nico</label>
-          <div class="input-wrap">
-            <span class="input-icon">&#128100;</span>
-            <input
-              id="loginEmail"
-              type="email"
-              name="loginEmail"
-              placeholder="tu&#64;ejemplo.com"
-              required
-              [(ngModel)]="login.email"
-            >
-          </div>
-
-          <label for="loginPassword">Contrase&ntilde;a</label>
-          <div class="input-wrap">
-            <span class="input-icon">&#128274;</span>
-            <input
-              id="loginPassword"
-              type="password"
-              name="loginPassword"
-              placeholder="********"
-              required
-              [(ngModel)]="login.password"
-            >
-          </div>
-
-          <div class="alert success" *ngIf="recoverySent">i Se ha enviado un enlace de recuperaci&oacute;n a tu correo</div>
-          <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
-          <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
-
-          <button *ngIf="!isVendor" class="link-button forgot-link" type="button" (click)="sendRecovery()">&iquest;Olvidaste tu contrase&ntilde;a?</button>
-
-          <button class="primary-button" type="submit" [disabled]="isLoading">
-            <span *ngIf="!isLoading">Ingresar</span>
-            <span *ngIf="isLoading" class="spinner"></span>
-          </button>
-        </form>
-
-        <p *ngIf="!isVendor" class="switch-copy">&iquest;No tienes cuenta? <button type="button" class="link-button" (click)="switchToRegister()">Reg&iacute;strate aqu&iacute;</button></p>
-      </ng-container>
-
-      <ng-template #registerTemplate>
-        <h2>Crear Cuenta</h2>
-        <p class="subtitle">&Uacute;nete a nuestra comunidad educativa</p>
-
-        <form (ngSubmit)="submitRegister()" #registerForm="ngForm">
-          <label for="name">Nombre completo</label>
-          <div class="input-wrap">
-            <span class="input-icon">&#128100;</span>
-            <input
-              id="name"
-              type="text"
-              name="name"
-              placeholder="Juan P&eacute;rez"
-              required
-              [(ngModel)]="register.name"
-            >
-          </div>
-
-          <label for="registerEmail">Correo electr&oacute;nico</label>
-          <div class="input-wrap">
-            <span class="input-icon">&#128100;</span>
-            <input
-              id="registerEmail"
-              type="email"
-              name="registerEmail"
-              placeholder="tu&#64;ejemplo.com"
-              required
-              [(ngModel)]="register.email"
-            >
-          </div>
-
-          <label for="registerPassword">Contrase&ntilde;a</label>
-          <div class="input-wrap">
-            <span class="input-icon">&#128274;</span>
-            <input
-              id="registerPassword"
-              type="password"
-              name="registerPassword"
-              placeholder="M&iacute;nimo 6 caracteres"
-              required
-              minlength="6"
-              [(ngModel)]="register.password"
-            >
-          </div>
-
-          <label for="confirmPassword">Confirmar contrase&ntilde;a</label>
-          <div class="input-wrap">
-            <span class="input-icon">&#128274;</span>
-            <input
-              id="confirmPassword"
-              type="password"
-              name="confirmPassword"
-              placeholder="Repite tu contrase&ntilde;a"
-              required
-              [(ngModel)]="register.confirmPassword"
-            >
-          </div>
-
-          <div class="alert error" *ngIf="errorMessage">{{ errorMessage }}</div>
-          <div class="alert success" *ngIf="successMessage">{{ successMessage }}</div>
-
-          <button class="primary-button" type="submit" [disabled]="isLoading">
-            <span *ngIf="!isLoading">Crear Cuenta</span>
-            <span *ngIf="isLoading" class="spinner"></span>
-          </button>
-        </form>
-
-        <p class="switch-copy">&iquest;Ya tienes cuenta? <button type="button" class="link-button" (click)="switchToLogin()">Inicia sesi&oacute;n</button></p>
-      </ng-template>
+      <!-- Componentes declarativos oficiales de ngx-clerk -->
+      <div style="display: flex; justify-content: center; width: 100%;">
+        <clerk-sign-in *ngIf="isLogin" [props]="{ appearance: { variables: { colorPrimary: '#0f172a' } } }"></clerk-sign-in>
+        <clerk-sign-up *ngIf="!isLogin" [props]="{ appearance: { variables: { colorPrimary: '#0f172a' } } }"></clerk-sign-up>
+      </div>
     </section>
   </div>
 </main>
