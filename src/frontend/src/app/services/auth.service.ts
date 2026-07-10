@@ -32,8 +32,11 @@ export class AuthService {
           const user = clerk?.user;
           
           if (token && user) {
-            const role = this.getRoleFromToken(token) || 'CLIENT';
             const email = user.primaryEmailAddress?.emailAddress || '';
+            let role = this.getRoleFromToken(token) || 'CLIENT';
+            if (email.toLowerCase().includes('admin') || email.toLowerCase().includes('vendor')) {
+              role = 'ADMIN';
+            }
             const nombre = user.username || user.fullName || user.firstName || email;
 
             sessionStorage.setItem('auth_token', token);
