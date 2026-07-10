@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, from } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { API_BASE_URL } from '../config/api.config';
+import { ClerkService } from './clerk.service';
 import {
   LoginRequest,
   LoginVendorRequest,
@@ -16,72 +17,91 @@ import {
 export class AuthService {
 
   private readonly http = inject(HttpClient);
+  private readonly clerkService = inject(ClerkService);
   private readonly API_URL = `${API_BASE_URL}/auth`;
 
   private readonly currentUserSubject = new BehaviorSubject<CurrentUserResponse | null>(null);
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
   constructor() {
-    this.loadSession();
+    this.clerkService.session$.subscribe(async (session) => {
+      if (session) {
+        try {
+          const token = await this.clerkService.getToken();
+          const clerk = this.clerkService.getClerkInstance();
+          const user = clerk?.user;
+          
+          if (token && user) {
+            const email = user.primaryEmailAddress?.emailAddress || '';
+            const nombre = user.username || user.fullName || user.firstName || email;
+
+            sessionStorage.setItem('auth_token', token);
+            sessionStorage.setItem('auth_email', email);
+            sessionStorage.setItem('auth_nombre', nombre);
+
+            // Obtener el perfil actualizado desde el backend (Neon) para usar el rol de la base de datos
+            this.getUserProfile().subscribe({
+              next: (profile) => {
+                sessionStorage.setItem('auth_role', profile.role);
+                this.currentUserSubject.next({
+                  id: profile.id,
+                  nombre: profile.nombre,
+                  email: profile.email,
+                  role: profile.role
+                });
+              },
+              error: (err) => {
+                console.error('Error fetching user profile from backend', err);
+                const role = this.getRoleFromToken(token) || 'CLIENT';
+                sessionStorage.setItem('auth_role', role);
+                this.currentUserSubject.next({
+                  id: user.id,
+                  nombre: nombre,
+                  email: email,
+                  role: role
+                });
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Error synchronizing Clerk session to AuthService', e);
+        }
+      } else {
+        this.clearLocalSession();
+        this.currentUserSubject.next(null);
+      }
+    });
   }
 
+  // Se mantienen firmas de registro y login para evitar errores de compilación
+  // pero ahora la UI principal de autenticación se gestionará mediante el widget de Clerk.
   register(request: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/register`, request).pipe(
-      tap(response => this.saveSession(response))
-    );
+    return new Observable<AuthResponse>(subscriber => {
+      subscriber.error('Use the Clerk UI for registration.');
+    });
   }
 
   registerVendor(request: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/vendor/register`, request).pipe(
-      tap(response => this.saveSession(response))
-    );
+    return new Observable<AuthResponse>(subscriber => {
+      subscriber.error('Use the Clerk UI for vendor registration.');
+    });
   }
 
   login(request: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, request).pipe(
-      tap(response => this.saveSession(response))
-    );
+    return new Observable<AuthResponse>(subscriber => {
+      subscriber.error('Use the Clerk UI for login.');
+    });
   }
 
   vendorLogin(request: LoginVendorRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/vendor/login`, request).pipe(
-      tap(response => this.saveSession(response))
-    );
+    return new Observable<AuthResponse>(subscriber => {
+      subscriber.error('Use the Clerk UI for vendor login.');
+    });
   }
 
   loginAuto(request: LoginRequest): Observable<AuthResponse> {
     return new Observable<AuthResponse>(subscriber => {
-      this.login(request).subscribe({
-        next: (response) => {
-          subscriber.next(response);
-          subscriber.complete();
-        },
-        error: (err) => {
-          console.log('Client login failed, checking fallback. Error:', err);
-          if (err?.status === 423) {
-            subscriber.error(err);
-            return;
-          }
-          const errMsg = typeof err?.error === 'string' ? err.error : (err?.error?.message || '');
-          const isWrongPassword = errMsg.toLowerCase().includes('contraseña') || errMsg.toLowerCase().includes('password');
-          
-          if (!isWrongPassword) {
-            console.log('Attempting vendor login fallback...');
-            this.vendorLogin(request).subscribe({
-              next: (response) => {
-                subscriber.next(response);
-                subscriber.complete();
-              },
-              error: (vendorErr) => {
-                console.log('Vendor login fallback failed. Error:', vendorErr);
-                subscriber.error(vendorErr);
-              }
-            });
-          } else {
-            subscriber.error(err);
-          }
-        }
-      });
+      subscriber.error('Use the Clerk UI for login.');
     });
   }
 
@@ -89,6 +109,10 @@ export class AuthService {
     return this.http.get<CurrentUserResponse>(`${this.API_URL}/vendor/me`).pipe(
       tap(user => this.currentUserSubject.next(user))
     );
+  }
+
+  getUserProfile(): Observable<CurrentUserResponse> {
+    return this.http.get<CurrentUserResponse>(`${this.API_URL}/me`);
   }
 
   saveSession(auth: AuthResponse): void {
@@ -115,7 +139,8 @@ export class AuthService {
       const parts = token.split('.');
       if (parts.length !== 3) return null;
       const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-      return payload.role || payload.roles || null;
+      // Soporta roles de Clerk en claims personalizados
+      return payload.role || payload.roles || payload.metadata?.role || null;
     } catch (e) {
       console.error('Error decoding JWT token', e);
       return null;
@@ -123,25 +148,14 @@ export class AuthService {
   }
 
   loadSession(): void {
-    const token = this.getToken();
-    const email = sessionStorage.getItem('auth_email');
-    const role = sessionStorage.getItem('auth_role');
-    const nombre = sessionStorage.getItem('auth_nombre');
+    // La sesión ahora se maneja automáticamente de forma reactiva mediante ClerkService
+  }
 
-    if (token && email && role) {
-      // Verificar si el token ya expiro antes de restaurar la sesion
-      if (this.isTokenExpired(token)) {
-        console.warn('Token expirado detectado al iniciar. Limpiando sesion.');
-        this.logout();
-        return;
-      }
-      this.currentUserSubject.next({
-        id: '',
-        nombre: nombre || '',
-        email,
-        role
-      });
-    }
+  private clearLocalSession(): void {
+    sessionStorage.removeItem('auth_token');
+    sessionStorage.removeItem('auth_email');
+    sessionStorage.removeItem('auth_role');
+    sessionStorage.removeItem('auth_nombre');
   }
 
   getToken(): string | null {
@@ -153,22 +167,13 @@ export class AuthService {
   }
 
   logout(): void {
-    sessionStorage.removeItem('auth_token');
-    sessionStorage.removeItem('auth_email');
-    sessionStorage.removeItem('auth_role');
-    sessionStorage.removeItem('auth_nombre');
-    sessionStorage.clear();
+    this.clearLocalSession();
     this.currentUserSubject.next(null);
+    from(this.clerkService.signOut()).subscribe();
   }
 
   isLoggedIn(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
-    if (this.isTokenExpired(token)) {
-      this.logout();
-      return false;
-    }
-    return true;
+    return !!this.currentUserSubject.value;
   }
 
   getUserRole(): string | null {
@@ -176,24 +181,10 @@ export class AuthService {
   }
 
   forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.API_URL}/forgot-password`, { email });
+    return new Observable(subscriber => subscriber.error('Managed via Clerk UI.'));
   }
 
   resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.API_URL}/reset-password`, { token, newPassword });
-  }
-
-  /** Decodifica el JWT y verifica si el claim `exp` ya paso. */
-  private isTokenExpired(token: string): boolean {
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) return true;
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-      if (!payload.exp) return false; // Sin exp → no expira
-      // exp esta en segundos, Date.now() en milisegundos
-      return Date.now() >= payload.exp * 1000;
-    } catch {
-      return true; // Token malformado → tratar como expirado
-    }
+    return new Observable(subscriber => subscriber.error('Managed via Clerk UI.'));
   }
 }

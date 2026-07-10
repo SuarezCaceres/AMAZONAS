@@ -115,11 +115,21 @@ export class ChatService {
       brokerURL = brokerURL.replace('http://', 'ws://');
     }
 
+    const email = sessionStorage.getItem('auth_email') || '';
+    const name = sessionStorage.getItem('auth_nombre') || '';
+    const headers: Record<string, string> = {
+      token: `Bearer ${token}`
+    };
+    if (email) {
+      headers['X-User-Email'] = email;
+    }
+    if (name) {
+      headers['X-User-Name'] = name;
+    }
+
     this.stompClient = new Client({
       brokerURL: brokerURL,
-      connectHeaders: {
-        token: `Bearer ${token}`
-      },
+      connectHeaders: headers,
       debug: (str) => {
         console.log('[STOMP Debug]', str);
       },

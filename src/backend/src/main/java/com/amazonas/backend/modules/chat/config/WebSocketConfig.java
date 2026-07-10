@@ -2,6 +2,11 @@ package com.amazonas.backend.modules.chat.config;
 
 import com.amazonas.backend.security.jwt.JwtService;
 import com.amazonas.backend.security.service.CustomUserDetailsService;
+import com.amazonas.backend.modules.users.repository.UserRepository;
+import com.amazonas.backend.modules.users.model.User;
+import com.amazonas.backend.modules.vendors.repository.VendorRepository;
+import com.amazonas.backend.modules.vendors.model.Vendor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +46,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final VendorRepository vendorRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -90,26 +98,77 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     }
 
                     if (token != null && !token.isBlank()) {
-                        try {
-                            String email = jwtService.extractUsername(token);
-                            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                        // Detectar si es un token de Clerk
+                        String issuer = getClaimUnverified(token, "iss");
+                        boolean isClerkToken = issuer != null && (issuer.contains("clerk") || issuer.contains("clerk.accounts.dev"));
 
-                            if (jwtService.isTokenValid(token, userDetails.getUsername())) {
-                                UsernamePasswordAuthenticationToken auth =
-                                        new UsernamePasswordAuthenticationToken(
-                                                userDetails,
-                                                null,
-                                                userDetails.getAuthorities()
-                                        );
-                                accessor.setUser(auth);
-                                log.debug("WebSocket autenticado para usuario: {}", email);
+                        if (isClerkToken) {
+                            String clerkEmail = accessor.getFirstNativeHeader("X-User-Email");
+                            String clerkName = accessor.getFirstNativeHeader("X-User-Name");
+                             if (clerkEmail != null && !clerkEmail.isBlank()) {
+                                try {
+                                    UserDetails userDetails = null;
+
+                                    // 1. Buscar en la tabla users (Clientes)
+                                    java.util.Optional<User> userOpt = userRepository.findByEmailIgnoreCase(clerkEmail);
+                                    if (userOpt.isPresent()) {
+                                        userDetails = userOpt.get();
+                                    } else {
+                                        // 2. Buscar en la tabla vendors (Vendedores/Admins)
+                                        java.util.Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(clerkEmail);
+                                        if (vendorOpt.isPresent()) {
+                                            userDetails = vendorOpt.get();
+                                        } else {
+                                            // 3. Si no existe en ninguno, auto-registrar como CLIENT en users
+                                            User newUser = new User();
+                                            newUser.setEmail(clerkEmail);
+                                            newUser.setNombre((clerkName != null && !clerkName.isBlank()) ? clerkName : clerkEmail.split("@")[0]);
+                                            newUser.setPassword(passwordEncoder.encode("clerk_oauth_dummy_pass"));
+                                            newUser.setRole(com.amazonas.backend.modules.auth.enums.Role.CLIENT);
+                                            newUser.setTelefono("");
+                                            userDetails = userRepository.save(newUser);
+                                        }
+                                    }
+
+                                    UsernamePasswordAuthenticationToken auth =
+                                            new UsernamePasswordAuthenticationToken(
+                                                    userDetails,
+                                                    null,
+                                                    userDetails.getAuthorities()
+                                            );
+                                    accessor.setUser(auth);
+                                    log.debug("WebSocket autenticado con Clerk para usuario: {}", clerkEmail);
+                                } catch (Exception e) {
+                                    log.warn("WebSocket CONNECT con Clerk rechazado: {}", e.getMessage());
+                                    return null; // Rechaza la conexión
+                                }
                             } else {
-                                log.warn("WebSocket CONNECT rechazado: token inválido");
+                                log.warn("WebSocket CONNECT con Clerk rechazado: X-User-Email faltante");
                                 return null; // Rechaza la conexión
                             }
-                        } catch (Exception e) {
-                            log.warn("WebSocket CONNECT rechazado: {}", e.getMessage());
-                            return null; // Rechaza la conexión
+                        } else {
+                            // Flujo original para token JWT local
+                            try {
+                                String email = jwtService.extractUsername(token);
+                                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                                if (jwtService.isTokenValid(token, userDetails.getUsername())) {
+                                    UsernamePasswordAuthenticationToken auth =
+                                            new UsernamePasswordAuthenticationToken(
+                                                    userDetails,
+                                                    null,
+                                                    userDetails.getAuthorities()
+                                            );
+                                    accessor.setUser(auth);
+                                    log.debug("WebSocket autenticado para usuario: {}", email);
+                                } else {
+                                    log.warn("WebSocket CONNECT rechazado: token inválido");
+                                    return null; // Rechaza la conexión
+                                }
+                            } catch (Exception e) {
+                                log.warn("WebSocket CONNECT rechazado: {}", e.getMessage());
+                                return null; // Rechaza la conexión
+                            }
                         }
                     } else {
                         log.warn("WebSocket CONNECT sin token JWT");
@@ -120,5 +179,28 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 return message;
             }
         });
+    }
+
+    private String getClaimUnverified(String token, String claimName) {
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) {
+                return null;
+            }
+            String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]), java.nio.charset.StandardCharsets.UTF_8);
+            String searchPattern = "\"" + claimName + "\":\"";
+            int index = payload.indexOf(searchPattern);
+            if (index == -1) {
+                return null;
+            }
+            int start = index + searchPattern.length();
+            int end = payload.indexOf("\"", start);
+            if (end == -1) {
+                return null;
+            }
+            return payload.substring(start, end);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
