@@ -35,8 +35,11 @@ public record MaterialRequest(
 
     Boolean activo
 ) {
-    // Constructor para definir un valor por defecto de "activo" similar a la clase original
     public MaterialRequest {
+        if (nombre != null) nombre = nombre.trim();
+        if (unidad != null) unidad = unidad.trim();
+        if (categoriaId != null) categoriaId = categoriaId.trim();
+        if (proveedor != null) proveedor = proveedor.trim();
         if (activo == null) {
             activo = true;
         }
