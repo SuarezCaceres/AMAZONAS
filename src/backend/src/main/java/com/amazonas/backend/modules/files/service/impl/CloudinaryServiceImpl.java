@@ -10,12 +10,18 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Service
 @RequiredArgsConstructor
 public class CloudinaryServiceImpl implements CloudinaryService {
 
     private final Cloudinary cloudinary;
+    
+    @Qualifier("fileUploadExecutor")
+    private final Executor fileUploadExecutor;
 
     /**
      * Content-Types permitidos para subida de archivos de referencia de maquetas.
@@ -78,5 +84,16 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         );
 
         return uploadResult.get("secure_url").toString();
+    }
+
+    @Override
+    public CompletableFuture<String> uploadFileAsync(MultipartFile file) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return uploadFile(file);
+            } catch (IOException e) {
+                throw new RuntimeException("Error en subida asíncrona a Cloudinary: " + e.getMessage(), e);
+            }
+        }, fileUploadExecutor);
     }
 }
