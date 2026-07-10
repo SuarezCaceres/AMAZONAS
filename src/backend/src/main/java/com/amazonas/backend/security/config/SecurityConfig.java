@@ -73,7 +73,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.copyOf(allowedOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(
-                List.of("Authorization", "Content-Type", "Cache-Control", "Accept", "Origin", "X-Requested-With"));
+                List.of("Authorization", "Content-Type", "Cache-Control", "Accept", "Origin", "X-Requested-With", "X-User-Email", "X-User-Name"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 

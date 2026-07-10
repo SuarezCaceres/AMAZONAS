@@ -38,8 +38,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     switchMap(token => {
       let outReq = req;
       if (token) {
+        const email = sessionStorage.getItem('auth_email') || '';
+        const name = sessionStorage.getItem('auth_nombre') || '';
+        const headers: { [key: string]: string } = {
+          Authorization: `Bearer ${token}`
+        };
+        if (email) {
+          headers['X-User-Email'] = email;
+        }
+        if (name) {
+          headers['X-User-Name'] = name;
+        }
         outReq = req.clone({
-          setHeaders: { Authorization: `Bearer ${token}` }
+          setHeaders: headers
         });
       }
       return next(outReq);
