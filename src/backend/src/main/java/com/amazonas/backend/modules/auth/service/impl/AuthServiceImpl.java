@@ -47,15 +47,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.email())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El correo ya se encuentra registrado");
         }
 
         User user = new User();
-        user.setNombre(request.getNombre());
-        user.setEmail(request.getEmail());
-        user.setTelefono(request.getTelefono());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setNombre(request.nombre());
+        user.setEmail(request.email());
+        user.setTelefono(request.telefono());
+        user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.CLIENT);
 
         userRepository.save(user);
@@ -66,14 +66,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse registerVendor(RegisterRequest request) {
-        if (vendorRepository.existsByEmail(request.getEmail())) {
+        if (vendorRepository.existsByEmail(request.email())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El email ya está registrado para un vendor");
         }
 
         Vendor vendor = new Vendor();
-        vendor.setNombre(request.getNombre());
-        vendor.setEmail(request.getEmail());
-        vendor.setPassword(passwordEncoder.encode(request.getPassword()));
+        vendor.setNombre(request.nombre());
+        vendor.setEmail(request.email());
+        vendor.setPassword(passwordEncoder.encode(request.password()));
         vendor.setRole(Role.ADMIN);
 
         vendorRepository.save(vendor);
@@ -84,14 +84,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no encontrado"));
 
         if (user.getLockUntil() != null && user.getLockUntil().isAfter(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.LOCKED, "La cuenta está bloqueada temporalmente. Inténtalo de nuevo más tarde.");
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             int attempts = (user.getFailedLoginAttempts() != null ? user.getFailedLoginAttempts() : 0) + 1;
             user.setFailedLoginAttempts(attempts);
             if (attempts >= 3) {
@@ -111,14 +111,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse vendorLogin(LoginVendorRequest request) {
-        Vendor vendor = vendorRepository.findByEmail(request.getEmail())
+        Vendor vendor = vendorRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vendor no encontrado"));
 
         if (vendor.getLockUntil() != null && vendor.getLockUntil().isAfter(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.LOCKED, "La cuenta está bloqueada temporalmente. Inténtalo de nuevo más tarde.");
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), vendor.getPassword())) {
+        if (!passwordEncoder.matches(request.password(), vendor.getPassword())) {
             int attempts = (vendor.getFailedLoginAttempts() != null ? vendor.getFailedLoginAttempts() : 0) + 1;
             vendor.setFailedLoginAttempts(attempts);
             if (attempts >= 3) {
@@ -155,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        String email = request.email().trim().toLowerCase();
         String userType = null;
 
         if (userRepository.existsByEmail(email)) {
@@ -202,7 +202,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        PasswordResetToken resetToken = tokenRepository.findByToken(request.getToken())
+        PasswordResetToken resetToken = tokenRepository.findByToken(request.token())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token de recuperación inválido o inexistente"));
 
         if (resetToken.isExpired()) {
@@ -211,7 +211,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String email = resetToken.getEmail();
-        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        String encodedPassword = passwordEncoder.encode(request.newPassword());
 
         if ("USER".equals(resetToken.getUserType())) {
             User user = userRepository.findByEmail(email)
