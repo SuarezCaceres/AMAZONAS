@@ -34,7 +34,7 @@ export class AuthService {
           if (token && user) {
             const role = this.getRoleFromToken(token) || 'CLIENT';
             const email = user.primaryEmailAddress?.emailAddress || '';
-            const nombre = user.fullName || user.firstName || '';
+            const nombre = user.username || user.fullName || user.firstName || email;
 
             sessionStorage.setItem('auth_token', token);
             sessionStorage.setItem('auth_email', email);
