@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.amazonas.backend.security.service.CustomUserDetailsService;
 import com.amazonas.backend.modules.users.repository.UserRepository;
 import com.amazonas.backend.modules.users.model.User;
+import com.amazonas.backend.modules.vendors.repository.VendorRepository;
+import com.amazonas.backend.modules.vendors.model.Vendor;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,6 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
     private final UserRepository userRepository;
+    private final VendorRepository vendorRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -56,22 +59,34 @@ public class JwtFilter extends OncePerRequestFilter {
             String clerkEmail = request.getHeader("X-User-Email");
             String clerkName = request.getHeader("X-User-Name");
             if (clerkEmail != null && !clerkEmail.isBlank()) {
-                User user = userRepository.findByEmailIgnoreCase(clerkEmail)
-                        .orElseGet(() -> {
-                            User newUser = new User();
-                            newUser.setEmail(clerkEmail);
-                            newUser.setNombre((clerkName != null && !clerkName.isBlank()) ? clerkName : clerkEmail.split("@")[0]);
-                            newUser.setPassword(passwordEncoder.encode("clerk_oauth_dummy_pass"));
-                            newUser.setRole(com.amazonas.backend.modules.auth.enums.Role.CLIENT);
-                            newUser.setTelefono("");
-                            return userRepository.save(newUser);
-                        });
+                UserDetails userDetails = null;
+
+                // 1. Buscar en la tabla users (Clientes)
+                java.util.Optional<User> userOpt = userRepository.findByEmailIgnoreCase(clerkEmail);
+                if (userOpt.isPresent()) {
+                    userDetails = userOpt.get();
+                } else {
+                    // 2. Buscar en la tabla vendors (Vendedores/Admins)
+                    java.util.Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(clerkEmail);
+                    if (vendorOpt.isPresent()) {
+                        userDetails = vendorOpt.get();
+                    } else {
+                        // 3. Si no existe en ninguno, auto-registrar como CLIENT en users
+                        User newUser = new User();
+                        newUser.setEmail(clerkEmail);
+                        newUser.setNombre((clerkName != null && !clerkName.isBlank()) ? clerkName : clerkEmail.split("@")[0]);
+                        newUser.setPassword(passwordEncoder.encode("clerk_oauth_dummy_pass"));
+                        newUser.setRole(com.amazonas.backend.modules.auth.enums.Role.CLIENT);
+                        newUser.setTelefono("");
+                        userDetails = userRepository.save(newUser);
+                    }
+                }
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                user,
+                                userDetails,
                                 null,
-                                user.getAuthorities()
+                                userDetails.getAuthorities()
                         );
 
                 authToken.setDetails(
