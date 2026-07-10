@@ -18,6 +18,7 @@ import com.amazonas.backend.modules.auth.dto.LoginVendorRequest;
 import com.amazonas.backend.modules.auth.dto.RegisterRequest;
 import com.amazonas.backend.modules.auth.dto.ForgotPasswordRequest;
 import com.amazonas.backend.modules.auth.dto.ResetPasswordRequest;
+import com.amazonas.backend.modules.auth.dto.UserProfileResponse;
 import com.amazonas.backend.modules.auth.enums.Role;
 import com.amazonas.backend.modules.auth.model.PasswordResetToken;
 import com.amazonas.backend.modules.auth.repository.PasswordResetTokenRepository;
@@ -225,5 +226,25 @@ public class AuthServiceImpl implements AuthService {
         }
 
         tokenRepository.delete(resetToken);
+    }
+
+    @Override
+    public UserProfileResponse getUserProfile(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .map(user -> new UserProfileResponse(
+                        user.getId().toString(),
+                        user.getNombre(),
+                        user.getEmail(),
+                        user.getRole().name()
+                ))
+                .orElseGet(() -> vendorRepository.findByEmailIgnoreCase(email)
+                        .map(vendor -> new UserProfileResponse(
+                                vendor.getId().toString(),
+                                vendor.getNombre(),
+                                vendor.getEmail(),
+                                vendor.getRole().name()
+                        ))
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Perfil no encontrado"))
+                );
     }
 }

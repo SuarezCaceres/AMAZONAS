@@ -105,25 +105,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             if (clerkEmail != null && !clerkEmail.isBlank()) {
                                 try {
                                     User user = userRepository.findByEmailIgnoreCase(clerkEmail)
-                                            .map(existingUser -> {
-                                                if (clerkEmail.toLowerCase().contains("admin") || clerkEmail.toLowerCase().contains("vendor")) {
-                                                    if (existingUser.getRole() != com.amazonas.backend.modules.auth.enums.Role.ADMIN) {
-                                                        existingUser.setRole(com.amazonas.backend.modules.auth.enums.Role.ADMIN);
-                                                        return userRepository.save(existingUser);
-                                                    }
-                                                }
-                                                return existingUser;
-                                            })
                                             .orElseGet(() -> {
                                                 User newUser = new User();
                                                 newUser.setEmail(clerkEmail);
                                                 newUser.setNombre((clerkName != null && !clerkName.isBlank()) ? clerkName : clerkEmail.split("@")[0]);
                                                 newUser.setPassword(passwordEncoder.encode("clerk_oauth_dummy_pass"));
-                                                com.amazonas.backend.modules.auth.enums.Role userRole = com.amazonas.backend.modules.auth.enums.Role.CLIENT;
-                                                if (clerkEmail.toLowerCase().contains("admin") || clerkEmail.toLowerCase().contains("vendor")) {
-                                                    userRole = com.amazonas.backend.modules.auth.enums.Role.ADMIN;
-                                                }
-                                                newUser.setRole(userRole);
+                                                newUser.setRole(com.amazonas.backend.modules.auth.enums.Role.CLIENT);
                                                 newUser.setTelefono("");
                                                 return userRepository.save(newUser);
                                             });

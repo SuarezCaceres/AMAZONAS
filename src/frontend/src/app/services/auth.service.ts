@@ -33,22 +33,34 @@ export class AuthService {
           
           if (token && user) {
             const email = user.primaryEmailAddress?.emailAddress || '';
-            let role = this.getRoleFromToken(token) || 'CLIENT';
-            if (email.toLowerCase().includes('admin') || email.toLowerCase().includes('vendor')) {
-              role = 'ADMIN';
-            }
             const nombre = user.username || user.fullName || user.firstName || email;
 
             sessionStorage.setItem('auth_token', token);
             sessionStorage.setItem('auth_email', email);
-            sessionStorage.setItem('auth_role', role);
             sessionStorage.setItem('auth_nombre', nombre);
 
-            this.currentUserSubject.next({
-              id: user.id,
-              nombre: nombre,
-              email: email,
-              role: role
+            // Obtener el perfil actualizado desde el backend (Neon) para usar el rol de la base de datos
+            this.getUserProfile().subscribe({
+              next: (profile) => {
+                sessionStorage.setItem('auth_role', profile.role);
+                this.currentUserSubject.next({
+                  id: profile.id,
+                  nombre: profile.nombre,
+                  email: profile.email,
+                  role: profile.role
+                });
+              },
+              error: (err) => {
+                console.error('Error fetching user profile from backend', err);
+                const role = this.getRoleFromToken(token) || 'CLIENT';
+                sessionStorage.setItem('auth_role', role);
+                this.currentUserSubject.next({
+                  id: user.id,
+                  nombre: nombre,
+                  email: email,
+                  role: role
+                });
+              }
             });
           }
         } catch (e) {
@@ -97,6 +109,10 @@ export class AuthService {
     return this.http.get<CurrentUserResponse>(`${this.API_URL}/vendor/me`).pipe(
       tap(user => this.currentUserSubject.next(user))
     );
+  }
+
+  getUserProfile(): Observable<CurrentUserResponse> {
+    return this.http.get<CurrentUserResponse>(`${this.API_URL}/me`);
   }
 
   saveSession(auth: AuthResponse): void {
