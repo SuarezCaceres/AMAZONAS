@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/files")
@@ -17,14 +18,18 @@ public class FileController {
     private final CloudinaryService cloudinaryService;
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileUrl = cloudinaryService.uploadFile(file);
-            return ResponseEntity.ok(Map.of("url", fileUrl));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "Error al subir el archivo: " + e.getMessage()));
-        }
+    public CompletableFuture<ResponseEntity<Object>> uploadFile(@RequestParam("file") MultipartFile file) {
+        return cloudinaryService.uploadFileAsync(file)
+            .thenApply(fileUrl -> ResponseEntity.ok((Object) Map.of("url", fileUrl)))
+            .exceptionally(throwable -> {
+                Throwable cause = throwable.getCause();
+                if (cause == null) {
+                    cause = throwable;
+                }
+                if (cause instanceof IllegalArgumentException) {
+                    return ResponseEntity.status(400).body((Object) Map.of("error", cause.getMessage()));
+                }
+                return ResponseEntity.status(500).body((Object) Map.of("error", "Error al subir el archivo: " + cause.getMessage()));
+            });
     }
 }
