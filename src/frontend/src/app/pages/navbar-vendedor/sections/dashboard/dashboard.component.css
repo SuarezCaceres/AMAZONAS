@@ -1,6 +1,7 @@
 :host {
   display: block;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .dashboard-wrapper {
@@ -228,5 +229,54 @@
 
   .quick-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-wrapper {
+    padding: 16px 12px 30px;
+  }
+  .dash-title {
+    font-size: 24px;
+  }
+  .stat-card {
+    padding: 16px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-title {
+    font-size: 20px;
+  }
+  .dash-subtitle {
+    font-size: 13px;
+  }
+  .stat-value {
+    font-size: 28px;
+  }
+  .quick-section {
+    padding: 20px 16px;
+  }
+  .quick-title {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboard-wrapper {
+    padding: 12px 8px 20px;
+  }
+  .dash-title {
+    font-size: 18px;
+  }
+  .btn-demo-load {
+    width: 100%;
+    justify-content: center;
+  }
+  .stat-card {
+    padding: 14px 16px;
+  }
+  .stat-value {
+    font-size: 24px;
   }
 }

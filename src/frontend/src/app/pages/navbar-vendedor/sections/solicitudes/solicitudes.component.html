@@ -552,165 +552,33 @@
       </div>
     </header>
 
+    <!-- Selector de Sub-pestañas para Móvil -->
+    <div class="flex md:hidden bg-slate-100/80 border-b border-slate-200 justify-around p-1.5 shrink-0 gap-1.5">
+      <button 
+        (click)="mobileChatTab = 'chat'" 
+        [class.bg-white]="mobileChatTab === 'chat'" 
+        [class.text-amazonas-700]="mobileChatTab === 'chat'"
+        [class.shadow-sm]="mobileChatTab === 'chat'"
+        [class.text-slate-500]="mobileChatTab !== 'chat'"
+        class="flex-1 font-bold text-xs py-2 px-3 rounded-lg border-none cursor-pointer text-center transition-all bg-transparent">
+        Chat
+      </button>
+      <button 
+        (click)="mobileChatTab = 'cliente'" 
+        [class.bg-white]="mobileChatTab === 'cliente'" 
+        [class.text-amazonas-700]="mobileChatTab === 'cliente'"
+        [class.shadow-sm]="mobileChatTab === 'cliente'"
+        [class.text-slate-500]="mobileChatTab !== 'cliente'"
+        class="flex-1 font-bold text-xs py-2 px-3 rounded-lg border-none cursor-pointer text-center transition-all bg-transparent">
+        Detalles y Acciones
+      </button>
+    </div>
+
     <!-- Cuerpo: sidebar info + panel chat + right panel -->
-    <div class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 min-h-0">
+    <div class="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-4 p-4 min-h-0">
 
-      <!-- PANEL IZQUIERDO: SOLICITUD & CLIENTE INFO (3 COLUMNS) -->
-      <aside class="lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
-        
-        <!-- CARD INFO CLIENTE -->
-        <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium">
-          <h2 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-3 flex items-center gap-1.5">
-            <span class="material-icons text-sm text-amazonas-500" style="font-size: 16px;">person_search</span>
-            Información del Cliente
-          </h2>
-          <div class="flex items-center gap-3.5 mb-3 pb-3 border-b border-slate-100">
-            <div class="w-10 h-10 bg-gradient-to-tr from-amazonas-500 to-teal-650 rounded-xl flex items-center justify-center text-white font-bold text-sm font-outfit shadow-sm">
-              {{ solicitudActiva.clienteNombre ? solicitudActiva.clienteNombre.substring(0,2).toUpperCase() : 'CL' }}
-            </div>
-            <div>
-              <h3 class="font-bold text-slate-900 text-xs leading-tight">{{ solicitudActiva.clienteNombre }}</h3>
-              <span class="inline-flex items-center gap-1 mt-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Cliente Verificado
-              </span>
-            </div>
-          </div>
-
-          <div class="space-y-2.5 text-xs">
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">Correo</span>
-              <a href="mailto:{{ solicitudActiva.clienteEmail }}" class="font-semibold text-slate-800 hover:underline truncate max-w-[150px]">{{ solicitudActiva.clienteEmail }}</a>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">Teléfono</span>
-              <span class="font-semibold text-slate-800">{{ solicitudActiva.clienteTelefono || 'No registrado' }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">Registro</span>
-              <span class="font-semibold text-slate-800">{{ solicitudActiva.fecha | date:'dd MMM yyyy' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- CARD FICHA DE SOLICITUD (DINÁMICA) -->
-        <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium flex flex-col gap-3">
-          <h2 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1 flex items-center gap-1.5">
-            <span class="material-icons text-sm text-amazonas-500" style="font-size: 16px;">receipt_long</span>
-            Ficha de Solicitud
-          </h2>
-          
-          <div class="space-y-3 divide-y divide-slate-100 text-xs">
-            <!-- Número de Solicitud -->
-            <div class="flex justify-between py-1.5">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">N° Solicitud</span>
-              <span class="font-extrabold text-amazonas-700 font-mono">{{ solicitudActiva.numeroSolicitud }}</span>
-            </div>
-
-            <!-- Tipo de Proyecto -->
-            <div class="flex justify-between py-1.5">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">Tipo Proyecto</span>
-              <span class="font-bold text-slate-800">{{ solicitudActiva.isCustom ? 'Proyecto Personalizado' : 'Proyecto Estándar' }}</span>
-            </div>
-
-            <!-- Nombre del Encargo -->
-            <div class="flex justify-between py-1.5">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">Encargo</span>
-              <span class="font-bold text-slate-800 text-right truncate max-w-[160px]" [title]="solicitudActiva.productoNombre">{{ solicitudActiva.productoNombre }}</span>
-            </div>
-
-            <!-- Fecha de Solicitud -->
-            <div class="flex justify-between py-1.5">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">Fecha</span>
-              <span class="font-semibold text-slate-700">{{ solicitudActiva.fecha | date:'dd MMM yyyy, HH:mm' }}</span>
-            </div>
-
-            <!-- Descripción del Cliente -->
-            <div class="py-2">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold block mb-1">Descripción del Cliente</span>
-              <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
-                <p class="text-slate-700 m-0 leading-relaxed italic text-[11px]">
-                  "{{ solicitudActiva.descripcionPersonalizacion || solicitudActiva.detalle || 'Sin descripción' }}"
-                </p>
-              </div>
-            </div>
-
-            <!-- Especificaciones Requeridas -->
-            @if (solicitudActiva.escala || solicitudActiva.dimensiones || solicitudActiva.mesaExpositora) {
-              <div class="py-2 space-y-1.5">
-                <span class="text-slate-400 text-[10px] uppercase font-bold block">Especificaciones Requeridas</span>
-                <div class="grid grid-cols-2 gap-1.5 bg-slate-50/50 p-2 rounded-xl text-[11px] border border-slate-100">
-                  @if (solicitudActiva.escala) {
-                    <div>
-                      <span class="text-slate-400 text-[9px] block uppercase font-medium">Escala</span>
-                      <span class="font-bold text-slate-750 block truncate">{{ solicitudActiva.escala }}</span>
-                    </div>
-                  }
-                  @if (solicitudActiva.dimensiones) {
-                    <div>
-                      <span class="text-slate-400 text-[9px] block uppercase font-medium">Dimensiones</span>
-                      <span class="font-bold text-slate-750 block truncate">{{ solicitudActiva.dimensiones }}</span>
-                    </div>
-                  }
-                  @if (solicitudActiva.mesaExpositora) {
-                    <div class="col-span-2">
-                      <span class="text-slate-400 text-[9px] block uppercase font-medium">Mesa Expositora</span>
-                      <span class="font-bold text-slate-750 block truncate">{{ solicitudActiva.mesaExpositora }}</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- Servicios y Preferencias -->
-            <div class="py-2 space-y-1.5">
-              <span class="text-slate-400 text-[10px] uppercase font-bold block">Servicios y Preferencias</span>
-              <div class="space-y-1.5 text-[11px]">
-                <div class="flex justify-between">
-                  <span class="text-slate-500">Explicación Especialista:</span>
-                  <span class="font-bold" [class.text-emerald-600]="solicitudActiva.solicitarExplicacion" [class.text-slate-400]="!solicitudActiva.solicitarExplicacion">
-                    {{ solicitudActiva.solicitarExplicacion ? 'Sí' : 'No' }}
-                  </span>
-                </div>
-                @if (solicitudActiva.tipoEvento) {
-                  <div class="flex justify-between">
-                    <span class="text-slate-500">Tipo de Evento:</span>
-                    <span class="font-bold text-slate-750">{{ solicitudActiva.tipoEvento }}</span>
-                  </div>
-                }
-                @if (solicitudActiva.cantidadPersonas) {
-                  <div class="flex justify-between">
-                    <span class="text-slate-500">Cantidad Personas:</span>
-                    <span class="font-bold text-slate-750">{{ solicitudActiva.cantidadPersonas }}</span>
-                  </div>
-                }
-                
-                <!-- Materiales Preferidos -->
-                <div class="pt-1">
-                  <span class="text-slate-500 block mb-1">Materiales Preferidos:</span>
-                  @if (solicitudActiva.materialesPreferidos && solicitudActiva.materialesPreferidos.length > 0) {
-                    <div class="flex flex-wrap gap-1">
-                      @for (mat of solicitudActiva.materialesPreferidos; track mat.id) {
-                        <span class="bg-amazonas-50 text-amazonas-700 border border-amazonas-100 px-1.5 py-0.5 rounded text-[10px] font-medium" [title]="mat.razonPreferencia || ''">
-                          {{ mat.materialName }}
-                        </span>
-                      }
-                    </div>
-                  } @else if (solicitudActiva.materialesDeseados) {
-                    <p class="text-slate-650 m-0 leading-tight italic text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-100">{{ solicitudActiva.materialesDeseados }}</p>
-                  } @else {
-                    <span class="text-slate-400 italic">No especificado</span>
-                  }
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </aside>
-
-      <!-- PANEL CENTRAL: CONVERSACIÓN Y MESSAGES (6 COLUMNS) -->
-      <section class="lg:col-span-6 bg-white rounded-2xl border border-slate-150 shadow-premium flex flex-col overflow-hidden h-full min-h-0">
+      <!-- PANEL CENTRAL: CONVERSACIÓN Y MESSAGES (8 COLUMNS) -->
+      <section [class.hidden-mobile]="mobileChatTab !== 'chat'" class="md:flex md:col-span-8 lg:col-span-8 bg-white rounded-2xl border border-slate-150 shadow-premium flex flex-col overflow-hidden h-full min-h-0">
         
         <!-- Header status -->
         <div class="border-b border-slate-150 bg-slate-50/50 shrink-0">
@@ -801,8 +669,8 @@
                 }
               </div>
               <div class="flex-1 h-0.5 mx-1.5"
-                [class.bg-emerald-500]="solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado'"
-                [class.bg-slate-200]="solicitudActiva.estado !== 'procesando' && solicitudActiva.estado !== 'completado'">
+                [class.bg-emerald-500]="solicitudActiva.estado === 'completado'"
+                [class.bg-slate-200]="solicitudActiva.estado !== 'completado'">
               </div>
 
               <!-- Step 5: Producción -->
@@ -844,81 +712,78 @@
               @if (!isMensajeDescartado(msg.id)) {
                 @if (msg.messageType === 'SYSTEM') {
                   <div class="flex justify-center my-1">
-                  <div class="bg-white px-3.5 py-1.5 rounded-full border border-slate-200/60 shadow-sm text-center max-w-[85%]">
-                    <p class="text-[10px] font-semibold text-slate-500 flex items-center justify-center gap-1.5 m-0 leading-tight">
-                      <span class="material-icons text-teal-600 text-xs" style="font-size: 13px;">notifications</span>
+                    <span class="text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full border border-slate-200/60 font-semibold shadow-xs">
                       {{ msg.content }}
-                    </p>
+                    </span>
                   </div>
-                </div>
-              } @else {
-                <!-- Mensaje: Vendedor a la derecha (isVendorMessage), Cliente a la izquierda -->
-                <div class="flex items-start gap-2.5 max-w-[85%] animate-fadeIn"
-                  [class.self-end]="isVendorMessage(msg)"
-                  [class.flex-row-reverse]="isVendorMessage(msg)"
-                  [class.self-start]="!isVendorMessage(msg)">
-                  
-                  <!-- Avatar -->
-                  <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold font-outfit shadow-sm shrink-0"
-                    [class.bg-amazonas-800]="isVendorMessage(msg)"
-                    [class.bg-gradient-to-tr]="!isVendorMessage(msg)"
-                    [class.from-amazonas-500]="!isVendorMessage(msg)"
-                    [class.to-teal-650]="!isVendorMessage(msg)">
-                    {{ isVendorMessage(msg) ? 'AM' : 'CL' }}
-                  </div>
+                } @else {
+                  <!-- Mensaje: Vendedor a la derecha (isVendorMessage), Cliente a la izquierda -->
+                  <div class="flex items-start gap-2.5 max-w-[85%] animate-fadeIn"
+                    [class.self-end]="isVendorMessage(msg)"
+                    [class.flex-row-reverse]="isVendorMessage(msg)"
+                    [class.self-start]="!isVendorMessage(msg)">
+                    
+                    <!-- Avatar -->
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold font-outfit shadow-sm shrink-0"
+                      [class.bg-amazonas-800]="isVendorMessage(msg)"
+                      [class.bg-gradient-to-tr]="!isVendorMessage(msg)"
+                      [class.from-amazonas-500]="!isVendorMessage(msg)"
+                      [class.to-teal-650]="!isVendorMessage(msg)">
+                      {{ isVendorMessage(msg) ? 'AM' : 'CL' }}
+                    </div>
 
-                  <div>
-                    <!-- Burbuja -->
-                    <div class="p-3.5 shadow-sm"
-                      [class.bg-emerald-50/70]="isVendorMessage(msg)"
-                      [class.border]="isVendorMessage(msg)"
-                      [class.border-emerald-100]="isVendorMessage(msg)"
-                      [class.rounded-l-2xl]="isVendorMessage(msg)"
-                      [class.rounded-br-2xl]="isVendorMessage(msg)"
-                      [class.bg-white]="!isVendorMessage(msg)"
-                      [class.border]="!isVendorMessage(msg)"
-                      [class.border-slate-100]="!isVendorMessage(msg)"
-                      [class.rounded-r-2xl]="!isVendorMessage(msg)"
-                      [class.rounded-bl-2xl]="!isVendorMessage(msg)">
-                      
-                      <div class="flex items-center gap-3 mb-1">
-                        <span class="text-[10px] font-bold"
-                          [class.text-amazonas-900]="isVendorMessage(msg)"
-                          [class.text-slate-800]="!isVendorMessage(msg)">
-                          {{ msg.senderName }}
-                        </span>
-                        <span class="text-[9px] text-slate-400">{{ formatTime(msg.sentAt) }}</span>
-                      </div>
-
-                      <!-- Renderizado según tipo de mensaje -->
-                      @if (msg.messageType === 'TEXT') {
-                        <p class="text-xs text-slate-700 m-0 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
-                      }
-
-                      @else if (msg.messageType === 'FILE') {
-                        @let fileData = parseMetadata(msg.metadata);
-                        <div class="py-0.5">
-                          @if (fileData.fileType && fileData.fileType.startsWith('image/')) {
-                            <a [href]="fileData.fileUrl" target="_blank" class="block rounded overflow-hidden max-w-xs hover:opacity-90 transition-opacity mt-1">
-                              <img [src]="fileData.fileUrl" alt="Imagen" class="max-w-full max-h-60 object-contain bg-slate-50 border rounded-lg">
-                            </a>
-                          } @else {
-                            <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
-                              <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 20px;">{{ getFileIcon(fileData.fileType) }}</span>
-                              <div class="flex-1 min-w-0 text-left">
-                                <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
-                                <span class="text-[9px] text-slate-400 block mt-0.5">Descargar archivo</span>
-                              </div>
-                              <span class="material-icons text-slate-400 text-sm">download</span>
-                            </a>
-                          }
-                          @if (msg.content && msg.content !== ('Archivo adjunto: ' + fileData.fileName)) {
-                            <p class="text-xs text-slate-700 mt-2 m-0 leading-relaxed">{{ msg.content }}</p>
-                          }
+                    <div>
+                      <!-- Burbuja -->
+                      <div class="p-3.5 shadow-sm"
+                        [class.bg-emerald-50/70]="isVendorMessage(msg)"
+                        [class.border]="isVendorMessage(msg)"
+                        [class.border-emerald-100]="isVendorMessage(msg)"
+                        [class.rounded-l-2xl]="isVendorMessage(msg)"
+                        [class.rounded-br-2xl]="isVendorMessage(msg)"
+                        [class.bg-white]="!isVendorMessage(msg)"
+                        [class.border]="!isVendorMessage(msg)"
+                        [class.border-slate-100]="!isVendorMessage(msg)"
+                        [class.rounded-r-2xl]="!isVendorMessage(msg)"
+                        [class.rounded-bl-2xl]="!isVendorMessage(msg)">
+                        
+                        <div class="flex items-center gap-3 mb-1">
+                          <span class="text-[10px] font-bold"
+                            [class.text-amazonas-900]="isVendorMessage(msg)"
+                            [class.text-slate-800]="!isVendorMessage(msg)">
+                            {{ msg.senderName }}
+                          </span>
+                          <span class="text-[9px] text-slate-400">{{ formatTime(msg.sentAt) }}</span>
                         </div>
-                      }
 
-                      @else if (msg.messageType === 'VOUCHER') {
+                        <!-- Renderizado según tipo de mensaje -->
+                        @if (msg.messageType === 'TEXT') {
+                          <p class="text-xs text-slate-700 m-0 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
+                        }
+
+                        @else if (msg.messageType === 'FILE') {
+                          @let fileData = parseMetadata(msg.metadata);
+                          <div class="py-0.5">
+                            @if (fileData.fileType && fileData.fileType.startsWith('image/')) {
+                              <a [href]="fileData.fileUrl" target="_blank" class="block rounded overflow-hidden max-w-xs hover:opacity-90 transition-opacity mt-1">
+                                <img [src]="fileData.fileUrl" alt="Imagen" class="max-w-full max-h-60 object-contain bg-slate-50 border rounded-lg">
+                              </a>
+                            } @else {
+                              <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
+                                <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 20px;">{{ getFileIcon(fileData.fileType) }}</span>
+                                <div class="flex-1 min-w-0 text-left">
+                                  <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
+                                  <span class="text-[9px] text-slate-400 block mt-0.5">Descargar archivo</span>
+                                </div>
+                                <span class="material-icons text-slate-400 text-sm">download</span>
+                              </a>
+                            }
+                            @if (msg.content && msg.content !== ('Archivo adjunto: ' + fileData.fileName)) {
+                              <p class="text-xs text-slate-700 mt-2 m-0 leading-relaxed">{{ msg.content }}</p>
+                            }
+                          </div>
+                        }
+
+                        @else if (msg.messageType === 'VOUCHER') {
                         @let fileData = parseMetadata(msg.metadata);
                         <div class="py-0.5 space-y-2">
                           <span class="inline-block text-[8px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded uppercase tracking-wider">
@@ -1225,9 +1090,159 @@
         </div>
       </section>
 
-      <!-- PANEL DERECHO: ACCIONES VENDEDOR Y HISTORIAL TIMELINE (3 COLUMNAS) -->
-      <aside class="lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
+      <!-- PANEL DERECHO/SIDEBAR: DETALLES Y ACCIONES (4 COLUMNAS) -->
+      <aside [class.hidden-mobile]="mobileChatTab !== 'cliente'" class="md:block md:col-span-4 lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
         
+        <!-- CARD INFO CLIENTE -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium">
+          <h2 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-3 flex items-center gap-1.5">
+            <span class="material-icons text-sm text-amazonas-500" style="font-size: 16px;">person_search</span>
+            Información del Cliente
+          </h2>
+          <div class="flex items-center gap-3.5 mb-3 pb-3 border-b border-slate-100">
+            <div class="w-10 h-10 bg-gradient-to-tr from-amazonas-500 to-teal-650 rounded-xl flex items-center justify-center text-white font-bold text-sm font-outfit shadow-sm">
+              {{ solicitudActiva.clienteNombre ? solicitudActiva.clienteNombre.substring(0,2).toUpperCase() : 'CL' }}
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-xs leading-tight">{{ solicitudActiva.clienteNombre }}</h3>
+              <span class="inline-flex items-center gap-1 mt-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Cliente Verificado
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-2.5 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Correo</span>
+              <a href="mailto:{{ solicitudActiva.clienteEmail }}" class="font-semibold text-slate-800 hover:underline truncate max-w-[150px]">{{ solicitudActiva.clienteEmail }}</a>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Teléfono</span>
+              <span class="font-semibold text-slate-800">{{ solicitudActiva.clienteTelefono || 'No registrado' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Registro</span>
+              <span class="font-semibold text-slate-800">{{ solicitudActiva.fecha | date:'dd MMM yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD FICHA DE SOLICITUD (DINÁMICA) -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium flex flex-col gap-3">
+          <h2 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-1 flex items-center gap-1.5">
+            <span class="material-icons text-sm text-amazonas-500" style="font-size: 16px;">receipt_long</span>
+            Ficha de Solicitud
+          </h2>
+          
+          <div class="space-y-3 divide-y divide-slate-100 text-xs">
+            <!-- Número de Solicitud -->
+            <div class="flex justify-between py-1.5">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">N° Solicitud</span>
+              <span class="font-extrabold text-amazonas-700 font-mono">{{ solicitudActiva.numeroSolicitud }}</span>
+            </div>
+
+            <!-- Tipo de Proyecto -->
+            <div class="flex justify-between py-1.5">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Tipo Proyecto</span>
+              <span class="font-bold text-slate-800">{{ solicitudActiva.isCustom ? 'Proyecto Personalizado' : 'Proyecto Estándar' }}</span>
+            </div>
+
+            <!-- Nombre del Encargo -->
+            <div class="flex justify-between py-1.5">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Encargo</span>
+              <span class="font-bold text-slate-800 text-right truncate max-w-[160px]" [title]="solicitudActiva.productoNombre">{{ solicitudActiva.productoNombre }}</span>
+            </div>
+
+            <!-- Fecha de Solicitud -->
+            <div class="flex justify-between py-1.5">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Fecha</span>
+              <span class="font-semibold text-slate-700">{{ solicitudActiva.fecha | date:'dd MMM yyyy, HH:mm' }}</span>
+            </div>
+
+            <!-- Descripción del Cliente -->
+            <div class="py-2">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold block mb-1">Descripción del Cliente</span>
+              <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100/80">
+                <p class="text-slate-700 m-0 leading-relaxed italic text-[11px]">
+                  "{{ solicitudActiva.descripcionPersonalizacion || solicitudActiva.detalle || 'Sin descripción' }}"
+                </p>
+              </div>
+            </div>
+
+            <!-- Especificaciones Requeridas -->
+            @if (solicitudActiva.escala || solicitudActiva.dimensiones || solicitudActiva.mesaExpositora) {
+              <div class="py-2 space-y-1.5">
+                <span class="text-slate-400 text-[10px] uppercase font-bold block">Especificaciones Requeridas</span>
+                <div class="grid grid-cols-2 gap-1.5 bg-slate-50/50 p-2 rounded-xl text-[11px] border border-slate-100">
+                  @if (solicitudActiva.escala) {
+                    <div>
+                      <span class="text-slate-400 text-[9px] block uppercase font-medium">Escala</span>
+                      <span class="font-bold text-slate-750 block truncate">{{ solicitudActiva.escala }}</span>
+                    </div>
+                  }
+                  @if (solicitudActiva.dimensiones) {
+                    <div>
+                      <span class="text-slate-400 text-[9px] block uppercase font-medium">Dimensiones</span>
+                      <span class="font-bold text-slate-750 block truncate">{{ solicitudActiva.dimensiones }}</span>
+                    </div>
+                  }
+                  @if (solicitudActiva.mesaExpositora) {
+                    <div class="col-span-2">
+                      <span class="text-slate-400 text-[9px] block uppercase font-medium">Mesa Expositora</span>
+                      <span class="font-bold text-slate-750 block truncate">{{ solicitudActiva.mesaExpositora }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Servicios y Preferencias -->
+            <div class="py-2 space-y-1.5">
+              <span class="text-slate-400 text-[10px] uppercase font-bold block">Servicios y Preferencias</span>
+              <div class="space-y-1.5 text-[11px]">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">Explicación Especialista:</span>
+                  <span class="font-bold" [class.text-emerald-600]="solicitudActiva.solicitarExplicacion" [class.text-slate-400]="!solicitudActiva.solicitarExplicacion">
+                    {{ solicitudActiva.solicitarExplicacion ? 'Sí' : 'No' }}
+                  </span>
+                </div>
+                @if (solicitudActiva.tipoEvento) {
+                  <div class="flex justify-between">
+                    <span class="text-slate-500">Tipo de Evento:</span>
+                    <span class="font-bold text-slate-750">{{ solicitudActiva.tipoEvento }}</span>
+                  </div>
+                }
+                @if (solicitudActiva.cantidadPersonas) {
+                  <div class="flex justify-between">
+                    <span class="text-slate-500">Cantidad Personas:</span>
+                    <span class="font-bold text-slate-750">{{ solicitudActiva.cantidadPersonas }}</span>
+                  </div>
+                }
+                
+                <!-- Materiales Preferidos -->
+                <div class="pt-1">
+                  <span class="text-slate-500 block mb-1">Materiales Preferidos:</span>
+                  @if (solicitudActiva.materialesPreferidos && solicitudActiva.materialesPreferidos.length > 0) {
+                    <div class="flex flex-wrap gap-1">
+                      @for (mat of solicitudActiva.materialesPreferidos; track mat.id) {
+                        <span class="bg-amazonas-50 text-amazonas-700 border border-amazonas-100 px-1.5 py-0.5 rounded text-[10px] font-medium" [title]="mat.razonPreferencia || ''">
+                          {{ mat.materialName }}
+                        </span>
+                      }
+                    </div>
+                  } @else if (solicitudActiva.materialesDeseados) {
+                    <p class="text-slate-650 m-0 leading-tight italic text-[11px] bg-slate-50 p-2 rounded-lg border border-slate-100">{{ solicitudActiva.materialesDeseados }}</p>
+                  } @else {
+                    <span class="text-slate-400 italic">No especificado</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <!-- Quick Actions Panel -->
         <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium shrink-0">
           <h2 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-3 flex items-center gap-1.5">

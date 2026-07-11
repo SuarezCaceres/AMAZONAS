@@ -66,6 +66,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
   // ── Vista ──────────────────────────────────────────────────────────────────
   vista: Vista = 'lista';
   solicitudActiva: Solicitud | null = null;
+  mobileChatTab: 'chat' | 'cliente' | 'historial' = 'chat';
 
   // ── Lista ─────────────────────────────────────────────────────────────────
   searchTerm = '';

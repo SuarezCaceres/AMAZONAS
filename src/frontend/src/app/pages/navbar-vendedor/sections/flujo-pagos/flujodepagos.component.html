@@ -142,33 +142,36 @@
                         <div class="y-axis-labels">
                             <span *ngFor="let label of chartData.yLabels">{{ label }}</span>
                         </div>
-                        <div class="chart-svg-container">
-                            <svg viewBox="0 0 500 200" class="historical-line-chart" preserveAspectRatio="none">
-                                <defs>
-                                    <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15"/>
-                                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
-                                    </linearGradient>
-                                </defs>
-                                <!-- Horizontal Grid Lines -->
-                                <line x1="0" y1="30" x2="500" y2="30" stroke="#f1f5f9" stroke-width="1"/>
-                                <line x1="0" y1="65" x2="500" y2="65" stroke="#f1f5f9" stroke-width="1"/>
-                                <line x1="0" y1="100" x2="500" y2="100" stroke="#f1f5f9" stroke-width="1"/>
-                                <line x1="0" y1="135" x2="500" y2="135" stroke="#f1f5f9" stroke-width="1"/>
-                                <line x1="0" y1="170" x2="500" y2="170" stroke="#f1f5f9" stroke-width="1"/>
+                        <!-- Scroll interno: el gráfico mantiene su ancho mínimo en mobile -->
+                        <div class="chart-inner-scroll">
+                            <div class="chart-svg-container">
+                                <svg viewBox="0 0 500 200" class="historical-line-chart" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15"/>
+                                            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Horizontal Grid Lines -->
+                                    <line x1="0" y1="30" x2="500" y2="30" stroke="#f1f5f9" stroke-width="1"/>
+                                    <line x1="0" y1="65" x2="500" y2="65" stroke="#f1f5f9" stroke-width="1"/>
+                                    <line x1="0" y1="100" x2="500" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+                                    <line x1="0" y1="135" x2="500" y2="135" stroke="#f1f5f9" stroke-width="1"/>
+                                    <line x1="0" y1="170" x2="500" y2="170" stroke="#f1f5f9" stroke-width="1"/>
 
-                                <!-- Area under path -->
-                                <path [attr.d]="chartData.areaPath" fill="url(#chart-area-grad)"/>
+                                    <!-- Area under path -->
+                                    <path [attr.d]="chartData.areaPath" fill="url(#chart-area-grad)"/>
 
-                                <!-- Smooth Line Curve -->
-                                <path [attr.d]="chartData.linePath" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                                    <!-- Smooth Line Curve -->
+                                    <path [attr.d]="chartData.linePath" fill="none" stroke="#2563eb" stroke-width="2.5"/>
 
-                                <!-- Data point dots -->
-                                <circle *ngFor="let p of chartData.points" [attr.cx]="p.x" [attr.cy]="p.y" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"/>
-                            </svg>
-                        </div>
-                        <div class="x-axis-labels">
-                            <span *ngFor="let p of chartData.points">{{ p.label }}</span>
+                                    <!-- Data point dots -->
+                                    <circle *ngFor="let p of chartData.points" [attr.cx]="p.x" [attr.cy]="p.y" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                            <div class="x-axis-labels">
+                                <span *ngFor="let p of chartData.points">{{ p.label }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -242,13 +245,13 @@
                         </p>
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                    <div class="saldos-toolbar-filters" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                         <!-- FECHAS Y ORDENAR POR -->
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                             <!-- Date Range Picker mockup -->
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <label style="font-size: 10px; font-weight: 700; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase;">Rango de Fechas</label>
-                                <div style="display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 13px;">
+                                <div class="date-range-wrapper" style="display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 13px;">
                                     <span class="material-icons" style="font-size: 16px; color: #64748b;">calendar_today</span>
                                     <input type="date" [(ngModel)]="fechaInicioPendientes" style="border: none; background: transparent; font-size: 12px; font-family: inherit; color: #334155; outline: none;">
                                     <span style="color: #94a3b8;">-</span>
@@ -269,7 +272,7 @@
                         </div>
 
                         <!-- Count badge pill -->
-                        <div style="background: #ccfbf1; border: 1px solid #99f6e4; padding: 12px 20px; border-radius: 12px; text-align: center; min-width: 90px;">
+                        <div class="count-badge-pill" style="background: #ccfbf1; border: 1px solid #99f6e4; padding: 12px 20px; border-radius: 12px; text-align: center; min-width: 90px;">
                             <span style="font-size: 22px; font-weight: 800; color: #0d9488; display: block; line-height: 1;">{{ saldosPendientesFiltrados.length }}</span>
                             <span style="font-size: 9.5px; font-weight: 800; color: #0f766e; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; display: block;">PENDIENTES</span>
                         </div>
@@ -277,7 +280,7 @@
                 </div>
 
                 <!-- TABS DE FILTRO CANAL (Todos, Presencial, Online) -->
-                <div style="display: flex; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                <div class="canal-filter-row" style="display: flex; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px; flex-wrap: wrap;">
                     <button type="button" 
                             (click)="filtroCanalPendientes = 'todos'"
                             [style.background]="filtroCanalPendientes === 'todos' ? '#0f172a' : '#f8fafc'"
@@ -311,7 +314,6 @@
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 
                 <div *ngFor="let item of saldosPendientesPaginados" 
-                     style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 20px 24px; display: grid; grid-template-columns: 260px 1fr 220px; align-items: center; gap: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: transform 0.15s, box-shadow 0.15s;"
                      class="saldos-card-row">
                     
                     <!-- COLUMNA 1: CLIENTE E ID -->
@@ -393,6 +395,7 @@
 
             <!-- PAGINATION FOOTER (Matching Reference Image) -->
             <div *ngIf="saldosPendientesFiltrados.length > 0" 
+                 class="saldos-pagination-footer"
                  style="background: #ffffff; border-radius: 14px; padding: 14px 24px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                 <span style="font-size: 13px; color: #64748b; font-weight: 500;">
                     Mostrando <strong style="color: #0f172a;">{{ indiceInicioPendientes }}</strong> a <strong style="color: #0f172a;">{{ indiceFinPendientes }}</strong> de <strong style="color: #0f172a;">{{ saldosPendientesFiltrados.length }}</strong> resultados

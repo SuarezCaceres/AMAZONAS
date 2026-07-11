@@ -43,8 +43,9 @@
 .stat-card {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 14px;
-  padding: 16px 20px;
+  padding: 16px 18px;
   border-radius: 14px;
   border: 1px solid transparent;
   background: #ffffff;
@@ -52,6 +53,7 @@
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
   overflow: hidden;
+  min-height: 90px;
 }
 
 .stat-card:hover {
@@ -60,13 +62,13 @@
 }
 
 .stat-card-icon {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  flex: 0 0 46px;
 }
 
 .stat-card--total {
@@ -105,41 +107,57 @@
   color: #059669;
 }
 
+.stat-card--rejected {
+  border-color: #fecaca;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+.stat-card--rejected .stat-card-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
 .stat-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .stat-label {
   color: #64748b;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  line-height: 1.2;
+  word-wrap: break-word;
 }
 
 .stat-value {
   color: #0f172a;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 800;
   line-height: 1;
 }
 
 .stat-badge {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  height: 24px;
+  min-width: 26px;
+  height: 26px;
   padding: 0 6px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
   color: #475569;
   border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 /* ── Panel de Filtros Unificado ── */
@@ -574,6 +592,7 @@
   display: block;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* ── Filtros de fecha (Píldoras) ── */
@@ -620,9 +639,6 @@
   }
 }
 
-/* ========================================== */
-/* RESPONSIVE DESIGN MEDIA QUERIES (SKILL)    */
-/* ========================================== */
 
 @media (max-width: 900px) {
   .stats-grid {
@@ -631,9 +647,27 @@
   }
 }
 
+@media (max-width: 768px) {
+  /* En tablets y móviles, cambiar la grid de 12 cols del chat a flex vertical */
+  div.grid.grid-cols-1.md\:grid-cols-12 {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    padding: 8px !important;
+    gap: 8px !important;
+  }
+
+  /* El panel de chat embebido debe reducir su max-height/height para no empujar la pantalla */
+  section.flex.flex-col {
+    height: calc(100vh - 56px) !important;
+    max-height: calc(100vh - 56px) !important;
+  }
+}
+
 @media (max-width: 520px) {
   .solicitudes-page {
-    padding: 20px 14px 40px;
+    padding: 16px 8px 30px;
   }
 
   .stats-grid {
@@ -796,5 +830,98 @@
 @keyframes slideInModal {
   from { transform: translateY(24px) scale(0.95); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .lg\:col-span-12 {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .filter-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .filter-row-label {
+    width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .btn-communicate,
+  .btn-budget {
+    flex: none;
+    width: 100%;
+  }
+
+  .filter-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .cancelation-modal-footer {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .btn-cancelation-confirm,
+  .btn-cancelation-back {
+    width: 100%;
+    text-align: center;
+  }
+
+  .info-value {
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 380px) {
+  .solicitud-wrapper {
+    padding: 12px;
+  }
+  .search-box {
+    height: 44px;
+  }
+  .card-header {
+    padding: 12px 16px;
+  }
+  .card-content {
+    padding: 0 16px 14px;
+  }
+  .client-info, .contact-info {
+    gap: 10px;
+  }
+  .btn-communicate,
+  .btn-budget {
+    height: 38px;
+  }
 }
 

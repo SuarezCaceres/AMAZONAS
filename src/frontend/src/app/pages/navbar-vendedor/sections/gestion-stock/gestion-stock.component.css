@@ -2,6 +2,7 @@
   display: block;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -458,5 +459,64 @@
   .btn-save, .btn-cancel {
     flex: 1;
     text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .stock-container {
+    padding: 16px 12px 30px;
+    gap: 16px;
+  }
+
+  .stock-title {
+    font-size: 20px;
+  }
+
+  .product-info {
+    gap: 12px;
+  }
+
+  .product-image {
+    width: 64px;
+    height: 64px;
+  }
+
+  .product-name {
+    font-size: 14px;
+  }
+
+  .display-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-edit {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .stock-container {
+    padding: 12px 8px 24px;
+  }
+  .product-card {
+    padding: 12px;
+  }
+  .product-image {
+    width: 56px;
+    height: 56px;
+  }
+  .stock-input-field {
+    max-width: 100px;
+    padding: 6px 8px;
+  }
+  .control-label {
+    font-size: 12px;
+  }
+  .btn-save, .btn-cancel {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }

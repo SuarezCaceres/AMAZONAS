@@ -5,6 +5,7 @@
   display: block;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
 }
 
@@ -1307,3 +1308,331 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   MAQUETA — RESPONSIVE MOBILE FIRST
+   Breakpoints: 640px | 480px | 380px
+   Secciones: Configurar Maqueta + Crear Maqueta
+═══════════════════════════════════════════════════════════════ */
+
+/* ── 640px: Mobile L ─────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Wrapper: padding lateral reducido */
+  .maqueta-wrapper {
+    padding: 16px 12px 40px;
+    gap: 16px;
+  }
+
+  /* Header: columna completa */
+  .maqueta-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Botones de acción: ancho completo */
+  .btn-configurar,
+  .btn-configurar-primera {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Stats row: 1 columna */
+  .stats-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Config panel: padding reducido */
+  .config-panel {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  /* Config tabs: fuente reducida */
+  .config-tab {
+    font-size: 13px;
+    padding: 9px 8px;
+  }
+
+  /* Form card: padding reducido */
+  .config-form-card {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  /* Form row: 1 columna */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Materiales header: wrap */
+  .materiales-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Botón "Agregar Material": ancho completo */
+  .btn-agregar-material {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Row de inputs de materiales: 1 columna */
+  .row-main-inputs {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  /* Select de material: span 1 */
+  .col-material-select {
+    grid-column: span 1 !important;
+  }
+
+  /* Botón eliminar material: ancho completo */
+  .col-material-delete {
+    grid-column: span 1 !important;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .btn-eliminar-material-improved {
+    width: 100%;
+    height: 38px;
+  }
+
+  /* Subtotales: wrap */
+  .row-subtotals {
+    flex-wrap: wrap;
+    gap: 6px;
+    row-gap: 4px;
+  }
+
+  /* Divider: ocultar en mobile */
+  .subtotal-divider {
+    display: none;
+  }
+
+  /* Resumen de costos: columna */
+  .resumen-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Config footer: botones apilados */
+  .config-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-guardar,
+  .btn-cancelar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Image preview: wrap en mobile */
+  .img-preview-wrap {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .img-preview-name {
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  /* Análisis section: padding reducido */
+  .analisis-section {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  /* Análisis stats: 2 columnas */
+  .analisis-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Top-sol y sin-sol grid: 2 columnas */
+  .top-sol-grid,
+  .sin-sol-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Paneles: padding reducido */
+  .top-sol-panel,
+  .sin-sol-panel {
+    padding: 14px;
+  }
+}
+
+/* ── 480px: Mobile M ─────────────────────────────────────── */
+@media (max-width: 480px) {
+
+  .maqueta-wrapper {
+    padding: 14px 10px 40px;
+  }
+
+  .config-panel {
+    padding: 14px;
+  }
+
+  .config-form-card {
+    padding: 12px;
+  }
+
+  .config-tabs {
+    gap: 3px;
+  }
+
+  .config-tab {
+    font-size: 12px;
+    padding: 8px 6px;
+  }
+
+  .maqueta-title {
+    font-size: 20px;
+  }
+
+  .stat-value {
+    font-size: 26px;
+  }
+
+  /* Analisis stats: 1 columna */
+  .analisis-stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .analisis-stat-value {
+    font-size: 22px;
+  }
+
+  .materiales-list-improved {
+    padding: 14px;
+  }
+
+  .row-subtotals {
+    font-size: 11.5px;
+  }
+
+  .costos-resumen-card {
+    padding: 14px 16px;
+  }
+
+  .resumen-val {
+    font-size: 18px;
+  }
+
+  .top-sol-grid,
+  .sin-sol-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* ── 380px: Mobile S ─────────────────────────────────────── */
+@media (max-width: 380px) {
+
+  .maqueta-wrapper {
+    padding: 12px 8px 40px;
+    gap: 12px;
+  }
+
+  .maqueta-title {
+    font-size: 18px;
+  }
+
+  .maqueta-subtitle {
+    font-size: 12px;
+  }
+
+  .config-panel {
+    padding: 12px;
+    gap: 12px;
+    border-radius: 10px;
+  }
+
+  .config-form-card {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .config-tab {
+    font-size: 11.5px;
+    padding: 8px 4px;
+  }
+
+  .config-panel-title {
+    font-size: 13px;
+  }
+
+  .field-input,
+  .field-select,
+  .field-textarea {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .field-label {
+    font-size: 12px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .materiales-nota {
+    font-size: 11.5px;
+    padding: 8px 10px;
+  }
+
+  .materiales-list-improved {
+    padding: 10px;
+  }
+
+  .row-subtotals {
+    font-size: 11px;
+  }
+
+  .costos-resumen-card {
+    padding: 12px;
+  }
+
+  .resumen-val {
+    font-size: 16px;
+  }
+
+  .top-sol-grid,
+  .sin-sol-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .top-sol-card {
+    padding: 10px;
+  }
+
+  .analisis-title {
+    font-size: 16px;
+  }
+
+  .analisis-stat-value {
+    font-size: 20px;
+  }
+
+  .sin-sol-panel {
+    padding: 12px;
+  }
+
+  .empty-state-card {
+    padding: 32px 14px;
+  }
+}
