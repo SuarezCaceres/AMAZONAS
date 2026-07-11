@@ -43,4 +43,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
 
     @Query("SELECT m FROM ChatMessage m WHERE m.roomId = :roomId AND m.isRead = false AND m.sentAt >= :start AND m.sentAt < :end")
     List<ChatMessage> findUnreadMessagesInRoom(@Param("roomId") UUID roomId, @Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
+
+    long countByIsReadFalse();
 }
