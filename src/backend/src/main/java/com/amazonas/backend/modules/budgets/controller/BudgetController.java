@@ -55,43 +55,43 @@ public class BudgetController {
                     
             if (isVendor) {
                 BudgetVendorResponse vendorResponse = new BudgetVendorResponse(
-                    response.getId(),
-                    response.getSolicitudId(),
-                    response.getNombre(),
-                    response.getDescripcion(),
-                    response.getCodigoReferencia(),
-                    response.getEstado(),
-                    response.getManoDeObra(),
-                    response.getMargenGanancia(),
-                    response.getCostoMateriales(),
-                    response.getSubtotal(),
-                    response.getGanancia(),
-                    response.getTotal(),
-                    response.getAdelantoRequerido(),
-                    response.getAdelantoPorcentaje(),
-                    response.getAdelantoMonto(),
-                    response.getItems(),
-                    response.getServicioExplicacion()
+                    response.id(),
+                    response.solicitudId(),
+                    response.nombre(),
+                    response.descripcion(),
+                    response.codigoReferencia(),
+                    response.estado(),
+                    response.manoDeObra(),
+                    response.margenGanancia(),
+                    response.costoMateriales(),
+                    response.subtotal(),
+                    response.ganancia(),
+                    response.total(),
+                    response.adelantoRequerido(),
+                    response.adelantoPorcentaje(),
+                    response.adelantoMonto(),
+                    response.items(),
+                    response.servicioExplicacion()
                 );
                 return ResponseEntity.ok(vendorResponse);
             } else {
-                List<String> materialesIncluidos = response.getItems().stream()
-                        .map(item -> item.getMaterialNombre() + " (" + item.getCantidad() + ")")
+                List<String> materialesIncluidos = response.items().stream()
+                        .map(item -> item.materialNombre() + " (" + item.cantidad() + ")")
                         .collect(Collectors.toList());
                         
                 BudgetClientResponse clientResponse = new BudgetClientResponse(
-                    response.getId(),
-                    response.getSolicitudId(),
-                    response.getNombre(),
-                    response.getDescripcion(),
-                    response.getCodigoReferencia(),
-                    response.getEstado(),
-                    response.getTotal(),
-                    response.getAdelantoRequerido(),
-                    response.getAdelantoPorcentaje(),
-                    response.getAdelantoMonto(),
+                    response.id(),
+                    response.solicitudId(),
+                    response.nombre(),
+                    response.descripcion(),
+                    response.codigoReferencia(),
+                    response.estado(),
+                    response.total(),
+                    response.adelantoRequerido(),
+                    response.adelantoPorcentaje(),
+                    response.adelantoMonto(),
                     materialesIncluidos,
-                    response.getServicioExplicacion()
+                    response.servicioExplicacion()
                 );
                 return ResponseEntity.ok(clientResponse);
             }
