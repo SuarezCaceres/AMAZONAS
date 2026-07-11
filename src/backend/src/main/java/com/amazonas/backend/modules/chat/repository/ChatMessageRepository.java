@@ -37,4 +37,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     @Modifying
     @Query("UPDATE ChatMessage m SET m.isRead = true WHERE m.roomId = :roomId AND m.senderRole <> :myRole")
     void markAllAsRead(@Param("roomId") UUID roomId, @Param("myRole") com.amazonas.backend.modules.chat.enums.ChatSenderRole myRole);
+
+    @Query("SELECT DISTINCT m.roomId FROM ChatMessage m WHERE m.isRead = false AND m.sentAt >= :start AND m.sentAt < :end")
+    List<UUID> findRoomsWithUnreadMessages(@Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
+
+    @Query("SELECT m FROM ChatMessage m WHERE m.roomId = :roomId AND m.isRead = false AND m.sentAt >= :start AND m.sentAt < :end")
+    List<ChatMessage> findUnreadMessagesInRoom(@Param("roomId") UUID roomId, @Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
 }
