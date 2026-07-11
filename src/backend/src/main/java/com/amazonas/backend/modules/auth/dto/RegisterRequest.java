@@ -19,4 +19,10 @@ public record RegisterRequest(
 
     @Size(max = 15, message = "El teléfono debe tener como máximo 15 caracteres")
     String telefono
-) {}
+) {
+    public RegisterRequest {
+        if (nombre != null) nombre = nombre.trim();
+        if (email != null) email = email.trim();
+        if (telefono != null) telefono = telefono.trim();
+    }
+}

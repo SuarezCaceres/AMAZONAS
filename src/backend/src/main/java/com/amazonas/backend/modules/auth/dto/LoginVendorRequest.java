@@ -10,4 +10,8 @@ public record LoginVendorRequest(
 
     @NotBlank
     String password
-) {}
+) {
+    public LoginVendorRequest {
+        if (email != null) email = email.trim();
+    }
+}
