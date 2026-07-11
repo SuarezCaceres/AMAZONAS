@@ -721,3 +721,28 @@
 .payment-logo.mastercard { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23b45309"><rect width="24" height="16" rx="2"/><text x="4" y="11" font-size="7" font-weight="900" fill="white">MC</text></svg>'); }
 .payment-logo.bank { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23475569"><rect width="24" height="16" rx="2"/><text x="3" y="11" font-size="7" font-weight="900" fill="white">BANK</text></svg>'); }
 .payment-logo.mobile { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230d9488"><rect width="24" height="16" rx="2"/><text x="4" y="11" font-size="7" font-weight="900" fill="white">YAPE</text></svg>'); }
+
+/* =========================================================================
+   RESPONSIVE DESIGN - PAYMENT MODAL
+   ========================================================================= */
+@media (max-width: 480px) {
+    .modal-checkout-box {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+
+    .checkout-payment-col {
+        padding: 20px 16px;
+    }
+
+    .checkout-summary-col {
+        padding: 20px 16px;
+    }
+
+    .method-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
