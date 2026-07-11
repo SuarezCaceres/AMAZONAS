@@ -133,6 +133,19 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 
+		<!-- ShedLock Spring Integration -->
+		<dependency>
+			<groupId>net.javacrumbs.shedlock</groupId>
+			<artifactId>shedlock-spring</artifactId>
+			<version>6.2.0</version>
+		</dependency>
+		<!-- ShedLock Redis Provider -->
+		<dependency>
+			<groupId>net.javacrumbs.shedlock</groupId>
+			<artifactId>shedlock-provider-redis-spring</artifactId>
+			<version>6.2.0</version>
+		</dependency>
+
 		<!-- Spring Boot Actuator for health checks and metrics -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
