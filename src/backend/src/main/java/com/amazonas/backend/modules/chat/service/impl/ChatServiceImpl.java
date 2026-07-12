@@ -82,26 +82,87 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional(readOnly = true)
     public List<ChatRoomResponse> getMyRooms(String currentEmail) {
-        // Determinar si es cliente o vendedor
-        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(currentEmail);
-        if (userOpt.isPresent()) {
-            return chatRoomRepository
-                    .findByClientIdOrderByLastMessageAtDesc(userOpt.get().getId())
-                    .stream()
-                    .map(r -> buildRoomResponse(r, currentEmail))
-                    .collect(Collectors.toList());
+        // 1. Determinar el rol/usuario
+        Optional<User> currentUserOpt = userRepository.findByEmailIgnoreCase(currentEmail);
+        UUID currentUserId;
+        ChatSenderRole myRole;
+
+        List<ChatRoom> rooms;
+        if (currentUserOpt.isPresent()) {
+            User user = currentUserOpt.get();
+            currentUserId = user.getId();
+            myRole = ChatSenderRole.CLIENT;
+            rooms = chatRoomRepository.findByClientIdOrderByLastMessageAtDesc(currentUserId);
+        } else {
+            Optional<Vendor> currentVendorOpt = vendorRepository.findByEmailIgnoreCase(currentEmail);
+            if (currentVendorOpt.isPresent()) {
+                Vendor vendor = currentVendorOpt.get();
+                currentUserId = vendor.getId();
+                myRole = ChatSenderRole.VENDOR;
+                rooms = chatRoomRepository.findByVendorIdOrderByLastMessageAtDesc(currentUserId);
+            } else {
+                throw new EntityNotFoundException("Usuario no encontrado: " + currentEmail);
+            }
         }
 
-        Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(currentEmail);
-        if (vendorOpt.isPresent()) {
-            return chatRoomRepository
-                    .findByVendorIdOrderByLastMessageAtDesc(vendorOpt.get().getId())
-                    .stream()
-                    .map(r -> buildRoomResponse(r, currentEmail))
-                    .collect(Collectors.toList());
+        if (rooms.isEmpty()) {
+            return List.of();
         }
 
-        throw new EntityNotFoundException("Usuario no encontrado: " + currentEmail);
+        // 2. Extraer todos los IDs únicos para batch loading
+        List<UUID> clientIds = rooms.stream().map(ChatRoom::getClientId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+        List<UUID> vendorIds = rooms.stream().map(ChatRoom::getVendorId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+        List<UUID> requestIds = rooms.stream().map(ChatRoom::getRequestId).filter(java.util.Objects::nonNull).distinct().collect(Collectors.toList());
+        List<UUID> roomIds = rooms.stream().map(ChatRoom::getId).collect(Collectors.toList());
+
+        // 3. Consultas en lote (Batch Loading)
+        java.util.Map<UUID, User> clientMap = userRepository.findAllById(clientIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
+        java.util.Map<UUID, Vendor> vendorMap = vendorRepository.findAllById(vendorIds).stream()
+                .collect(Collectors.toMap(Vendor::getId, v -> v));
+        java.util.Map<UUID, PurchaseRequest> requestMap = purchaseRequestRepository.findAllById(requestIds).stream()
+                .collect(Collectors.toMap(PurchaseRequest::getId, r -> r));
+
+        // 4. Obtener contadores de mensajes no leídos en lote
+        List<Object[]> unreadCounts = chatMessageRepository.countUnreadForRooms(roomIds, myRole);
+        java.util.Map<UUID, Long> unreadMap = unreadCounts.stream()
+                .collect(Collectors.toMap(
+                        row -> (UUID) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        // 5. Mapear las respuestas usando los mapas en memoria
+        return rooms.stream()
+                .map(room -> {
+                    String clientName = Optional.ofNullable(clientMap.get(room.getClientId()))
+                            .map(User::getNombre).orElse("Cliente");
+                    String clientEmailStr = Optional.ofNullable(clientMap.get(room.getClientId()))
+                            .map(User::getEmail).orElse("");
+                    String vendorName = Optional.ofNullable(vendorMap.get(room.getVendorId()))
+                            .map(Vendor::getNombre).orElse("Vendedor");
+                    
+                    PurchaseRequest request = requestMap.get(room.getRequestId());
+                    String productName = (request != null) ? request.getProductoNombre() : "Maqueta";
+                    EstadoSolicitud requestStatus = (request != null) ? request.getEstado() : EstadoSolicitud.PENDIENTE;
+
+                    long unread = unreadMap.getOrDefault(room.getId(), 0L);
+
+                    return new ChatRoomResponse(
+                            room.getId(),
+                            room.getRequestId(),
+                            productName,
+                            clientName,
+                            clientEmailStr,
+                            vendorName,
+                            room.getStatus(),
+                            room.getAgreedPrice(),
+                            room.getLastMessageAt(),
+                            room.getCreatedAt(),
+                            unread,
+                            requestStatus
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     // =========================================================================
