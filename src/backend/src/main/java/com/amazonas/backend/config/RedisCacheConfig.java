@@ -37,6 +37,8 @@ public class RedisCacheConfig {
         ObjectMapper objectMapper = JsonMapper.builder()
                 .addModule(new JavaTimeModule()) // Soporte para LocalDateTime y LocalDate
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                // Ignora propiedades desconocidas como '@class' en Records (clases final)
+                .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 // Activa el tipado por defecto (polimorfismo) para guardar la información de la clase
                 .activateDefaultTyping(
                     LaissezFaireSubTypeValidator.instance,
