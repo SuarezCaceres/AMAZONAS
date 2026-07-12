@@ -227,8 +227,13 @@ p {
 }
 
 @media (max-width: 760px) {
+  .catalog-page {
+    padding: 20px 16px 48px;
+  }
+
   .catalog-hero {
-    padding: 24px;
+    padding: 30px 24px;
+    gap: 28px;
   }
 
   .hero-copy h1 {
@@ -242,8 +247,82 @@ p {
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 480px) {
+  .catalog-page {
+    padding: 16px 12px 40px;
+  }
+
+  .catalog-hero {
+    padding: 24px 16px;
+    gap: 20px;
+    border-radius: 12px;
+  }
+
+  .hero-copy h1 {
+    font-size: 24px;
+    line-height: 1.15;
+  }
+
+  .hero-copy p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
   .search-panel {
-    padding: 18px;
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+
+  .search-box input {
+    height: 46px;
+    font-size: 14px;
+    padding: 0 12px 0 40px;
+  }
+
+  .search-box span {
+    font-size: 18px;
+    left: 14px;
+  }
+
+  .category-list {
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .category-list button {
+    padding: 7px 11px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .model-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .model-card {
+    border-radius: 12px;
+  }
+
+  .model-card img {
+    aspect-ratio: 16 / 10;
+  }
+
+  .model-body {
+    padding: 16px;
+    gap: 8px;
+  }
+
+  .model-body h3 {
+    font-size: 17px;
+  }
+
+  .model-body p {
+    font-size: 13px;
+  }
+
+  .detail-button {
+    min-height: 40px;
+    font-size: 14px;
   }
 }

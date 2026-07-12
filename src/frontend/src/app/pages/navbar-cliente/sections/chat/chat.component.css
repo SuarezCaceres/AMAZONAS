@@ -42,54 +42,7 @@
   display: none;
 }
 
-@media (max-width: 767px) {
-  /* Desbloquear/bloquear dinámicamente el contenedor raíz del componente según la pestaña activa */
-  .chat-container-wrapper:has(#mobile-tab-chat-trigger:checked) {
-    height: calc(100dvh - 75px) !important;
-    max-height: calc(100dvh - 75px) !important;
-    overflow: hidden !important;
-  }
-  
-  .chat-container-wrapper:has(#mobile-tab-details-trigger:checked) {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-
-  /* Control condicional del scroll en el workspace principal de móvil */
-  .chat-workspace:has(#mobile-tab-chat-trigger:checked) {
-    overflow: hidden !important;
-    height: 100% !important;
-  }
-  
-  .chat-workspace:has(#mobile-tab-details-trigger:checked) {
-    overflow: visible !important;
-    height: auto !important;
-    min-height: 0 !important;
-  }
-
-  /* Evitar restricciones del grid original al estar en pestaña detalles */
-  .chat-workspace:has(#mobile-tab-details-trigger:checked) > div.h-full.grid {
-    height: auto !important;
-    min-height: 100% !important;
-    overflow: visible !important;
-  }
-
-  /* Asegurar que las columnas de detalles pierdan completamente sus restricciones originales */
-  .chat-workspace:has(#mobile-tab-details-trigger:checked) .chat-column-ficha,
-  .chat-workspace:has(#mobile-tab-details-trigger:checked) .chat-column-historial {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    flex-shrink: 0 !important;
-  }
-
-  .mobile-tabs-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
+@media (max-width: 768px) {
   /* Mostrar barra de pestañas */
   .mobile-tabs-nav {
     display: flex;
@@ -158,8 +111,8 @@
   #mobile-tab-details-trigger:checked ~ div.h-full.grid {
     display: flex !important;
     flex-direction: column !important;
-    overflow: visible !important;
-    height: auto !important;
+    overflow-y: auto !important; /* Desplazamiento vertical independiente en Detalles */
+    height: 100% !important;     /* Mantener la altura para ocupar espacio disponible */
     padding: 12px !important;
     gap: 12px !important;
   }
@@ -172,8 +125,9 @@
     width: 100% !important;
     height: auto !important;
     min-height: auto !important;
-    overflow-y: visible !important;
-    flex-shrink: 0 !important;
+    max-height: none !important;
+    overflow: visible !important; /* Evitar scroll interno dentro de cada panel */
+    flex-shrink: 0 !important;   /* Evitar que se colapsen/encojan */
   }
 
   /* --- Ajustes responsivos de la Cabecera de Chat --- */
