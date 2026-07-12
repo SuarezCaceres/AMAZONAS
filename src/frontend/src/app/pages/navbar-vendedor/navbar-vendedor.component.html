@@ -217,24 +217,33 @@
   <!-- ══════════════════════════════════ CONTENT ═══════════════════════════════════ -->
   <main class="tab-content" [class.chat-active]="isChatActivo">
 
-    @switch (activeTab) {
-
-      @case ('dashboard') {
+    <!-- Dashboard -->
+    @if (loadedTabs['dashboard']) {
+      <div [class.hidden-tab]="activeTab !== 'dashboard'" style="width: 100%; height: 100%;">
         <app-dashboard
           (tabSelected)="setTab($event)"
           (goToSite)="salir.emit()">
         </app-dashboard>
-      }
+      </div>
+    }
 
-      @case ('maquetas') {
+    <!-- Maquetas -->
+    @if (loadedTabs['maquetas']) {
+      <div [class.hidden-tab]="activeTab !== 'maquetas'" style="width: 100%; height: 100%;">
         <app-maqueta></app-maqueta>
-      }
+      </div>
+    }
 
-      @case ('gestion-stock') {
+    <!-- Gestión de Stock -->
+    @if (loadedTabs['gestion-stock']) {
+      <div [class.hidden-tab]="activeTab !== 'gestion-stock'" style="width: 100%; height: 100%;">
         <app-gestion-stock></app-gestion-stock>
-      }
+      </div>
+    }
 
-      @case ('solicitudes') {
+    <!-- Solicitudes -->
+    @if (loadedTabs['solicitudes']) {
+      <div [class.hidden-tab]="activeTab !== 'solicitudes'" style="width: 100%; height: 100%;">
         <app-solicitudes
           [inicialSolicitudId]="solicitudIdParaChat"
           (chatIniciado)="solicitudIdParaChat = null"
@@ -242,28 +251,36 @@
           (crearPresupuestoEvent)="irAPresupuestoConSolicitud($event)"
           (navegarAPagosEvent)="navegarAPagos($event)">
         </app-solicitudes>
-      }
+      </div>
+    }
 
-      @case ('materiales') {
+    <!-- Materiales -->
+    @if (loadedTabs['materiales']) {
+      <div [class.hidden-tab]="activeTab !== 'materiales'" style="width: 100%; height: 100%;">
         <app-materiales></app-materiales>
-      }
+      </div>
+    }
 
-      @case ('presupuestos') {
+    <!-- Presupuestos -->
+    @if (loadedTabs['presupuestos']) {
+      <div [class.hidden-tab]="activeTab !== 'presupuestos'" style="width: 100%; height: 100%;">
         <app-presupuestos 
           [solicitudId]="solicitudIdParaPresupuesto"
           (volverEvent)="volverAlChat()"
           (navegarATabEvent)="setTab($event)"
           (navegarAPagosEvent)="navegarAPagos($event)">
         </app-presupuestos>
-      }
+      </div>
+    }
 
-      @case ('pagos') {
+    <!-- Pagos -->
+    @if (loadedTabs['pagos']) {
+      <div [class.hidden-tab]="activeTab !== 'pagos'" style="width: 100%; height: 100%;">
         <app-flujodepagos 
           [prefilledData]="selectedPaymentData"
           (pagoRegistrado)="selectedPaymentData = null">
         </app-flujodepagos>
-      }
-
+      </div>
     }
 
   </main>

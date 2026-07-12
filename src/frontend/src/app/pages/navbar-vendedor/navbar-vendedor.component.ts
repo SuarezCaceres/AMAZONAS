@@ -50,6 +50,12 @@ export class NavbarVendedorComponent {
   solicitudIdParaChat: string | null = null;
   isChatActivo = false;
 
+  // Estado para la carga perezosa de pestañas (lazy tab loading)
+  // Mantiene los componentes en memoria una vez cargados para evitar peticiones HTTP y perder estado al cambiar de tab.
+  loadedTabs: { [key in VendedorTab]?: boolean } = {
+    dashboard: true
+  };
+
   navItems: NavItem[] = [
     { id: 'dashboard',     label: 'Dashboard',        icon: 'grid'        },
     { id: 'maquetas',      label: 'Maquetas',          icon: 'layers'      },
@@ -62,6 +68,7 @@ export class NavbarVendedorComponent {
 
   setTab(tab: VendedorTab): void {
     this.activeTab = tab;
+    this.loadedTabs[tab] = true;
     this.mobileMenuOpen = false;
     if (tab !== 'presupuestos') {
       this.solicitudIdParaPresupuesto = null;
@@ -79,6 +86,7 @@ export class NavbarVendedorComponent {
       this.solicitudIdParaPresupuesto = solicitudId;
       this.solicitudIdParaChat = solicitudId; // Guardar context para el retorno
       this.activeTab = 'presupuestos';
+      this.loadedTabs['presupuestos'] = true;
       this.mobileMenuOpen = false;
       this.cdr.detectChanges();
     });
@@ -86,6 +94,7 @@ export class NavbarVendedorComponent {
 
   volverAlChat(): void {
     this.activeTab = 'solicitudes';
+    this.loadedTabs['solicitudes'] = true;
     this.solicitudIdParaChat = this.solicitudIdParaPresupuesto;
   }
 
@@ -94,6 +103,7 @@ export class NavbarVendedorComponent {
   navegarAPagos(paymentData: any): void {
     this.selectedPaymentData = paymentData;
     this.activeTab = 'pagos';
+    this.loadedTabs['pagos'] = true;
   }
 
   private readonly cdr = inject(ChangeDetectorRef);
