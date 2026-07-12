@@ -60,6 +60,9 @@ public class RedisCacheConfig {
         // Caché de solicitudes por email de usuario — 5 minutos
         cacheConfigs.put("solicitudes", defaultConfig.entryTtl(Duration.ofMinutes(5)));
 
+        // Caché de lista completa de solicitudes (admin) — 5 minutos
+        cacheConfigs.put("solicitudes-todas", defaultConfig.entryTtl(Duration.ofMinutes(5)));
+
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(cacheConfigs)

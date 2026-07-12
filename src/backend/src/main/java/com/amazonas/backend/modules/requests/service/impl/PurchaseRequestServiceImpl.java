@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import com.amazonas.backend.modules.materials.model.Material;
 import com.amazonas.backend.modules.materials.repository.MaterialRepository;
@@ -67,11 +68,13 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     // ─────────────────────────────────────────────────────────
 
     /**
-     * Crea una solicitud e invalida la caché del usuario para que
-     * la próxima consulta lea los datos actualizados desde Neon.
+     * Crea una solicitud e invalida la caché del usuario y la caché de admin.
      */
     @Override
-    @CacheEvict(value = "solicitudes", key = "#usuarioEmail")
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", key = "#usuarioEmail"),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse crear(PurchaseRequestRequest req, String usuarioEmail) {
         // Validar duplicidad de materiales seleccionados (si es personalización)
         if (Boolean.TRUE.equals(req.isCustom())) {
@@ -271,8 +274,13 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         return toResponse(solicitud);
     }
 
+    /**
+     * Lista todas las solicitudes filtradas por estado.
+     * Caché de Redis configurada para administradores (vendedores).
+     */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "solicitudes-todas", key = "#estado != null ? #estado.name() : 'todas'")
     public List<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado) {
         List<PurchaseRequest> lista = (estado != null)
                 ? purchaseRequestRepository.findByEstadoOrderByCreatedAtDesc(estado)
@@ -289,11 +297,14 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     /**
-     * Actualiza el estado de una solicitud e invalida TODA la caché de solicitudes
-     * (varios usuarios pueden ver estados actualizados, e.g., admin y cliente).
+     * Actualiza el estado de una solicitud e invalida toda la caché de solicitudes
+     * (tanto individuales de usuario como la global de admin).
      */
     @Override
-    @CacheEvict(value = "solicitudes", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse actualizarEstado(UUID id, UpdateEstadoRequest req) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
@@ -507,7 +518,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     @Override
-    @CacheEvict(value = "solicitudes", key = "#usuarioEmail")
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", key = "#usuarioEmail"),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse actualizarArchivos(UUID id, RequestFilesUpdateRequest req, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
@@ -530,7 +544,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     @Override
-    @CacheEvict(value = "solicitudes", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public void eliminar(UUID id, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
@@ -557,7 +574,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     @Override
-    @CacheEvict(value = "solicitudes", allEntries = true)
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse rechazar(UUID id, RejectRequest req, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
