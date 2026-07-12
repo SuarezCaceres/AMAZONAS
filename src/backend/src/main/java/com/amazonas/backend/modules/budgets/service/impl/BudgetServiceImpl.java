@@ -91,7 +91,9 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional(readOnly = true)
     public BudgetResponse obtenerPorSolicitudId(UUID solicitudId) {
-        Budget budget = budgetRepository.findBySolicitudId(solicitudId)
+        // Usa findBySolicitudIdWithDetails para traer items, items.material y
+        // servicioExplicacion en un único JOIN SQL — elimina el N+1 del mapper.
+        Budget budget = budgetRepository.findBySolicitudIdWithDetails(solicitudId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay presupuesto para la solicitud: " + solicitudId));
         return toResponse(budget);
     }
@@ -187,7 +189,9 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     @Transactional(readOnly = true)
     public java.util.List<BudgetResponse> obtenerTodos() {
-        java.util.List<Budget> lista = budgetRepository.findAll();
+        // findAllWithDetails carga items, items.material y servicioExplicacion
+        // en una sola query con JOIN — elimina N+1 al iterar la lista completa.
+        java.util.List<Budget> lista = budgetRepository.findAllWithDetails();
         java.util.List<BudgetResponse> result = new java.util.ArrayList<>();
         for (Budget b : lista) {
             try {
