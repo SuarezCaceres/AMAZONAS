@@ -8,14 +8,19 @@ import com.amazonas.backend.modules.budgets.model.Budget;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, UUID> {
+    
+    @EntityGraph(attributePaths = {"solicitud", "creador"})
     Optional<Budget> findBySolicitudId(UUID solicitudId);
+    
     boolean existsBySolicitudId(UUID solicitudId);
 
+    @EntityGraph(attributePaths = {"solicitud"})
     @Query("SELECT b FROM Budget b WHERE b.estado IN ('PENDIENTE', 'ENVIADO') AND b.createdAt < :limite")
     List<Budget> findExpiredBudgets(@Param("limite") LocalDateTime limite);
 }

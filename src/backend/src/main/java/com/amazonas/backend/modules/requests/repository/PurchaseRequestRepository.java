@@ -31,6 +31,7 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
             @Param("since") LocalDateTime since
     );
 
+    @EntityGraph(attributePaths = {"presupuesto", "usuario", "producto"})
     @Query("SELECT pr FROM PurchaseRequest pr WHERE " +
            "(:estado IS NULL OR pr.estado = :estado) AND " +
            "(:search IS NULL OR LOWER(pr.clienteNombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
