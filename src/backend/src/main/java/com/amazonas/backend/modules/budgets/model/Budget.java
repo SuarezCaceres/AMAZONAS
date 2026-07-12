@@ -84,7 +84,6 @@ public class Budget {
     @OneToMany(mappedBy = "presupuesto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BudgetItem> items = new ArrayList<>();
 
-    @BatchSize(size = 1)
     @OneToOne(mappedBy = "budget", cascade = CascadeType.ALL, orphanRemoval = true)
     private BudgetExplanationService servicioExplicacion;
 
