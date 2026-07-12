@@ -524,7 +524,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             customized,
             personales,
             preferidos,
-            conPresupuesto != null ? conPresupuesto.contains(s.getId()) : s.getPresupuesto() != null,
+            conPresupuesto != null ? conPresupuesto.contains(s.getId()) : budgetRepository.existsBySolicitudId(s.getId()),
             grabacionesUrls,
             archivosUrls,
             s.getMotivoCancelacion(),
