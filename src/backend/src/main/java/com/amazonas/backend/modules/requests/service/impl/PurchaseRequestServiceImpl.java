@@ -258,11 +258,17 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     @Transactional(readOnly = true)
     @Cacheable(value = "solicitudes", key = "#usuarioEmail")
     public List<PurchaseRequestResponse> listarMisSolicitudes(String usuarioEmail) {
+        // Carga previa en memoria de los IDs de solicitudes con presupuesto
+        // para evitar el N+1 del OneToOne opcional
+        java.util.Set<UUID> conPresupuesto = new java.util.HashSet<>(
+                budgetRepository.findSolicitudIdsWithPresupuesto()
+        );
+
         // Si el email corresponde a un vendedor/admin (no existe en tabla users), retornar lista vacía
         // en lugar de lanzar una excepción que produce HTTP 500.
         return userRepository.findByEmail(usuarioEmail)
                 .map(usuario -> purchaseRequestRepository.findByUsuarioOrderByCreatedAtDesc(usuario)
-                        .stream().map(this::toResponse).collect(Collectors.toList()))
+                        .stream().map(s -> this.toResponse(s, conPresupuesto)).collect(Collectors.toList()))
                 .orElse(List.of());
     }
 
@@ -282,13 +288,19 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     @Transactional(readOnly = true)
     @Cacheable(value = "solicitudes-todas", key = "#estado != null ? #estado.name() : 'todas'")
     public List<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado) {
+        // Carga previa en memoria de los IDs de solicitudes con presupuesto
+        // para evitar el N+1 del OneToOne opcional en Hibernate al listar
+        java.util.Set<UUID> conPresupuesto = new java.util.HashSet<>(
+                budgetRepository.findSolicitudIdsWithPresupuesto()
+        );
+
         List<PurchaseRequest> lista = (estado != null)
                 ? purchaseRequestRepository.findByEstadoOrderByCreatedAtDesc(estado)
                 : purchaseRequestRepository.findAllByOrderByCreatedAtDesc();
         List<PurchaseRequestResponse> result = new ArrayList<>();
         for (PurchaseRequest s : lista) {
             try {
-                result.add(toResponse(s));
+                result.add(toResponse(s, conPresupuesto));
             } catch (Exception ex) {
                 log.error("Exception mapping request {}", s.getId(), ex);
             }
@@ -425,6 +437,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     // ─────────────────────────────────────────────────────────
 
     private PurchaseRequestResponse toResponse(PurchaseRequest s) {
+        return toResponse(s, null);
+    }
+
+    private PurchaseRequestResponse toResponse(PurchaseRequest s, java.util.Set<UUID> conPresupuesto) {
         UUID productoId = (s.getProducto() != null) ? s.getProducto().getId() : null;
 
         List<KitMaquetaResponse> kits = s.getKits().stream().map(k -> {
@@ -508,7 +524,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             customized,
             personales,
             preferidos,
-            s.getPresupuesto() != null,
+            conPresupuesto != null ? conPresupuesto.contains(s.getId()) : s.getPresupuesto() != null,
             grabacionesUrls,
             archivosUrls,
             s.getMotivoCancelacion(),

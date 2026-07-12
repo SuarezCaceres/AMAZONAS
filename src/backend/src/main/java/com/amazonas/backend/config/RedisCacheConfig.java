@@ -5,9 +5,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -16,17 +22,10 @@ import java.util.Map;
 /**
  * Configuración explícita del CacheManager de Redis.
  *
- * <p>Usa {@code RedisSerializer.json()} — la forma recomendada por Spring Data Redis para
- * serializar valores como JSON en Redis. Esto guarda los DTOs (BudgetResponse,
- * PurchaseRequestResponse) como JSON legible, facilitando la depuración con redis-cli.</p>
- *
- * <p>TTLs por cache:
- * <ul>
- *   <li><b>presupuestos</b>      — 10 min: los presupuestos cambian con poca frecuencia.</li>
- *   <li><b>presupuestos-todos</b> — 5 min: lista global, se invalida ante cualquier cambio.</li>
- *   <li><b>solicitudes</b>       — 5 min: las solicitudes cambian más frecuentemente.</li>
- * </ul>
- * </p>
+ * <p>Usa {@code GenericJackson2JsonRedisSerializer} con un ObjectMapper configurado
+ * con Default Typing. Esto añade información de clase (@class) en el JSON guardado
+ * en Redis para que Jackson pueda deserializar los DTOs complejos (LocalDateTime, Records)
+ * de vuelta a sus tipos correspondientes en Java sin producir errores de tipado.</p>
  */
 @Configuration
 public class RedisCacheConfig {
@@ -34,8 +33,19 @@ public class RedisCacheConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
 
-        // Serializer JSON recomendado por Spring Data Redis (sin deprecación)
-        RedisSerializer<Object> jsonSerializer = RedisSerializer.json();
+        // ObjectMapper personalizado para Redis
+        ObjectMapper objectMapper = JsonMapper.builder()
+                .addModule(new JavaTimeModule()) // Soporte para LocalDateTime y LocalDate
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                // Activa el tipado por defecto (polimorfismo) para guardar la información de la clase
+                .activateDefaultTyping(
+                    LaissezFaireSubTypeValidator.instance,
+                    ObjectMapper.DefaultTyping.NON_FINAL,
+                    JsonTypeInfo.As.PROPERTY
+                )
+                .build();
+
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         // Configuración base: JSON + sin nulls + TTL global de 1 hora
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()

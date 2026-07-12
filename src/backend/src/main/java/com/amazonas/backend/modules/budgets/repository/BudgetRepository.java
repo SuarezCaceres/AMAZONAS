@@ -52,4 +52,11 @@ public interface BudgetRepository extends JpaRepository<Budget, UUID> {
     @EntityGraph(attributePaths = {"solicitud"})
     @Query("SELECT b FROM Budget b WHERE b.estado IN ('PENDIENTE', 'ENVIADO') AND b.createdAt < :limite")
     List<Budget> findExpiredBudgets(@Param("limite") LocalDateTime limite);
+
+    /**
+     * Retorna únicamente los IDs de las solicitudes que ya tienen un presupuesto asignado.
+     * Evita consultas N+1 en bucle al listar solicitudes.
+     */
+    @Query("SELECT b.solicitud.id FROM Budget b WHERE b.solicitud.id IS NOT NULL")
+    List<UUID> findSolicitudIdsWithPresupuesto();
 }
