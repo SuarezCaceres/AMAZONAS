@@ -75,6 +75,9 @@ public class RedisCacheConfig {
         // Caché de lista completa de solicitudes (admin) — 5 minutos
         cacheConfigs.put("solicitudes-todas", defaultConfig.entryTtl(Duration.ofMinutes(5)));
 
+        // Caché de materiales (cambian muy poco) — 30 minutos
+        cacheConfigs.put("materials", defaultConfig.entryTtl(Duration.ofMinutes(30)));
+
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(cacheConfigs)
