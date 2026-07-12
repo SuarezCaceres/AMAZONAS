@@ -10,6 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import com.amazonas.backend.modules.budgets.dto.*;
 import com.amazonas.backend.modules.budgets.model.Budget;
@@ -60,7 +63,16 @@ public class BudgetServiceImpl implements BudgetService {
     // CREAR PRESUPUESTO
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Crea un presupuesto y evicta la caché 'presupuestos-todos' y la entrada
+     * del presupuesto de esa solicitud (si existía una versión anterior cacheada).
+     */
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "presupuestos-todos", allEntries = true),
+        @CacheEvict(value = "presupuestos",
+            key = "#req.solicitudId() != null ? #req.solicitudId().toString() : 'presencial'")
+    })
     public BudgetResponse crear(BudgetRequest req) {
         PurchaseRequest solicitud = null;
 
@@ -88,8 +100,13 @@ public class BudgetServiceImpl implements BudgetService {
     // CONSULTA POR SOLICITUD
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Retorna el presupuesto desde Redis si ya fue cacheado.
+     * La key es el UUID de la solicitud en formato String.
+     */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "presupuestos", key = "#solicitudId.toString()")
     public BudgetResponse obtenerPorSolicitudId(UUID solicitudId) {
         // Usa findBySolicitudIdWithDetails para traer items, items.material y
         // servicioExplicacion en un único JOIN SQL — elimina el N+1 del mapper.
@@ -102,7 +119,15 @@ public class BudgetServiceImpl implements BudgetService {
     // ACTUALIZAR PRESUPUESTO
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Actualiza el presupuesto y evicta TODA la caché de presupuestos
+     * (individual y lista global) para garantizar consistencia.
+     */
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "presupuestos", allEntries = true),
+        @CacheEvict(value = "presupuestos-todos", allEntries = true)
+    })
     public BudgetResponse actualizar(UUID budgetId, BudgetRequest req) {
         if (budgetId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID del presupuesto es obligatorio.");
@@ -186,8 +211,12 @@ public class BudgetServiceImpl implements BudgetService {
         return toResponse(budgetRepository.save(budget));
     }
 
+    /**
+     * Lista todos los presupuestos desde Redis si están cacheados.
+     */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "presupuestos-todos")
     public java.util.List<BudgetResponse> obtenerTodos() {
         // findAllWithDetails carga items, items.material y servicioExplicacion
         // en una sola query con JOIN — elimina N+1 al iterar la lista completa.
