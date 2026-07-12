@@ -6,8 +6,7 @@ import com.amazonas.backend.modules.requests.model.PurchaseRequest;
 import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
 import com.amazonas.backend.modules.requests.repository.PurchaseRequestRepository;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
+@Slf4j
 public class BudgetGuardianScheduler {
-
-    private static final Logger log = LoggerFactory.getLogger(BudgetGuardianScheduler.class);
 
     private final BudgetRepository budgetRepository;
     private final PurchaseRequestRepository purchaseRequestRepository;

@@ -9,8 +9,7 @@ import com.amazonas.backend.modules.requests.repository.PurchaseRequestRepositor
 import com.amazonas.backend.modules.reports.model.NightlyReport;
 import com.amazonas.backend.modules.reports.repository.NightlyReportRepository;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +19,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
+@Slf4j
 public class NightlyReportScheduler {
-
-    private static final Logger log = LoggerFactory.getLogger(NightlyReportScheduler.class);
 
     private final ProductRepository productRepository;
     private final PurchaseRequestRepository purchaseRequestRepository;

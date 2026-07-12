@@ -11,8 +11,7 @@ import com.amazonas.backend.modules.users.repository.UserRepository;
 import com.amazonas.backend.modules.vendors.model.Vendor;
 import com.amazonas.backend.modules.vendors.repository.VendorRepository;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,9 +21,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 @Component
+@Slf4j
 public class ChatAlertScheduler {
-
-    private static final Logger log = LoggerFactory.getLogger(ChatAlertScheduler.class);
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
