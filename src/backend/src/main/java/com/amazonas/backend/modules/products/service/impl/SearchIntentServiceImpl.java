@@ -4,8 +4,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,9 +19,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
+@Slf4j
 public class SearchIntentServiceImpl implements SearchIntentService {
-
-    private static final Logger log = LoggerFactory.getLogger(SearchIntentServiceImpl.class);
 
     @Value("${gemini.api.key:}")
     private String geminiApiKey;

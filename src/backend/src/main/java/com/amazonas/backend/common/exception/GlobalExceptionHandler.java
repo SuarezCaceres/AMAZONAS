@@ -3,8 +3,6 @@ package com.amazonas.backend.common.exception;
 import java.util.HashMap;
 import java.util.Map;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,10 +12,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-@RestControllerAdvice
-public class GlobalExceptionHandler {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
 
     // DTO de respuesta para estructurar todos los errores del API de manera uniforme
     public record ErrorResponse(
@@ -130,16 +129,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         log.error("Excepcion no controlada capturada en el API", ex);
-        try {
-            java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
-            java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-            pw.println("--- NEW EXCEPTION --- " + new java.util.Date());
-            ex.printStackTrace(pw);
-            pw.close();
-            fw.close();
-        } catch (Exception e) {
-            log.error("No se pudo escribir error.log", e);
-        }
         ErrorResponse response = new ErrorResponse(
                 "Ha ocurrido un error interno en el servidor. Por favor, intenta mas tarde.",
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

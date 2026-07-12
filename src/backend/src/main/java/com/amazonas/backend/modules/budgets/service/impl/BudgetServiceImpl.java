@@ -27,9 +27,11 @@ import com.amazonas.backend.modules.users.model.User;
 import com.amazonas.backend.modules.users.repository.UserRepository;
 import com.amazonas.backend.modules.auth.enums.Role;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class BudgetServiceImpl implements BudgetService {
 
     private final BudgetRepository budgetRepository;
@@ -191,17 +193,7 @@ public class BudgetServiceImpl implements BudgetService {
             try {
                 result.add(toResponse(b));
             } catch (Exception ex) {
-                // Loguear error y continuar
-                try {
-                    java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
-                    java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-                    pw.println("--- EXCEPTION MAPPING BUDGET " + b.getId() + " --- " + new java.util.Date());
-                    ex.printStackTrace(pw);
-                    pw.close();
-                    fw.close();
-                } catch (Exception e) {
-                    // ignore
-                }
+                log.error("Exception mapping budget {}", b.getId(), ex);
             }
         }
         return result;
@@ -413,16 +405,7 @@ public class BudgetServiceImpl implements BudgetService {
                 userRepository.save(user);
             }
         } catch (Exception ex) {
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
-                java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-                pw.println("--- EXCEPTION REGISTERING USER FOR EMAIL " + email + " --- " + new java.util.Date());
-                ex.printStackTrace(pw);
-                pw.close();
-                fw.close();
-            } catch (Exception e) {
-                // ignore
-            }
+            log.error("Exception registering user for email {}", email, ex);
         }
     }
 }

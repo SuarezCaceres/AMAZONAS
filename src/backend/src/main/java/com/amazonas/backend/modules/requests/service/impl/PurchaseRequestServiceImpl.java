@@ -28,9 +28,11 @@ import com.amazonas.backend.modules.vendors.repository.VendorRepository;
 import com.amazonas.backend.modules.chat.repository.ChatRoomRepository;
 import com.amazonas.backend.modules.chat.enums.ChatRoomStatus;
 import com.amazonas.backend.modules.budgets.repository.BudgetRepository;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class PurchaseRequestServiceImpl implements PurchaseRequestService {
 
     private final PurchaseRequestRepository purchaseRequestRepository;
@@ -267,16 +269,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             try {
                 result.add(toResponse(s));
             } catch (Exception ex) {
-                try {
-                    java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
-                    java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-                    pw.println("--- EXCEPTION MAPPING REQUEST " + s.getId() + " --- " + new java.util.Date());
-                    ex.printStackTrace(pw);
-                    pw.close();
-                    fw.close();
-                } catch (Exception e) {
-                    // ignore
-                }
+                log.error("Exception mapping request {}", s.getId(), ex);
             }
         }
         return result;
