@@ -31,7 +31,7 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
             @Param("since") LocalDateTime since
     );
 
-    @EntityGraph(attributePaths = {"presupuesto", "usuario", "producto"})
+    @EntityGraph(attributePaths = {"presupuesto", "presupuesto.servicioExplicacion", "usuario", "producto"})
     @Query("SELECT pr FROM PurchaseRequest pr WHERE " +
            "(:estado IS NULL OR pr.estado = :estado) AND " +
            "(:search IS NULL OR LOWER(pr.clienteNombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
@@ -49,16 +49,16 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
            "WHERE pr.producto IS NOT NULL " +
            "GROUP BY pr.producto.id, pr.producto.titulo, pr.producto.categoria.nombre, pr.producto.imageUrl " +
            "ORDER BY COUNT(pr) DESC")
-     List<Object[]> countRequestsByProduct();
+      List<Object[]> countRequestsByProduct();
 
     // Métodos adicionales usados por PurchaseRequestServiceImpl
-    @EntityGraph(attributePaths = {"presupuesto", "usuario"})
+    @EntityGraph(attributePaths = {"presupuesto", "presupuesto.servicioExplicacion", "usuario"})
     List<PurchaseRequest> findByUsuarioOrderByCreatedAtDesc(User usuario);
 
-    @EntityGraph(attributePaths = {"presupuesto", "usuario"})
+    @EntityGraph(attributePaths = {"presupuesto", "presupuesto.servicioExplicacion", "usuario"})
     List<PurchaseRequest> findByEstadoOrderByCreatedAtDesc(EstadoSolicitud estado);
 
-    @EntityGraph(attributePaths = {"presupuesto", "usuario"})
+    @EntityGraph(attributePaths = {"presupuesto", "presupuesto.servicioExplicacion", "usuario"})
     List<PurchaseRequest> findAllByOrderByCreatedAtDesc();
 
     @Modifying
