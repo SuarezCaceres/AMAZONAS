@@ -26,3 +26,127 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
 }
+
+/* ================================================================
+   Mobile Tabs Nav (Only visible on mobile < 768px)
+   ================================================================ */
+.hidden-tab-input {
+  display: none;
+}
+
+.mobile-tabs-nav {
+  display: none;
+}
+
+.chat-header-badge-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Mostrar barra de pestañas */
+  .mobile-tabs-nav {
+    display: flex;
+    width: 100%;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  
+  .mobile-tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  /* Efecto visual al activar pestañas */
+  #mobile-tab-chat-trigger:checked ~ .mobile-tabs-nav label[for="mobile-tab-chat-trigger"] {
+    border-bottom-color: #00a982;
+    color: #00a982;
+    font-weight: 700;
+  }
+  
+  #mobile-tab-details-trigger:checked ~ .mobile-tabs-nav label[for="mobile-tab-details-trigger"] {
+    border-bottom-color: #00a982;
+    color: #00a982;
+    font-weight: 700;
+  }
+
+  /* --- Comportamiento cuando la pestaña Chat está activa --- */
+  #mobile-tab-chat-trigger:checked ~ div.h-full.grid {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+  }
+  #mobile-tab-chat-trigger:checked ~ div.h-full.grid .chat-column-mensajes {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    flex: 1 !important;
+  }
+  #mobile-tab-chat-trigger:checked ~ div.h-full.grid .chat-column-mensajes > div.flex-1 {
+    overflow-y: auto !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+  }
+  #mobile-tab-chat-trigger:checked ~ div.h-full.grid .chat-column-mensajes > div.shrink-0 {
+    flex-shrink: 0 !important;
+  }
+  #mobile-tab-chat-trigger:checked ~ div.h-full.grid .chat-column-ficha,
+  #mobile-tab-chat-trigger:checked ~ div.h-full.grid .chat-column-historial {
+    display: none !important;
+  }
+
+  /* --- Comportamiento cuando la pestaña Detalles está activa --- */
+  #mobile-tab-details-trigger:checked ~ div.h-full.grid {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important; /* Desplazamiento vertical independiente en Detalles */
+    height: 100% !important;     /* Mantener la altura para ocupar espacio disponible */
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+  #mobile-tab-details-trigger:checked ~ div.h-full.grid .chat-column-mensajes {
+    display: none !important;
+  }
+  #mobile-tab-details-trigger:checked ~ div.h-full.grid .chat-column-ficha,
+  #mobile-tab-details-trigger:checked ~ div.h-full.grid .chat-column-historial {
+    display: flex !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important; /* Evitar scroll interno dentro de cada panel */
+    flex-shrink: 0 !important;   /* Evitar que se colapsen/encojan */
+  }
+
+  /* --- Ajustes responsivos de la Cabecera de Chat --- */
+  .chat-header-badge-desktop {
+    display: none !important;
+  }
+  .chat-header-badge-mobile {
+    display: inline-block !important;
+  }
+  .chat-header-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .chat-header-actions-wrapper {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+}

@@ -446,14 +446,18 @@ body {
 
 .banner-image {
   padding: 40px;
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
 .banner-image img {
   width: 100%;
   border-radius: 30px;
-  height: 500px;
+  height: auto;
+  aspect-ratio: 21 / 9;
   object-fit: cover;
   box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+  display: block;
 }
 
 /* BENEFICIOS */
@@ -600,25 +604,108 @@ body {
 
 @media(max-width:768px) {
 
+  .hero {
+    padding: 60px 16px;
+  }
+
   .hero h1 {
-    font-size: 45px;
+    font-size: 36px;
+  }
+
+  .steps-section,
+  .benefits {
+    padding: 60px 20px;
   }
 
   .steps-section h2,
   .benefits h2,
   .cta-section h2 {
-    font-size: 38px;
+    font-size: 32px;
   }
 
   .hero p,
   .subtitle,
   .cta-section p {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .steps-grid::before,
   .benefits-grid::before {
     display: none;
+  }
+
+  .banner-image {
+    padding: 20px 16px;
+  }
+
+  .banner-image img {
+    aspect-ratio: 16 / 9;
+    border-radius: 20px;
+  }
+
+}
+
+@media(max-width:480px) {
+
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  .steps-section h2,
+  .benefits h2,
+  .cta-section h2 {
+    font-size: 26px;
+  }
+
+  .hero-cards {
+    margin-top: 40px;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .card {
+    padding: 24px 20px;
+  }
+
+  .card h3 {
+    font-size: 20px;
+  }
+
+  .card p {
+    font-size: 15px;
+  }
+
+  .steps-grid,
+  .benefits-grid {
+    margin-top: 40px;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .step-card,
+  .benefit-card {
+    padding: 30px 20px;
+  }
+
+  .banner-image img {
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+  }
+
+  .cta-section {
+    padding: 50px 16px;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .catalog-btn,
+  .register-btn {
+    width: 100%;
+    padding: 14px 24px;
+    font-size: 16px;
   }
 
 }
