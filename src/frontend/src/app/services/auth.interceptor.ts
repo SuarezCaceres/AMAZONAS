@@ -1,6 +1,6 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError, from, switchMap } from 'rxjs';
+import { catchError, throwError, from, switchMap, of } from 'rxjs';
 import { ClerkService } from './clerk.service';
 
 // Rutas publicas que NO deben llevar el token en la cabecera.
@@ -23,6 +23,29 @@ function isPublicGetRequest(method: string, url: string): boolean {
   }
 }
 
+/**
+ * Obtiene el token de Clerk con un mecanismo de reintento.
+ *
+ * Clerk puede devolver null momentáneamente si el SDK está realizando
+ * un token refresh silencioso (ocurre cada ~60 s). En ese caso esperamos
+ * 500 ms y reintentamos una vez antes de rendirnos.
+ *
+ * Sin este retry existía una condición de carrera: la Op-2 (multipart/FormData)
+ * se ejecutaba justo durante el refresh y la request llegaba al backend sin
+ * cabecera Authorization, provocando el 403 Forbidden en /api/files/upload.
+ */
+function getTokenWithRetry(clerkService: ClerkService): Promise<string | null> {
+  return clerkService.getToken().then(token => {
+    if (token) return token;
+
+    // Token nulo en el primer intento — esperar 500 ms y reintentar una vez.
+    console.warn('[AuthInterceptor] getToken() retornó null; reintentando en 500 ms...');
+    return new Promise<string | null>(resolve =>
+      setTimeout(() => clerkService.getToken().then(resolve), 500)
+    );
+  });
+}
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const clerkService = inject(ClerkService);
 
@@ -34,25 +57,28 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  return from(clerkService.getToken()).pipe(
+  return from(getTokenWithRetry(clerkService)).pipe(
     switchMap(token => {
-      let outReq = req;
-      if (token) {
-        const email = sessionStorage.getItem('auth_email') || '';
-        const name = sessionStorage.getItem('auth_nombre') || '';
-        const headers: { [key: string]: string } = {
-          Authorization: `Bearer ${token}`
-        };
-        if (email) {
-          headers['X-User-Email'] = email;
-        }
-        if (name) {
-          headers['X-User-Name'] = name;
-        }
-        outReq = req.clone({
-          setHeaders: headers
-        });
+      if (!token) {
+        // Después del retry sigue sin token: no enviar la request sin auth.
+        // Retornar un error descriptivo para que el componente pueda manejarlo.
+        console.error('[AuthInterceptor] No se pudo obtener el token de Clerk tras el reintento. Request abortada:', req.url);
+        return throwError(() => new Error('Token de autenticación no disponible. Por favor, recarga la página.'));
       }
+
+      const email = sessionStorage.getItem('auth_email') || '';
+      const name = sessionStorage.getItem('auth_nombre') || '';
+      const headers: { [key: string]: string } = {
+        Authorization: `Bearer ${token}`
+      };
+      if (email) {
+        headers['X-User-Email'] = email;
+      }
+      if (name) {
+        headers['X-User-Name'] = name;
+      }
+
+      const outReq = req.clone({ setHeaders: headers });
       return next(outReq);
     }),
     catchError((error: HttpErrorResponse) => {
