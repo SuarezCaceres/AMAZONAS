@@ -2,6 +2,7 @@
     display: block;
     height: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
     box-sizing: border-box;
     background:
         radial-gradient(circle at top left, rgba(0, 169, 130, 0.12), transparent 30%),
@@ -86,6 +87,31 @@
     gap: 24px;
     align-items: start;
 }
+
+/* Default desktop style for pending balances card row */
+.saldos-card-row {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 260px 1fr 220px;
+    align-items: center;
+    gap: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+}
+
+/* Default subtab layout style */
+.payments-subtabs {
+    display: flex;
+    gap: 12px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 2px;
+    margin-bottom: 20px;
+}
+
 
 .payment-card,
 .pending-card {
@@ -3671,4 +3697,698 @@
     margin-bottom: 8px;
 }
 
-
+/* =========================================================================
+   ESTILOS RESPONSIVOS ADICIONALES (MÓVIL Y TABLET)
+   ========================================================================= */
+
+@media (max-width: 980px) {
+    .payments-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .payments-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .payments-header h1 {
+        font-size: 26px !important;
+    }
+
+    .payments-header p {
+        font-size: 12px !important;
+        margin-top: 4px;
+    }
+    
+    .cash-pill {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+    }
+
+    .cash-pill strong {
+        font-size: 18px !important;
+    }
+    
+    .payments-subtabs {
+        display: flex !important;
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
+        padding-bottom: 8px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .subtab-btn {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        justify-content: center;
+        font-size: 11px !important;
+        padding: 8px 12px !important;
+    }
+    
+    .kpi-grid-modern {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-card-modern {
+        padding: 16px !important;
+        min-height: 140px !important;
+    }
+
+    .kpi-value-modern {
+        font-size: 24px !important;
+    }
+
+    .kpi-label-modern {
+        font-size: 11px !important;
+    }
+    
+    .modern-dashboard-columns {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Responsive layout override for inline grid */
+    .saldos-card-row {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        padding: 16px !important;
+    }
+    
+    .saldos-card-row > div:nth-child(2) {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 16px;
+    }
+    
+    .saldos-card-row > div:nth-child(3) {
+        align-items: flex-start !important;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 16px;
+    }
+
+    .transactions-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .recent-transactions-table {
+        min-width: 550px;
+    }
+
+    /* Audit section styling */
+    .audit-kpi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .audit-header-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+
+    .audit-btn-export {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    .audit-filters-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+
+    .audit-search-box {
+        width: 100% !important;
+    }
+
+    .audit-filter-select-wrapper {
+        width: 100% !important;
+    }
+
+    .audit-filter-select-wrapper select {
+        width: 100% !important;
+    }
+
+    .audit-tx-card {
+        padding: 16px !important;
+    }
+
+    .audit-card-header {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .audit-amount-info {
+        text-align: left !important;
+    }
+
+    .audit-card-body {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .audit-card-footer {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+    
+    .audit-actions-group {
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+    }
+
+    .audit-actions-group button {
+        flex: 1 !important;
+        text-align: center !important;
+    }
+
+    .btn-page-nav {
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+    }
+
+    .payments-page {
+        padding: 24px 14px 40px !important;
+    }
+}
+
+/* ============================================================
+   FLUJO DE PAGOS — RESPONSIVE MOBILE FIRST
+   Breakpoints: 640px | 480px | 380px
+   Aplica solo a esta sección, sin overflow-x: hidden global
+   ============================================================ */
+
+/* ── 640px: Mobile L ─────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* === PAGE === */
+  .payments-page {
+    padding: 18px 12px 60px !important;
+  }
+
+  /* === HEADER === */
+  .payments-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .cash-pill {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* === SUBTABS: scroll horizontal solo dentro de la barra === */
+  .payments-subtabs {
+    gap: 6px !important;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+
+  .subtab-btn {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* === TAB DASHBOARD === */
+  .dashboard-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-header-row h2 {
+    font-size: 18px !important;
+  }
+
+  /* Period selector: permite que los botones se distribuyan */
+  .period-selector {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .period-selector button {
+    flex: 1;
+    padding: 7px 8px !important;
+    font-size: 11px !important;
+    text-align: center;
+  }
+
+  /* KPI cards: ya se apilan, reducir padding */
+  .kpi-card-modern {
+    padding: 16px !important;
+    min-height: 130px !important;
+  }
+
+  .kpi-value-modern {
+    font-size: 22px !important;
+  }
+
+  /* Chart header: wrap */
+  .chart-header,
+  .transactions-card-header {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  .chart-select {
+    width: 100%;
+  }
+
+  /* Chart SVG: reduce height un poco */
+  .chart-svg-container {
+    height: 140px !important;
+  }
+
+  /* X-axis labels: reduce font */
+  .x-axis-labels {
+    font-size: 9px !important;
+    padding: 0 4px !important;
+  }
+
+  /* Tabla transacciones recientes: scroll interno */
+  .transactions-table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .recent-transactions-table {
+    min-width: 480px !important;
+  }
+
+  /* === TAB SALDOS === */
+
+  /* El contenedor usa inline styles; aseguramos box-sizing */
+  .saldos-page-container {
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  /* Header-toolbar del tab saldos (inline flex → columna) */
+  .saldos-page-container > div:first-child {
+    padding: 16px !important;
+  }
+
+  /* Filtros: fecha + ordenar por → columna */
+  .saldos-toolbar-filters {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  /* Date-range picker: inputs apilados */
+  .date-range-wrapper {
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .date-range-wrapper input[type="date"] {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Botones de filtro canal: permitir wrap */
+  .canal-filter-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .canal-filter-row button {
+    flex: 1 1 auto !important;
+    min-width: calc(50% - 4px) !important;
+    justify-content: center !important;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Card de saldo: ya se apila a 1 columna vía 768px */
+  .saldos-card-row {
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  /* Paginación footer: stack */
+  .saldos-pagination-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  .saldos-pagination-footer > div {
+    justify-content: center !important;
+  }
+
+  /* === TAB AUDITORÍA === */
+  .audit-page-wrapper {
+    gap: 16px !important;
+  }
+
+  .audit-title {
+    font-size: 18px !important;
+  }
+
+  .audit-kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .audit-kpi-card {
+    padding: 16px !important;
+  }
+
+  .audit-card-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .audit-actions-group {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .audit-btn-recibo,
+  .audit-btn-imprimir {
+    flex: 1 !important;
+    text-align: center !important;
+  }
+
+  .audit-flow-pill {
+    flex-wrap: wrap !important;
+  }
+
+  .pill-text {
+    word-break: break-word !important;
+  }
+}
+
+/* ── 480px: Mobile M ─────────────────────────────────────── */
+@media (max-width: 480px) {
+
+  .payments-page {
+    padding: 14px 10px 60px !important;
+  }
+
+  /* Period selector → columna */
+  .period-selector {
+    flex-direction: column !important;
+    width: 100%;
+    gap: 4px;
+  }
+
+  .period-selector button {
+    width: 100% !important;
+    text-align: center !important;
+    padding: 9px 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* KPI */
+  .kpi-label-modern {
+    font-size: 11px !important;
+  }
+
+  .kpi-value-modern {
+    font-size: 20px !important;
+  }
+
+  /* Transacciones tabla: min-width reducido */
+  .recent-transactions-table {
+    min-width: 420px !important;
+  }
+
+  /* Botones canal: siempre 1 columna */
+  .canal-filter-row button {
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  /* Saldo card: precio más pequeño */
+  .saldos-card-row span[style*="font-size: 24px"] {
+    font-size: 20px !important;
+  }
+
+  /* Audit card */
+  .audit-client-name {
+    font-size: 14px !important;
+    word-break: break-word !important;
+  }
+
+  .audit-op-code {
+    font-size: 10px !important;
+    word-break: break-all !important;
+  }
+}
+
+/* ── 380px: Mobile S ─────────────────────────────────────── */
+@media (max-width: 380px) {
+
+  .payments-page {
+    padding: 12px 8px 60px !important;
+  }
+
+  .payments-header h1 {
+    font-size: 22px !important;
+  }
+
+  .payments-header p {
+    font-size: 11px !important;
+  }
+
+  .subtab-btn {
+    font-size: 11px !important;
+    padding: 7px 10px !important;
+  }
+
+  /* Dashboard */
+  .dashboard-header-row h2 {
+    font-size: 16px !important;
+  }
+
+  .kpi-value-modern {
+    font-size: 18px !important;
+  }
+
+  .chart-title,
+  .transactions-title {
+    font-size: 13px !important;
+  }
+
+  /* X-axis labels: oculta en Mobile S para evitar overflow */
+  .x-axis-labels {
+    display: none !important;
+  }
+
+  /* Saldos */
+  .saldos-card-row {
+    padding: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Count badge */
+  .count-badge-pill {
+    padding: 8px 14px !important;
+    min-width: 70px !important;
+  }
+
+  /* Audit */
+  .audit-title {
+    font-size: 16px !important;
+  }
+
+  .audit-btn-export {
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+  }
+
+  .audit-kpi-value {
+    font-size: 20px !important;
+  }
+
+  .audit-card-header {
+    padding: 12px !important;
+  }
+
+  .audit-tx-card {
+    padding: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .pagination-controls {
+    gap: 4px !important;
+  }
+
+  .btn-page-nav {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+  }
+}
+
+/* ============================================================
+   SCROLL INDEPENDIENTE: MARGEN HISTÓRICO + TRANSACCIONES
+   Aplica en todos los breakpoints que lo necesiten
+   ============================================================ */
+
+/* ── Corrección crítica: min-width: 0 en hijos de grid/flex ──
+   Sin esto, los hijos del grid pueden exceder su celda       */
+.modern-dashboard-columns {
+  min-width: 0;
+}
+
+.modern-chart-card,
+.recent-transactions-card {
+  min-width: 0;        /* CRÍTICO: evita que el grid se desborde */
+  overflow: hidden;    /* Clip en el borde redondeado de la tarjeta */
+}
+
+/* ── Scroll wrapper del gráfico ── */
+.chart-inner-scroll {
+  /* En desktop: sin scroll, el gráfico usa todo el ancho disponible */
+  width: 100%;
+  overflow-x: visible;
+}
+
+.chart-inner-scroll .chart-svg-container {
+  width: 100%;
+}
+
+.chart-inner-scroll .x-axis-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── Tabla de Transacciones Recientes: scroll interno siempre ── */
+.transactions-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* En mobile: el gráfico y la tabla tienen scroll propio */
+@media (max-width: 640px) {
+
+  /* El card de gráfico recorta su contenido al borde */
+  .modern-chart-card {
+    overflow: hidden;
+  }
+
+  /* El scroll wrapper del gráfico activa scroll interno */
+  .chart-inner-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Estética: barra de scroll sutil */
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .chart-inner-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .chart-inner-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+
+  /* El SVG container y las etiquetas del eje X
+     mantienen un ancho mínimo legible en mobile  */
+  .chart-inner-scroll .chart-svg-container {
+    min-width: 320px;  /* ancho mínimo para ver todos los puntos */
+    height: 160px;
+  }
+
+  .chart-inner-scroll .x-axis-labels {
+    min-width: 320px;
+    font-size: 10px !important;
+    padding: 6px 4px 0 !important;
+  }
+
+  /* Restaura la visibilidad de x-axis-labels (anulamos la regla
+     anterior que las ocultaba dentro del scroll wrapper)         */
+  .chart-inner-scroll .x-axis-labels {
+    display: flex !important;
+  }
+
+  /* El card de transacciones: clip + scroll en la tabla */
+  .recent-transactions-card {
+    overflow: hidden;
+  }
+
+  .transactions-table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .transactions-table-wrapper::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .transactions-table-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+
+  /* La tabla mantiene un ancho mínimo para que todas las
+     columnas sean legibles y el scroll se active          */
+  .recent-transactions-table {
+    min-width: 520px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-inner-scroll .chart-svg-container {
+    min-width: 300px;
+    height: 140px;
+  }
+
+  .chart-inner-scroll .x-axis-labels {
+    min-width: 300px;
+    font-size: 9px !important;
+  }
+
+  .recent-transactions-table {
+    min-width: 460px !important;
+    font-size: 11.5px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  /* Mobile S: gráfico mantiene 280px → scroll activo en pantallas de 320px */
+  .chart-inner-scroll .chart-svg-container {
+    min-width: 280px;
+    height: 130px;
+  }
+
+  .chart-inner-scroll .x-axis-labels {
+    min-width: 280px;
+    font-size: 8.5px !important;
+  }
+
+  .recent-transactions-table {
+    min-width: 420px !important;
+    font-size: 11px !important;
+  }
+
+  /* Reducir padding de las tarjetas en Mobile S */
+  .modern-chart-card,
+  .recent-transactions-card {
+    padding: 14px !important;
+  }
+}

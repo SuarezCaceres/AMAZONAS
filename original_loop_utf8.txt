@@ -1,0 +1,181 @@
+﻿                      [class.border-slate-100]="!isVendorMessage(msg)"
+                      [class.rounded-r-2xl]="!isVendorMessage(msg)"
+                      [class.rounded-bl-2xl]="!isVendorMessage(msg)">
+                      
+                      <div class="flex items-center gap-3 mb-1">
+                        <span class="text-[10px] font-bold"
+                          [class.text-amazonas-900]="isVendorMessage(msg)"
+                          [class.text-slate-800]="!isVendorMessage(msg)">
+                          {{ msg.senderName }}
+                        </span>
+                        <span class="text-[9px] text-slate-400">{{ formatTime(msg.sentAt) }}</span>
+                      </div>
+
+                      <!-- Renderizado seg├║n tipo de mensaje -->
+                      @if (msg.messageType === 'TEXT') {
+                        <p class="text-xs text-slate-700 m-0 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
+                      }
+
+                      @else if (msg.messageType === 'FILE') {
+                        @let fileData = parseMetadata(msg.metadata);
+                        <div class="py-0.5">
+                          @if (fileData.fileType && fileData.fileType.startsWith('image/')) {
+                            <a [href]="fileData.fileUrl" target="_blank" class="block rounded overflow-hidden max-w-xs hover:opacity-90 transition-opacity mt-1">
+                              <img [src]="fileData.fileUrl" alt="Imagen" class="max-w-full max-h-60 object-contain bg-slate-50 border rounded-lg">
+                            </a>
+                          } @else {
+                            <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
+                              <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 20px;">{{ getFileIcon(fileData.fileType) }}</span>
+                              <div class="flex-1 min-w-0 text-left">
+                                <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
+                                <span class="text-[9px] text-slate-400 block mt-0.5">Descargar archivo</span>
+                              </div>
+                              <span class="material-icons text-slate-400 text-sm">download</span>
+                            </a>
+                          }
+                          @if (msg.content && msg.content !== ('Archivo adjunto: ' + fileData.fileName)) {
+                            <p class="text-xs text-slate-700 mt-2 m-0 leading-relaxed">{{ msg.content }}</p>
+                          }
+                        </div>
+                      }
+
+                      @else if (msg.messageType === 'VOUCHER') {
+                        @let fileData = parseMetadata(msg.metadata);
+                        <div class="py-0.5 space-y-2">
+                          <span class="inline-block text-[8px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded uppercase tracking-wider">
+                            Comprobante de Adelanto Recibido
+                          </span>
+                          
+                          <!-- Preview Box -->
+                          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-emerald-200 text-teal-800 shadow-sm">
+                            <span class="material-icons text-2xl" [class]="isImageFile(fileData.fileType) ? 'text-emerald-600' : getFileIconColorClass(fileData.fileType)">{{ isImageFile(fileData.fileType) ? 'receipt_long' : getFileIcon(fileData.fileType) }}</span>
+                            <div class="flex-1 min-w-0 text-left">
+                              <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
+                              <span class="text-[9px] text-slate-400 block mt-0.5">
+                                @if (isImageFile(fileData.fileType)) {
+                                  Captura de Yape ÔÇó S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
+                                } @else {
+                                  Documento Comprobante ÔÇó S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
+                                }
+                              </span>
+                            </div>
+                          </div>
+
+                          <!-- Botones R├ípidos en el Mensaje -->
+                          <div class="flex gap-2 pt-1.5 border-t border-emerald-100/50">
+                            <button type="button" (click)="openVoucherZoom(fileData.fileUrl, fileData.fileName, msg)" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-bold py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
+                              <span class="material-icons text-[12px]">zoom_in</span>
+                              Ver Detalle
+                            </button>
+                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                              <span class="material-icons text-[12px]">payments</span>
+                              Confirmar Adelanto
+                            </button>
+                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                              <span class="material-icons text-[12px]">payment</span>
+                              Confirmar Pago
+                            </button>
+                          </div>
+                        </div>
+                      }
+
+                      @else if (msg.messageType === 'OFFER') {
+                        @let offerData = parseMetadata(msg.metadata);
+                        <div class="bg-white border border-slate-150 p-3 rounded-xl mt-1.5 space-y-2 text-left max-w-sm">
+                          <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase">Propuesta de Precio</span>
+                            <span class="ml-auto text-xs font-black text-emerald-600">S/ {{ offerData.proposedPrice | number:'1.2-2' }}</span>
+                          </div>
+                          @if (offerData.note) {
+                            <p class="text-[11px] text-slate-500 m-0 italic">"{{ offerData.note }}"</p>
+                          }
+                          <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold uppercase py-0.5 px-2 rounded" 
+                              [class.bg-yellow-100]="offerData.status === 'PENDING'"
+                              [class.text-yellow-800]="offerData.status === 'PENDING'"
+                              [class.bg-emerald-100]="offerData.status === 'ACCEPTED'"
+                              [class.text-emerald-800]="offerData.status === 'ACCEPTED'">
+                              {{ offerData.status === 'PENDING' ? 'Pendiente' : offerData.status === 'ACCEPTED' ? 'Aceptada' : offerData.status === 'REJECTED' ? 'Rechazada' : 'Sustituida' }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+
+                      @else if (msg.messageType === 'EXTRA') {
+                        @let extraData = parseMetadata(msg.metadata);
+                        <div class="bg-white border border-slate-150 p-3 rounded-xl mt-1.5 space-y-1.5 text-left max-w-sm">
+                          <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase">Servicio Extra</span>
+                            <span class="ml-auto text-xs font-black text-blue-600">+S/ {{ extraData.price | number:'1.2-2' }}</span>
+                          </div>
+                          <h4 class="text-[11px] font-bold text-slate-800 m-0">{{ extraData.title }}</h4>
+                          @if (extraData.description) {
+                            <p class="text-[10px] text-slate-500 m-0">{{ extraData.description }}</p>
+                          }
+                          <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold py-0.5 px-2 rounded uppercase"
+                              [class.bg-yellow-100]="extraData.status === 'PENDING'"
+                              [class.text-yellow-800]="extraData.status === 'PENDING'"
+                              [class.bg-emerald-100]="extraData.status === 'ACCEPTED'"
+                              [class.text-emerald-800]="extraData.status === 'ACCEPTED'">
+                              {{ extraData.status === 'PENDING' ? 'Pendiente' : extraData.status === 'ACCEPTED' ? 'Aceptado' : 'Rechazado' }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+
+                      @else if (msg.messageType === 'BUDGET') {
+                        <!-- Tarjeta de Presupuesto Especializada (VENDEDOR VIEW: Muestra desglose interno) -->
+                        @let budgetData = parseMetadata(msg.metadata);
+                        <div class="border-2 border-emerald-600 shadow-md rounded-2xl overflow-hidden text-left max-w-sm mt-1.5 bg-white text-slate-800">
+                          <div class="bg-gradient-to-r from-emerald-800 to-teal-900 px-3 py-2.5 text-white flex justify-between items-center">
+                            <div>
+                              <span class="text-[8px] font-bold tracking-widest uppercase bg-emerald-700/50 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-600/30">PRESUPUESTO</span>
+                              <h4 class="font-bold text-[10px] font-mono mt-0.5">C├ôDIGO: #PR-{{ budgetData.budgetId || 'N/A' }}</h4>
+                            </div>
+                            <span class="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                              Propuesto
+                            </span>
+                          </div>
+                          <div class="p-3.5 space-y-2.5">
+                            <div>
+                              <span class="text-[8px] text-slate-400 uppercase font-bold block">Proyecto</span>
+                              <span class="font-bold text-slate-800 text-xs">{{ budgetData.proyectoNombre }}</span>
+                            </div>
+
+                            <!-- Tabla con subtotales y costos (VISTA INTERNA VENDEDOR) -->
+                            <div class="border border-slate-100 rounded-xl overflow-hidden text-[10px]">
+                              <div class="bg-slate-50 px-2 py-1.5 border-b border-slate-100 flex justify-between text-[9px] font-bold text-slate-400 uppercase">
+                                <span>Materiales (Detalle Interno)</span>
+                                <span>Subtotal</span>
+                              </div>
+                              <div class="divide-y divide-slate-100 text-slate-700">
+                                @for (mat of budgetData.materiales; track mat.nombre) {
+                                  <div class="px-2 py-1.5 flex justify-between">
+                                    <div>
+                                      <span class="font-semibold text-slate-800">{{ mat.nombre }}</span>
+                                      <span class="text-[8.5px] text-slate-400 block mt-0.5">{{ mat.cantidad }} u x S/ {{ mat.precioUnitario | number:'1.2-2' }}</span>
+                                    </div>
+                                    <span class="font-bold text-slate-900">S/ {{ mat.subtotal | number:'1.2-2' }}</span>
+                                  </div>
+                                }
+                              </div>
+                            </div>
+
+                            <!-- Bloque de costos internos mano de obra + utilidad -->
+                            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100 text-[10.5px]">
+                              <div>
+                                <span class="text-[8px] text-slate-400 block uppercase">Mano de Obra</span>
+                                <span class="font-bold text-slate-800">S/ {{ budgetData.manoDeObra | number:'1.2-2' }}</span>
+                              </div>
+                              <div>
+                                <span class="text-[8px] text-slate-400 block uppercase">Margen ({{ budgetData.margenGanancia }}%)</span>
+                                <span class="font-bold text-slate-800">S/ {{ (budgetData.totalAmount - budgetData.manoDeObra - (budgetData.totalAmount / (1 + budgetData.margenGanancia/100) * (budgetData.margenGanancia/100))) | number:'1.2-2' }}</span>
+                              </div>
+                            </div>
+
+                            <!-- Totales -->
+                            <div class="flex justify-between items-center py-1.5 border-t border-slate-100">
+                              <div>
+                                <span class="text-[8px] text-slate-400 block font-bold">TOTAL PRESUPUESTADO</span>
+                                <span class="text-base font-black text-slate-900">S/ {{ budgetData.totalAmount | number:'1.2-2' }}</span>

@@ -49,8 +49,6 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        ProductResponse response = mapToResponseDetail(product);
-
         // Buscar productos relacionados (de la misma categoría, limitado a 4)
         List<Product> related = productRepository.findRelatedProducts(
                 product.getCategoria().getId(),
@@ -61,8 +59,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(p -> new ProductResponse.RelatedProduct(p.getId(), p.getTitulo(), p.getImageUrl()))
                 .collect(Collectors.toList());
 
-        response.setRelacionados(relatedResponses);
-        return response;
+        return mapToResponse(product, relatedResponses);
     }
 
     @Override
@@ -101,26 +98,26 @@ public class ProductServiceImpl implements ProductService {
     // ===================================
 
     private void updateProductFields(Product product, ProductRequest request) {
-        product.setTitulo(request.getTitulo());
-        product.setDescripcion(request.getDescripcion());
-        product.setDescripcionDetallada(request.getDescripcionDetallada());
+        product.setTitulo(request.titulo());
+        product.setDescripcion(request.descripcion());
+        product.setDescripcionDetallada(request.descripcionDetallada());
 
         // Categoria auto-creacion/resolucion
-        Category category = resolveCategory(request.getCategoriaId());
+        Category category = resolveCategory(request.categoriaId());
         product.setCategoria(category);
 
-        product.setImageUrl(request.getImageUrl());
+        product.setImageUrl(request.imageUrl());
 
         // Grado escolar normalizacion
-        if (request.getGradoEscolar() != null) {
-            product.setGradoEscolar(request.getGradoEscolar().trim().toUpperCase());
+        if (request.gradoEscolar() != null) {
+            product.setGradoEscolar(request.gradoEscolar().trim().toUpperCase());
         } else {
             product.setGradoEscolar(null);
         }
 
         // Ocasion normalizacion
-        if (request.getOcasion() != null) {
-            List<String> normalizedOcasion = request.getOcasion().stream()
+        if (request.ocasion() != null) {
+            List<String> normalizedOcasion = request.ocasion().stream()
                     .filter(o -> o != null && !o.trim().isEmpty())
                     .map(o -> toTitleCase(o.trim()))
                     .collect(Collectors.toList());
@@ -130,8 +127,8 @@ public class ProductServiceImpl implements ProductService {
         }
 
         // Caracteristicas normalizacion
-        if (request.getCaracteristicas() != null) {
-            List<String> normalizedCaracteristicas = request.getCaracteristicas().stream()
+        if (request.caracteristicas() != null) {
+            List<String> normalizedCaracteristicas = request.caracteristicas().stream()
                     .filter(c -> c != null && !c.trim().isEmpty())
                     .map(String::trim)
                     .collect(Collectors.toList());
@@ -141,8 +138,8 @@ public class ProductServiceImpl implements ProductService {
         }
 
         product.setMaterialesReciclables(
-                request.getMaterialesReciclables() != null && request.getMaterialesReciclables());
-        product.setStock(request.getStock());
+                request.materialesReciclables() != null && request.materialesReciclables());
+        product.setStock(request.stock());
 
         // ProductMaterial update (Fix: Merge collection to avoid Hibernate duplicate key constraint)
         if (product.getMateriales() == null) {
@@ -151,27 +148,27 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductMaterial> existingMaterials = product.getMateriales();
 
-        if (request.getMateriales() == null || request.getMateriales().isEmpty()) {
+        if (request.materiales() == null || request.materiales().isEmpty()) {
             existingMaterials.clear();
         } else {
             // 1. Eliminar los materiales que ya no están en el request
-            List<String> requestedMaterialNames = request.getMateriales().stream()
-                    .filter(m -> m.getNombre() != null)
-                    .map(m -> m.getNombre().trim().toLowerCase())
+            List<String> requestedMaterialNames = request.materiales().stream()
+                    .filter(m -> m.nombre() != null)
+                    .map(m -> m.nombre().trim().toLowerCase())
                     .collect(Collectors.toList());
 
             existingMaterials.removeIf(pm -> !requestedMaterialNames.contains(pm.getMaterial().getNombre().toLowerCase()));
 
             // 2. Actualizar los existentes o agregar los nuevos
-            for (ProductRequest.ProductMaterialInput input : request.getMateriales()) {
-                if (input.getNombre() == null || input.getNombre().trim().isEmpty()) {
+            for (ProductRequest.ProductMaterialInput input : request.materiales()) {
+                if (input.nombre() == null || input.nombre().trim().isEmpty()) {
                     continue;
                 }
-                String normalizedName = input.getNombre().trim();
+                String normalizedName = input.nombre().trim();
 
                 Material material = materialRepository.findByNombreIgnoreCase(normalizedName)
                         .orElseThrow(() -> new RuntimeException(
-                                "Material no encontrado en inventario: " + input.getNombre()));
+                                "Material no encontrado en inventario: " + input.nombre()));
 
                 // Buscar si este material ya está vinculado al producto
                 ProductMaterial existingPm = existingMaterials.stream()
@@ -181,17 +178,17 @@ public class ProductServiceImpl implements ProductService {
 
                 if (existingPm != null) {
                     // Si ya existe, solo actualizamos sus valores sugeridos
-                    existingPm.setCantidadSugerida(input.getCantidadSugerida() != null ? input.getCantidadSugerida() : java.math.BigDecimal.ONE);
-                    existingPm.setEsOpcional(input.getEsOpcional() != null ? input.getEsOpcional() : false);
-                    existingPm.setNotas(input.getNotas());
+                    existingPm.setCantidadSugerida(input.cantidadSugerida() != null ? input.cantidadSugerida() : java.math.BigDecimal.ONE);
+                    existingPm.setEsOpcional(input.esOpcional() != null ? input.esOpcional() : false);
+                    existingPm.setNotas(input.notas());
                 } else {
                     // Si es nuevo, lo agregamos
                     ProductMaterial pm = new ProductMaterial(
                             product,
                             material,
-                            input.getCantidadSugerida() != null ? input.getCantidadSugerida() : java.math.BigDecimal.ONE,
-                            input.getEsOpcional() != null ? input.getEsOpcional() : false,
-                            input.getNotas());
+                            input.cantidadSugerida() != null ? input.cantidadSugerida() : java.math.BigDecimal.ONE,
+                            input.esOpcional() != null ? input.esOpcional() : false,
+                            input.notas());
                     existingMaterials.add(pm);
                 }
             }
@@ -274,64 +271,64 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductResponse mapToResponseSummary(Product product) {
-        ProductResponse response = new ProductResponse();
-        response.setId(product.getId());
-        response.setTitulo(product.getTitulo());
-        response.setDescripcion(product.getDescripcion());
-        response.setImageUrl(product.getImageUrl());
-        response.setGradoEscolar(product.getGradoEscolar());
-        response.setMaterialesReciclables(product.getMaterialesReciclables());
-        response.setOcasion(product.getOcasion());
-        response.setCaracteristicas(product.getCaracteristicas());
-        if (product.getCategoria() != null) {
-            response.setCategoriaId(product.getCategoria().getId());
-            response.setCategoriaNombre(product.getCategoria().getNombre());
-        }
-
-        if (product.getMateriales() != null) {
-            List<String> materialNames = product.getMateriales().stream()
-                    .map(pm -> pm.getMaterial().getNombre())
-                    .collect(Collectors.toList());
-            response.setMateriales(materialNames);
-        } else {
-            response.setMateriales(new ArrayList<>());
-        }
-
-        response.setStock(product.getStock());
-
-        return response;
+        return mapToResponse(product, null);
     }
 
     private ProductResponse mapToResponseDetail(Product product) {
-        ProductResponse response = mapToResponseSummary(product);
-        response.setDescripcionDetallada(product.getDescripcionDetallada());
-        response.setStock(product.getStock());
+        return mapToResponse(product, null);
+    }
 
-        if (product.getMateriales() != null) {
-            List<ProductResponse.ProductMaterialDetail> detailList = product.getMateriales().stream()
-                    .map(pm -> {
-                        ProductResponse.ProductMaterialDetail detail = new ProductResponse.ProductMaterialDetail();
-                        Material m = pm.getMaterial();
-                        detail.setMaterialId(m.getId());
-                        detail.setNombre(m.getNombre());
-                        detail.setUnidad(m.getUnidad());
-                        detail.setCostoVenta(m.getCostoVenta());
-                        detail.setCantidadSugerida(pm.getCantidadSugerida());
-                        detail.setEsOpcional(pm.getEsOpcional());
-                        detail.setNotas(pm.getNotas());
-                        detail.setProveedor(m.getProveedor());
-                        detail.setStockActual(m.getStockActual());
-                        if (m.getCategoria() != null) {
-                            detail.setCategoriaMaterial(m.getCategoria().getNombre());
-                        }
-                        return detail;
-                    })
-                    .collect(Collectors.toList());
-            response.setMaterialesDetalle(detailList);
-        } else {
-            response.setMaterialesDetalle(new ArrayList<>());
+    private ProductResponse mapToResponse(Product product, List<ProductResponse.RelatedProduct> relacionados) {
+        String catId = null;
+        String catNombre = null;
+        if (product.getCategoria() != null) {
+            catId = product.getCategoria().getId();
+            catNombre = product.getCategoria().getNombre();
         }
 
-        return response;
+        List<String> materiales = new ArrayList<>();
+        List<ProductResponse.ProductMaterialDetail> materialesDetalle = new ArrayList<>();
+        if (product.getMateriales() != null) {
+            for (ProductMaterial pm : product.getMateriales()) {
+                Material m = pm.getMaterial();
+                materiales.add(m.getNombre());
+
+                String catMaterialStr = null;
+                if (m.getCategoria() != null) {
+                    catMaterialStr = m.getCategoria().getNombre();
+                }
+
+                materialesDetalle.add(new ProductResponse.ProductMaterialDetail(
+                    m.getId(),
+                    m.getNombre(),
+                    m.getUnidad(),
+                    m.getCostoVenta(),
+                    pm.getCantidadSugerida(),
+                    pm.getEsOpcional(),
+                    pm.getNotas(),
+                    catMaterialStr,
+                    m.getProveedor(),
+                    m.getStockActual()
+                ));
+            }
+        }
+
+        return new ProductResponse(
+            product.getId(),
+            product.getTitulo(),
+            product.getDescripcion(),
+            product.getDescripcionDetallada(),
+            product.getImageUrl(),
+            catId,
+            catNombre,
+            materiales,
+            materialesDetalle,
+            product.getGradoEscolar(),
+            product.getOcasion(),
+            product.getCaracteristicas(),
+            product.getMaterialesReciclables(),
+            product.getStock(),
+            relacionados
+        );
     }
 }

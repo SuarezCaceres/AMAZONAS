@@ -100,10 +100,19 @@
         <p class="text-xs text-slate-400 mt-1 max-w-xs">Selecciona un canal del panel lateral para ver y coordinar los detalles con el vendedor.</p>
       </div>
     } @else {
+      <input type="radio" id="mobile-tab-chat-trigger" name="chat-mobile-tabs" checked class="hidden-tab-input">
+      <input type="radio" id="mobile-tab-details-trigger" name="chat-mobile-tabs" class="hidden-tab-input">
+      
+      <!-- Barra de Pestañas (Visible solo en móviles < 768px) -->
+      <div class="mobile-tabs-nav">
+        <label for="mobile-tab-chat-trigger" class="mobile-tab-btn">Conversación</label>
+        <label for="mobile-tab-details-trigger" class="mobile-tab-btn">Detalles</label>
+      </div>
+
       <div class="h-full grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 overflow-hidden">
         
         <!-- ── PANEL IZQUIERDO: FICHA DE LA SOLICITUD (3 COLUMNAS) ── -->
-        <aside class="lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
+        <aside class="chat-column-ficha lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
           <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium flex flex-col">
             <h2 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-3 flex items-center gap-1.5">
               <span class="material-icons text-sm text-amazonas-500" style="font-size: 16px;">receipt_long</span>
@@ -155,11 +164,11 @@
         </aside>
 
         <!-- ── PANEL CENTRAL: CANAL DE CHAT ACTIVO (6 COLUMNAS) ── -->
-        <section class="lg:col-span-6 bg-white rounded-2xl border border-slate-150 shadow-premium flex flex-col overflow-hidden h-full min-h-0">
+        <section class="chat-column-mensajes lg:col-span-6 bg-white rounded-2xl border border-slate-150 shadow-premium flex flex-col overflow-hidden h-full min-h-0">
           
           <!-- Cabecera del chat activo -->
           <div class="border-b border-slate-150 bg-slate-50/50 shrink-0">
-            <div class="px-4 py-3.5 flex justify-between items-center">
+            <div class="chat-header-flex px-4 py-3.5 flex justify-between items-center">
               <div class="flex items-center gap-3">
                 <button (click)="isSidebarOpen = !isSidebarOpen" class="p-2 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors text-slate-500 cursor-pointer bg-white flex items-center justify-center shrink-0" [title]="isSidebarOpen ? 'Ocultar negociaciones' : 'Mostrar negociaciones'">
                   <span class="material-icons text-sm" style="font-size: 18px;">{{ isSidebarOpen ? 'menu_open' : 'menu' }}</span>
@@ -171,9 +180,9 @@
                   <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white"></span>
                 </div>
                 <div>
-                  <div class="flex items-center gap-2">
+                  <div class="chat-header-title-row flex items-center gap-2">
                     <h2 class="font-bold text-slate-800 text-xs">Canal de Negociación</h2>
-                    <span class="px-2 py-0.5 text-[9px] font-bold rounded"
+                    <span class="chat-header-badge-desktop px-2 py-0.5 text-[9px] font-bold rounded"
                       [class.bg-yellow-50]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
                       [class.text-yellow-750]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
                       [class.border-yellow-100]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
@@ -204,7 +213,34 @@
                   <p class="text-[10px] text-slate-500 m-0">Chat activo con {{ selectedRoom.vendorName }}</p>
                 </div>
               </div>
-              <div class="flex items-center gap-4">
+              <div class="chat-header-actions-wrapper flex items-center gap-4">
+                <span class="chat-header-badge-mobile px-2 py-0.5 text-[9px] font-bold rounded"
+                  [class.bg-yellow-50]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
+                  [class.text-yellow-750]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
+                  [class.border-yellow-100]="selectedRoom.requestStatus === 'PENDIENTE' && selectedRoom.status !== 'AGREED'"
+                  [class.bg-emerald-55]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDIENTE'"
+                  [class.text-emerald-700]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDIENTE'"
+                  [class.border-emerald-100]="selectedRoom.status === 'AGREED' && selectedRoom.requestStatus === 'PENDIENTE'"
+                  [class.bg-blue-50]="selectedRoom.requestStatus === 'PROCESANDO'"
+                  [class.text-blue-700]="selectedRoom.requestStatus === 'PROCESANDO'"
+                  [class.border-blue-100]="selectedRoom.requestStatus === 'PROCESANDO'"
+                  [class.bg-emerald-500]="selectedRoom.requestStatus === 'COMPLETADO'"
+                  [class.text-white]="selectedRoom.requestStatus === 'COMPLETADO'"
+                  [class.bg-rose-50]="selectedRoom.requestStatus === 'RECHAZADO'"
+                  [class.text-rose-700]="selectedRoom.requestStatus === 'RECHAZADO'"
+                  [class.border-rose-200]="selectedRoom.requestStatus === 'RECHAZADO'">
+                  {{ 
+                    selectedRoom.requestStatus === 'COMPLETADO' 
+                      ? 'Completado' 
+                      : selectedRoom.requestStatus === 'PROCESANDO' 
+                        ? 'En Producción' 
+                        : selectedRoom.requestStatus === 'RECHAZADO'
+                          ? 'Rechazada'
+                          : selectedRoom.status === 'AGREED' 
+                            ? 'Presupuesto Aceptado' 
+                            : 'Cotización en Revisión' 
+                  }}
+                </span>
                 <!-- Botón Cancelar Solicitud (Solo visible si está PENDIENTE) -->
                 <button 
                   *ngIf="selectedRoom.requestStatus === 'PENDIENTE'"
@@ -702,7 +738,7 @@
         </section>
 
         <!-- ── PANEL DERECHO: INSTRUCCIONES O PANEL DE PAGO (3 COLUMNAS) ── -->
-        <aside class="lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
+        <aside class="chat-column-historial lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
           
           @if (showPaymentPanel && selectedRoom.status === 'AGREED') {
             <!-- Ventana de Pago Digital (QR Yape) -->

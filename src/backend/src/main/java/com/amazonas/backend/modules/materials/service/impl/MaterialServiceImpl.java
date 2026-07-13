@@ -47,13 +47,13 @@ public class MaterialServiceImpl implements MaterialService {
     @Transactional
     @CacheEvict(value = "materials", allEntries = true)
     public MaterialResponse createMaterial(MaterialRequest request) {
-        if (materialRepository.findByNombreIgnoreCase(request.getNombre()).isPresent()) {
-            throw new RuntimeException("Ya existe un material con el nombre: " + request.getNombre());
+        if (materialRepository.findByNombreIgnoreCase(request.nombre()).isPresent()) {
+            throw new RuntimeException("Ya existe un material con el nombre: " + request.nombre());
         }
 
         MaterialCategory category = materialCategoryRepository
-                .findById(UUID.fromString(request.getCategoriaId()))
-                .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.getCategoriaId()));
+                .findById(UUID.fromString(request.categoriaId()))
+                .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.categoriaId()));
 
         Material material = new Material();
         updateMaterialFields(material, request, category);
@@ -69,16 +69,16 @@ public class MaterialServiceImpl implements MaterialService {
         Material material = materialRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Material no encontrado"));
 
-        materialRepository.findByNombreIgnoreCase(request.getNombre())
+        materialRepository.findByNombreIgnoreCase(request.nombre())
                 .ifPresent(existing -> {
                     if (!existing.getId().equals(id)) {
-                        throw new RuntimeException("Ya existe otro material con el nombre: " + request.getNombre());
+                        throw new RuntimeException("Ya existe otro material con el nombre: " + request.nombre());
                     }
                 });
 
         MaterialCategory category = materialCategoryRepository
-                .findById(UUID.fromString(request.getCategoriaId()))
-                .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.getCategoriaId()));
+                .findById(UUID.fromString(request.categoriaId()))
+                .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.categoriaId()));
 
         updateMaterialFields(material, request, category);
 
@@ -97,30 +97,34 @@ public class MaterialServiceImpl implements MaterialService {
     }
 
     private void updateMaterialFields(Material material, MaterialRequest request, MaterialCategory category) {
-        material.setNombre(request.getNombre().trim());
-        material.setUnidad(request.getUnidad().trim());
-        material.setCostoCompra(request.getCostoCompra());
-        material.setCostoVenta(request.getCostoVenta());
-        material.setStockActual(request.getStockActual());
+        material.setNombre(request.nombre().trim());
+        material.setUnidad(request.unidad().trim());
+        material.setCostoCompra(request.costoCompra());
+        material.setCostoVenta(request.costoVenta());
+        material.setStockActual(request.stockActual());
         material.setCategoria(category);
-        material.setProveedor(request.getProveedor() != null ? request.getProveedor().trim() : null);
-        material.setActivo(request.getActivo() != null && request.getActivo());
+        material.setProveedor(request.proveedor() != null ? request.proveedor().trim() : null);
+        material.setActivo(request.activo() != null && request.activo());
     }
 
     private MaterialResponse mapToResponse(Material material) {
-        MaterialResponse response = new MaterialResponse();
-        response.setId(material.getId());
-        response.setNombre(material.getNombre());
-        response.setUnidad(material.getUnidad());
-        response.setCostoCompra(material.getCostoCompra());
-        response.setCostoVenta(material.getCostoVenta());
-        response.setStockActual(material.getStockActual());
-        response.setProveedor(material.getProveedor());
-        response.setActivo(material.getActivo());
+        String catId = null;
+        String catNombre = null;
         if (material.getCategoria() != null) {
-            response.setCategoriaId(material.getCategoria().getId().toString());
-            response.setCategoriaNombre(material.getCategoria().getNombre());
+            catId = material.getCategoria().getId().toString();
+            catNombre = material.getCategoria().getNombre();
         }
-        return response;
+        return new MaterialResponse(
+            material.getId(),
+            material.getNombre(),
+            material.getUnidad(),
+            material.getCostoCompra(),
+            material.getCostoVenta(),
+            material.getStockActual(),
+            catId,
+            catNombre,
+            material.getProveedor(),
+            material.getActivo()
+        );
     }
 }

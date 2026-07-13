@@ -58,7 +58,7 @@
     @if (mostrarHistorial) {
       <div class="history-content" style="margin-top: 16px;">
         <!-- Filtro por Fecha -->
-        <div class="history-filter-row" style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; width: max-content;">
+        <div class="history-filter-row" style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; width: 100%; max-width: 100%; box-sizing: border-box; flex-wrap: wrap;">
           <label for="filtroFecha" style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px;">
             <span class="material-icons" style="font-size: 16px; color: #7c3aed;">calendar_today</span>
             Filtrar por Fecha:
@@ -284,8 +284,8 @@
               </div>
             }
             @if (selectedMaquetaId || solicitudId) {
-              <div style="margin-top: 10px; padding: 10px 14px; background: #ecfdf5; border-radius: 8px; border: 1px solid #bbf7d0; font-size: 12px; color: #166534; display: flex; align-items: center; gap: 8px;">
-                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2">
+              <div class="maqueta-selected-banner">
+                <svg viewBox="0 0 24 24" class="maqueta-selected-icon" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                   <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
@@ -296,18 +296,18 @@
 
           @if (currentMaquetaTipo === 'kit') {
             <!-- Cabecera de Kits por Maqueta -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; gap: 10px;">
-              <div>
-                <label style="font-size: 13px; font-weight: 700; color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 6px;">
+            <div class="kit-header-row">
+              <div class="kit-header-info">
+                <label class="kit-header-label">
                   <span class="material-icons" style="font-size: 18px;">inventory</span>
                   Gestión de Kits por Maqueta
                 </label>
-                <span style="font-size: 11px; color: #64748b;">Define o selecciona kits de materiales recomendados</span>
+                <span class="kit-header-subtitle">Define o selecciona kits de materiales recomendados</span>
               </div>
               <button
                 type="button"
                 (click)="isAddingKit = true; editingKitId = null; kitFormData = { maquetaId: '', descripcion: '' }; kitMaterialesForm = []"
-                style="padding: 6px 12px; border: 1.5px solid #ddd6fe; border-radius: 8px; background: #f5f3ff; color: #7c3aed; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; font-family: inherit;"
+                class="kit-btn-agregar"
               >
                 <span class="material-icons" style="font-size: 15px;">add</span>
                 Agregar Kit
@@ -316,16 +316,16 @@
 
             <!-- Formulario de Agregar/Editar Kit (Solo visible si está agregando o editando) -->
             @if (isAddingKit || editingKitId) {
-              <div style="background: #f5f3ff; border: 1.5px solid #ddd6fe; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
-                <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 700; color: #6d28d9;">
+              <div class="kit-form-wrapper">
+                <h3 class="kit-form-title">
                   {{ isAddingKit ? 'Crear Nuevo Kit de Materiales' : 'Editar Kit de Materiales' }}
                 </h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Seleccionar Maqueta *</label>
+                <div class="kit-form-grid">
+                  <div class="form-group kit-form-field">
+                    <label class="kit-field-label">Seleccionar Maqueta *</label>
                     <select
                       [(ngModel)]="kitFormData.maquetaId"
-                      style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; background: #ffffff; outline: none; font-family: inherit;"
+                      class="kit-field-select"
                     >
                       <option value="">-- Seleccionar maqueta --</option>
                       @for (prod of catalogMaquetas; track prod.id) {
@@ -333,32 +333,32 @@
                       }
                     </select>
                   </div>
-                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Total del Kit (Autocalculado)</label>
-                    <div style="padding: 8px 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 13px; font-weight: 700; color: #065f46; min-height: 38px; display: flex; align-items: center; gap: 4px;">
+                  <div class="form-group kit-form-field">
+                    <label class="kit-field-label">Total del Kit (Autocalculado)</label>
+                    <div class="kit-total-display">
                       <span class="material-icons" style="font-size:15px;">calculate</span>
                       S/ {{ calcularTotalKit(kitMaterialesForm) | number:'1.2-2' }}
                     </div>
                   </div>
-                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px; grid-column: span 2;">
-                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Descripción del Kit (Opcional)</label>
+                  <div class="form-group kit-form-field kit-desc-field">
+                    <label class="kit-field-label">Descripción del Kit (Opcional)</label>
                     <input
                       type="text"
                       [(ngModel)]="kitFormData.descripcion"
                       placeholder="Ej: Incluye base de madera, planchas de acrílico y pegamento rápido"
-                      style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; outline: none; font-family: inherit;"
+                      class="kit-field-input"
                     />
                   </div>
                 </div>
 
                 <!-- Subformulario de Materiales del Kit -->
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #4c1d95;">Materiales del Kit</span>
+                <div class="kit-materiales-container">
+                  <div class="kit-materiales-header">
+                    <span class="kit-materiales-title">Materiales del Kit</span>
                     <button
                       type="button"
                       (click)="agregarMaterialKit()"
-                      style="padding: 4px 10px; border: 1px solid #c084fc; border-radius: 6px; background: #fdf4ff; color: #a21caf; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit;"
+                      class="kit-btn-add-material"
                     >
                       <span class="material-icons" style="font-size:12px;">add</span>
                       Agregar Material
@@ -366,12 +366,12 @@
                   </div>
 
                   @if (kitMaterialesForm.length > 0) {
-                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                    <div class="kit-materiales-list">
                       @for (matKit of kitMaterialesForm; track $index) {
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="kit-material-row">
                           <select
                             [(ngModel)]="matKit.materialNombre"
-                            style="flex: 2; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #ffffff; outline: none; font-family: inherit;"
+                            class="kit-material-select"
                           >
                             <option value="">-- Seleccionar material --</option>
                             @for (m of materialesDisponibles; track m.nombre) {
@@ -382,13 +382,13 @@
                             type="number"
                             min="1"
                             [(ngModel)]="matKit.cantidad"
-                            style="flex: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; font-family: inherit; text-align: center; max-width: 70px;"
+                            class="kit-material-cantidad"
                             placeholder="Cant."
                           />
                           <button
                             type="button"
                             (click)="eliminarMaterialKit($index)"
-                            style="padding: 6px; border: none; border-radius: 6px; background: #fee2e2; color: #ef4444; cursor: pointer; display: flex; align-items: center;"
+                            class="kit-material-btn-delete"
                             title="Eliminar material"
                           >
                             <span class="material-icons" style="font-size: 14px;">delete</span>
@@ -397,24 +397,24 @@
                       }
                     </div>
                   } @else {
-                    <div style="text-align: center; padding: 12px; font-size: 11.5px; color: #94a3b8; border: 1.5px dashed #cbd5e1; border-radius: 6px;">
+                    <div class="kit-materiales-empty">
                       No hay materiales en el kit. Haz clic en "Agregar Material".
                     </div>
                   }
                 </div>
 
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <div class="kit-form-footer">
                   <button
                     type="button"
                     (click)="handleCancelKit()"
-                    style="padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;"
+                    class="kit-btn-cancelar"
                   >
                     Cancelar
                   </button>
                   <button
                     type="button"
                     (click)="handleSaveKit()"
-                    style="padding: 6px 14px; border: none; border-radius: 6px; background: #7c3aed; color: #ffffff; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;"
+                    class="kit-btn-guardar"
                   >
                     Guardar Kit
                   </button>
@@ -426,12 +426,11 @@
             @if (!isAddingKit && !editingKitId) {
               <div>
                 <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Seleccionar kit predefinido</label>
-                <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="kit-selector-row">
                   <select
                     [(ngModel)]="kitSeleccionadoId"
                     (change)="cargarKitParaPresupuesto(kitSeleccionadoId)"
-                    class="form-group-input"
-                    style="flex: 1; cursor: pointer;"
+                    class="form-group-input kit-selector-select"
                   >
                     <option value="">-- Seleccionar kit --</option>
                     @for (kit of kitsGuardados; track kit.id) {
@@ -445,7 +444,7 @@
                     <button
                       type="button"
                       (click)="onEditKitSelected()"
-                      style="padding: 10px; border: 1.5px solid #ddd6fe; border-radius: 8px; background: #f5f3ff; color: #7c3aed; cursor: pointer; display: flex; align-items: center; outline: none;"
+                      class="kit-btn-edit"
                       title="Editar este kit"
                     >
                       <span class="material-icons" style="font-size:16px;">edit</span>
@@ -453,20 +452,20 @@
                     <button
                       type="button"
                       (click)="onDeleteKitSelected()"
-                      style="padding: 10px; border: 1.5px solid #fee2e2; border-radius: 8px; background: #fef2f2; color: #ef4444; cursor: pointer; display: flex; align-items: center; outline: none;"
+                      class="kit-btn-eliminar"
                       title="Eliminar este kit"
                     >
                       <span class="material-icons" style="font-size:16px;">delete</span>
                     </button>
                   }
                 </div>
-                <p style="font-size: 11.5px; color: var(--clr-text-muted); margin: 6px 0 0; line-height: 1.4;">
+                <p class="kit-selector-help">
                   Cargar un kit predefinido precargará todos sus materiales directamente en la calculadora de presupuestos de manera presencial.
                 </p>
               </div>
 
               @if (kitSeleccionadoId && nombreProyecto) {
-                <div style="margin-top: 10px; padding: 10px 14px; background: #f5f3ff; border-radius: 8px; border: 1px solid #ddd6fe; font-size: 12px; color: #6d28d9; display: flex; align-items: center; gap: 8px;">
+                <div class="kit-loaded-banner">
                   <span class="material-icons" style="font-size:16px;">check_circle</span>
                   <span>Kit <strong>{{ nombreProyecto }}</strong> cargado con éxito. Sus materiales fueron precargados abajo.</span>
                 </div>
@@ -476,37 +475,35 @@
 
           @if (currentMaquetaTipo === 'personalizada') {
             <!-- Campo libre para maqueta personalizada -->
-            <div>
-              <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Nombre del proyecto personalizado *</label>
+            <div class="personalizada-wrapper">
+              <label class="personalizada-label">Nombre del proyecto personalizado *</label>
               <input type="text"
                      [(ngModel)]="nombreProyecto"
                      placeholder="Ej: Maqueta del Colegio San Martín..."
-                     class="form-group-input"
-                     style="width: 100%; box-sizing: border-box; margin-bottom: 12px;">
+                     class="form-group-input personalizada-nombre-input">
 
               <!-- Autocomplete para maqueta base opcional -->
               <div class="autocomplete-input-wrapper">
-                <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Copiar materiales desde una maqueta existente (Opcional)</label>
+                <label class="personalizada-label">Copiar materiales desde una maqueta existente (Opcional)</label>
                 <input type="text"
                        [(ngModel)]="busquedaMaquetaBase"
                        (input)="filtrarMaquetasBase(); mostrarDropdownMaquetaBase = true"
                        (focus)="mostrarDropdownMaquetaBase = true"
                        (blur)="onBlurMaquetaBaseAutocomplete()"
                        placeholder="Buscar maqueta base para copiar sus materiales..."
-                       class="form-group-input"
-                       style="width: 100%; box-sizing: border-box;">
+                       class="form-group-input">
                 @if (mostrarDropdownMaquetaBase && maquetasFiltradasBase.length > 0) {
                   <div class="autocomplete-dropdown">
                     @for (maq of maquetasFiltradasBase; track maq.id) {
                       <div (mousedown)="seleccionarMaquetaBase(maq)" class="autocomplete-item">
                         @if (maq.imageUrl) {
-                          <img [src]="maq.imageUrl" alt="" style="width: 30px; height: 30px;">
+                          <img [src]="maq.imageUrl" alt="" class="autocomplete-thumb">
                         } @else {
-                          <div class="fallback-img" style="width: 30px; height: 30px; font-size: 14px;">🏠</div>
+                          <div class="fallback-img">&#127968;</div>
                         }
-                        <div style="flex: 1; min-width: 0;">
-                          <div style="font-weight: 700; font-size: 12px; color: var(--clr-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ maq.titulo }}</div>
-                          <div style="font-size: 10px; color: var(--clr-text-muted);">{{ maq.categoriaNombre }} · Stock: {{ maq.stock }}</div>
+                        <div class="autocomplete-item-info">
+                          <div class="autocomplete-item-title">{{ maq.titulo }}</div>
+                          <div class="autocomplete-item-meta">{{ maq.categoriaNombre }} · Stock: {{ maq.stock }}</div>
                         </div>
                       </div>
                     }

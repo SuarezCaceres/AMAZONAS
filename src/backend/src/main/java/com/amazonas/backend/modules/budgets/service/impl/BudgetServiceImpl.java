@@ -27,9 +27,11 @@ import com.amazonas.backend.modules.users.model.User;
 import com.amazonas.backend.modules.users.repository.UserRepository;
 import com.amazonas.backend.modules.auth.enums.Role;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class BudgetServiceImpl implements BudgetService {
 
     private final BudgetRepository budgetRepository;
@@ -62,9 +64,9 @@ public class BudgetServiceImpl implements BudgetService {
     public BudgetResponse crear(BudgetRequest req) {
         PurchaseRequest solicitud = null;
 
-        if (req.getSolicitudId() != null) {
-            solicitud = purchaseRequestRepository.findById(req.getSolicitudId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + req.getSolicitudId()));
+        if (req.solicitudId() != null) {
+            solicitud = purchaseRequestRepository.findById(req.solicitudId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + req.solicitudId()));
 
             // Validar unicidad: solo 1 presupuesto por solicitud
             if (budgetRepository.existsBySolicitudId(solicitud.getId())) {
@@ -73,8 +75,8 @@ public class BudgetServiceImpl implements BudgetService {
         }
 
         // Si es presencial y hay email, crear usuario si no existe
-        if (Boolean.TRUE.equals(req.getEsPresencial()) && req.getClienteEmail() != null && !req.getClienteEmail().isBlank()) {
-            crearUsuarioSiNoExiste(req.getClienteNombre(), req.getClienteEmail(), req.getClienteTelefono());
+        if (Boolean.TRUE.equals(req.esPresencial()) && req.clienteEmail() != null && !req.clienteEmail().isBlank()) {
+            crearUsuarioSiNoExiste(req.clienteNombre(), req.clienteEmail(), req.clienteTelefono());
         }
 
         Budget budget = buildBudget(req, solicitud);
@@ -107,34 +109,34 @@ public class BudgetServiceImpl implements BudgetService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Presupuesto no encontrado: " + budgetId));
 
         // Si es presencial y hay email, crear usuario si no existe
-        if (Boolean.TRUE.equals(req.getEsPresencial()) && req.getClienteEmail() != null && !req.getClienteEmail().isBlank()) {
-            crearUsuarioSiNoExiste(req.getClienteNombre(), req.getClienteEmail(), req.getClienteTelefono());
+        if (Boolean.TRUE.equals(req.esPresencial()) && req.clienteEmail() != null && !req.clienteEmail().isBlank()) {
+            crearUsuarioSiNoExiste(req.clienteNombre(), req.clienteEmail(), req.clienteTelefono());
         }
 
-        budget.setNombre(req.getNombre());
-        budget.setDescripcion(req.getDescripcion());
-        if (req.getClienteNombre() != null) budget.setClienteNombre(req.getClienteNombre());
-        if (req.getClienteEmail() != null) budget.setClienteEmail(req.getClienteEmail());
-        if (req.getClienteTelefono() != null) budget.setClienteTelefono(req.getClienteTelefono());
-        if (req.getEsPresencial() != null) budget.setEsPresencial(req.getEsPresencial());
-        if (req.getManoDeObra() != null) budget.setManoDeObra(req.getManoDeObra());
-        if (req.getMargenGanancia() != null) budget.setMargenGanancia(req.getMargenGanancia());
-        if (req.getAdelantoRequerido() != null) budget.setAdelantoRequerido(req.getAdelantoRequerido());
-        if (req.getAdelantoPorcentaje() != null) budget.setAdelantoPorcentaje(req.getAdelantoPorcentaje());
+        budget.setNombre(req.nombre());
+        budget.setDescripcion(req.descripcion());
+        if (req.clienteNombre() != null) budget.setClienteNombre(req.clienteNombre());
+        if (req.clienteEmail() != null) budget.setClienteEmail(req.clienteEmail());
+        if (req.clienteTelefono() != null) budget.setClienteTelefono(req.clienteTelefono());
+        if (req.esPresencial() != null) budget.setEsPresencial(req.esPresencial());
+        if (req.manoDeObra() != null) budget.setManoDeObra(req.manoDeObra());
+        if (req.margenGanancia() != null) budget.setMargenGanancia(req.margenGanancia());
+        if (req.adelantoRequerido() != null) budget.setAdelantoRequerido(req.adelantoRequerido());
+        if (req.adelantoPorcentaje() != null) budget.setAdelantoPorcentaje(req.adelantoPorcentaje());
  
         // Actualizar items de forma segura para no violar el constraint único uq_budget_material (Consolidación de duplicados)
-        if (req.getItems() != null) {
-            for (BudgetItemRequest itemReq : req.getItems()) {
-                if (itemReq.getMaterialId() == null) {
+        if (req.items() != null) {
+            for (BudgetItemRequest itemReq : req.items()) {
+                if (itemReq.materialId() == null) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID de cada material es obligatorio en los items del presupuesto.");
                 }
             }
 
-            java.util.Map<UUID, BigDecimal> groupedItems = req.getItems().stream()
-                    .filter(item -> item.getMaterialId() != null && item.getCantidad() != null)
+            java.util.Map<UUID, BigDecimal> groupedItems = req.items().stream()
+                    .filter(item -> item.materialId() != null && item.cantidad() != null)
                     .collect(Collectors.toMap(
-                        BudgetItemRequest::getMaterialId,
-                        BudgetItemRequest::getCantidad,
+                        BudgetItemRequest::materialId,
+                        BudgetItemRequest::cantidad,
                         BigDecimal::add
                     ));
 
@@ -168,14 +170,14 @@ public class BudgetServiceImpl implements BudgetService {
         }
 
         // Actualizar servicio de explicación
-        if (req.getServicioExplicacion() != null) {
+        if (req.servicioExplicacion() != null) {
             BudgetExplanationService svc = budget.getServicioExplicacion();
             if (svc == null) {
                 svc = new BudgetExplanationService();
                 svc.setBudget(budget);
                 budget.setServicioExplicacion(svc);
             }
-            applyExplanationService(svc, req.getServicioExplicacion());
+            applyExplanationService(svc, req.servicioExplicacion());
         }
 
         budget.recalculateAdelanto();
@@ -191,17 +193,7 @@ public class BudgetServiceImpl implements BudgetService {
             try {
                 result.add(toResponse(b));
             } catch (Exception ex) {
-                // Loguear error y continuar
-                try {
-                    java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
-                    java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-                    pw.println("--- EXCEPTION MAPPING BUDGET " + b.getId() + " --- " + new java.util.Date());
-                    ex.printStackTrace(pw);
-                    pw.close();
-                    fw.close();
-                } catch (Exception e) {
-                    // ignore
-                }
+                log.error("Exception mapping budget {}", b.getId(), ex);
             }
         }
         return result;
@@ -214,27 +206,27 @@ public class BudgetServiceImpl implements BudgetService {
     private Budget buildBudget(BudgetRequest req, PurchaseRequest solicitud) {
         Budget budget = new Budget();
         budget.setSolicitud(solicitud);
-        budget.setNombre(req.getNombre());
-        budget.setDescripcion(req.getDescripcion());
-        if (req.getManoDeObra() != null) budget.setManoDeObra(req.getManoDeObra());
-        if (req.getMargenGanancia() != null) budget.setMargenGanancia(req.getMargenGanancia());
-        if (req.getAdelantoRequerido() != null) budget.setAdelantoRequerido(req.getAdelantoRequerido());
-        if (req.getAdelantoPorcentaje() != null) budget.setAdelantoPorcentaje(req.getAdelantoPorcentaje());
+        budget.setNombre(req.nombre());
+        budget.setDescripcion(req.descripcion());
+        if (req.manoDeObra() != null) budget.setManoDeObra(req.manoDeObra());
+        if (req.margenGanancia() != null) budget.setMargenGanancia(req.margenGanancia());
+        if (req.adelantoRequerido() != null) budget.setAdelantoRequerido(req.adelantoRequerido());
+        if (req.adelantoPorcentaje() != null) budget.setAdelantoPorcentaje(req.adelantoPorcentaje());
 
         // Datos del cliente para presupuestos presenciales
-        if (req.getClienteNombre() != null) budget.setClienteNombre(req.getClienteNombre());
-        if (req.getClienteEmail() != null) budget.setClienteEmail(req.getClienteEmail());
-        if (req.getClienteTelefono() != null) budget.setClienteTelefono(req.getClienteTelefono());
-        if (req.getEsPresencial() != null) budget.setEsPresencial(req.getEsPresencial());
+        if (req.clienteNombre() != null) budget.setClienteNombre(req.clienteNombre());
+        if (req.clienteEmail() != null) budget.setClienteEmail(req.clienteEmail());
+        if (req.clienteTelefono() != null) budget.setClienteTelefono(req.clienteTelefono());
+        if (req.esPresencial() != null) budget.setEsPresencial(req.esPresencial());
 
         // Tipo de maqueta (Personalizada vs Kit Estándar)
-        if (req.getIsCustom() != null) {
-            budget.setIsCustom(req.getIsCustom());
+        if (req.isCustom() != null) {
+            budget.setIsCustom(req.isCustom());
         } else if (solicitud != null) {
             budget.setIsCustom(solicitud.getIsCustom());
         }
-        if (req.getIsKit() != null) {
-            budget.setIsKit(req.getIsKit());
+        if (req.isKit() != null) {
+            budget.setIsKit(req.isKit());
         } else if (solicitud != null) {
             budget.setIsKit(solicitud.getIsKit());
         }
@@ -246,18 +238,18 @@ public class BudgetServiceImpl implements BudgetService {
         }
 
         // Items del presupuesto — snapshot de costoVenta del material (Consolidación de duplicados)
-        if (req.getItems() != null) {
-            for (BudgetItemRequest itemReq : req.getItems()) {
-                if (itemReq.getMaterialId() == null) {
+        if (req.items() != null) {
+            for (BudgetItemRequest itemReq : req.items()) {
+                if (itemReq.materialId() == null) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID de cada material es obligatorio en los items del presupuesto.");
                 }
             }
 
-            java.util.Map<UUID, BigDecimal> groupedItems = req.getItems().stream()
-                    .filter(item -> item.getMaterialId() != null && item.getCantidad() != null)
+            java.util.Map<UUID, BigDecimal> groupedItems = req.items().stream()
+                    .filter(item -> item.materialId() != null && item.cantidad() != null)
                     .collect(Collectors.toMap(
-                        BudgetItemRequest::getMaterialId,
-                        BudgetItemRequest::getCantidad,
+                        BudgetItemRequest::materialId,
+                        BudgetItemRequest::cantidad,
                         BigDecimal::add
                     ));
 
@@ -273,10 +265,10 @@ public class BudgetServiceImpl implements BudgetService {
         }
 
         // Servicio de explicación (opcional)
-        if (req.getServicioExplicacion() != null) {
+        if (req.servicioExplicacion() != null) {
             BudgetExplanationService svc = new BudgetExplanationService();
             svc.setBudget(budget);
-            applyExplanationService(svc, req.getServicioExplicacion());
+            applyExplanationService(svc, req.servicioExplicacion());
             budget.setServicioExplicacion(svc);
         }
 
@@ -284,24 +276,24 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     private void applyExplanationService(BudgetExplanationService svc, BudgetExplanationServiceRequest req) {
-        boolean isIncluido = req.getIncluido() != null ? req.getIncluido() : svc.getIncluido();
-        if (req.getIncluido() != null) svc.setIncluido(req.getIncluido());
+        boolean isIncluido = req.incluido() != null ? req.incluido() : svc.getIncluido();
+        if (req.incluido() != null) svc.setIncluido(req.incluido());
 
         if (isIncluido) {
-            if (req.getCantidadPersonas() == null || req.getCantidadPersonas() <= 0) {
+            if (req.cantidadPersonas() == null || req.cantidadPersonas() <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad de personas para el servicio de explicación debe ser mayor a 0.");
             }
-            if (req.getDuracionMinutos() == null || req.getDuracionMinutos() <= 0) {
+            if (req.duracionMinutos() == null || req.duracionMinutos() <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La duración para el servicio de explicación debe ser mayor a 0.");
             }
-            if (req.getPrecio() != null && req.getPrecio().compareTo(java.math.BigDecimal.ZERO) < 0) {
+            if (req.precio() != null && req.precio().compareTo(java.math.BigDecimal.ZERO) < 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El precio del servicio de explicación no puede ser negativo.");
             }
-            svc.setTipoEvento(req.getTipoEvento());
-            svc.setCantidadPersonas(req.getCantidadPersonas());
-            svc.setDuracionMinutos(req.getDuracionMinutos());
-            if (req.getPrecio() != null) svc.setPrecio(req.getPrecio());
-            svc.setNotas(req.getNotas());
+            svc.setTipoEvento(req.tipoEvento());
+            svc.setCantidadPersonas(req.cantidadPersonas());
+            svc.setDuracionMinutos(req.duracionMinutos());
+            if (req.precio() != null) svc.setPrecio(req.precio());
+            svc.setNotas(req.notas());
         } else {
             svc.setTipoEvento(null);
             svc.setCantidadPersonas(null);
@@ -316,85 +308,89 @@ public class BudgetServiceImpl implements BudgetService {
     // ─────────────────────────────────────────────────────────
 
     private BudgetResponse toResponse(Budget b) {
-        BudgetResponse resp = new BudgetResponse();
-        resp.setId(b.getId());
         boolean clienteRegistrado = false;
         if (b.getSolicitud() != null) {
             clienteRegistrado = true;
         } else if (b.getClienteEmail() != null && !b.getClienteEmail().isBlank()) {
             clienteRegistrado = userRepository.existsByEmail(b.getClienteEmail());
         }
-        resp.setClienteRegistrado(clienteRegistrado);
+
+        UUID solicitudId = null;
+        Boolean isCustom = b.getIsCustom();
+        Boolean isKit = b.getIsKit();
         if (b.getSolicitud() != null) {
             try {
-                resp.setSolicitudId(b.getSolicitud().getId());
-                resp.setIsCustom(b.getIsCustom() != null ? b.getIsCustom() : b.getSolicitud().getIsCustom());
-                resp.setIsKit(b.getIsKit() != null ? b.getIsKit() : b.getSolicitud().getIsKit());
+                solicitudId = b.getSolicitud().getId();
+                isCustom = b.getIsCustom() != null ? b.getIsCustom() : b.getSolicitud().getIsCustom();
+                isKit = b.getIsKit() != null ? b.getIsKit() : b.getSolicitud().getIsKit();
             } catch (Exception ex) {
                 // Capturar EntityNotFoundException por soft-delete de solicitud
-                resp.setSolicitudId(null);
-                resp.setIsCustom(b.getIsCustom());
-                resp.setIsKit(b.getIsKit());
             }
-        } else {
-            resp.setIsCustom(b.getIsCustom());
-            resp.setIsKit(b.getIsKit());
         }
-        resp.setNombre(b.getNombre());
-        resp.setDescripcion(b.getDescripcion());
-        resp.setCodigoReferencia(b.getCodigoReferencia());
-        resp.setEstado(b.getEstado());
-        resp.setManoDeObra(b.getManoDeObra());
-        resp.setMargenGanancia(b.getMargenGanancia());
-        resp.setAdelantoRequerido(b.getAdelantoRequerido());
-        resp.setAdelantoPorcentaje(b.getAdelantoPorcentaje());
 
-        // Datos del cliente
-        resp.setClienteNombre(b.getClienteNombre());
-        resp.setClienteEmail(b.getClienteEmail());
-        resp.setClienteTelefono(b.getClienteTelefono());
-        resp.setEsPresencial(b.getEsPresencial());
-
-        // Campos calculados
-        resp.setCostoMateriales(b.getCostoMateriales());
-        resp.setSubtotal(b.getSubtotal());
-        resp.setGanancia(b.getGanancia());
-        resp.setTotal(b.getTotal());
-        resp.setAdelantoMonto(b.getAdelantoMonto());
-
-        resp.setCreatedAt(b.getCreatedAt());
-        resp.setUpdatedAt(b.getUpdatedAt());
-
-        // Items
-        resp.setItems(b.getItems().stream().map(item -> {
-            BudgetItemResponse ir = new BudgetItemResponse();
-            ir.setId(item.getId());
+        java.util.List<BudgetItemResponse> items = b.getItems().stream().map(item -> {
+            UUID id = item.getId();
+            UUID materialId = null;
+            String materialNombre = null;
+            String materialUnidad = null;
             if (item.getMaterial() != null) {
-                ir.setMaterialId(item.getMaterial().getId());
-                ir.setMaterialNombre(item.getMaterial().getNombre());
-                ir.setMaterialUnidad(item.getMaterial().getUnidad());
+                materialId = item.getMaterial().getId();
+                materialNombre = item.getMaterial().getNombre();
+                materialUnidad = item.getMaterial().getUnidad();
             }
-            ir.setCantidad(item.getCantidad());
-            ir.setCostoUnitario(item.getCostoUnitario());
-            ir.setSubtotal(item.getSubtotal());
-            return ir;
-        }).collect(Collectors.toList()));
+            return new BudgetItemResponse(
+                id,
+                materialId,
+                materialNombre,
+                materialUnidad,
+                item.getCantidad(),
+                item.getCostoUnitario(),
+                item.getSubtotal()
+            );
+        }).collect(Collectors.toList());
 
-        // Servicio de explicación
+        BudgetExplanationServiceResponse svcResp = null;
         if (b.getServicioExplicacion() != null) {
             BudgetExplanationService svc = b.getServicioExplicacion();
-            BudgetExplanationServiceResponse svcResp = new BudgetExplanationServiceResponse();
-            svcResp.setId(svc.getId());
-            svcResp.setIncluido(svc.getIncluido());
-            svcResp.setTipoEvento(svc.getTipoEvento());
-            svcResp.setCantidadPersonas(svc.getCantidadPersonas());
-            svcResp.setDuracionMinutos(svc.getDuracionMinutos());
-            svcResp.setPrecio(svc.getPrecio());
-            svcResp.setNotas(svc.getNotas());
-            resp.setServicioExplicacion(svcResp);
+            svcResp = new BudgetExplanationServiceResponse(
+                svc.getId(),
+                svc.getIncluido(),
+                svc.getTipoEvento(),
+                svc.getCantidadPersonas(),
+                svc.getDuracionMinutos(),
+                svc.getPrecio(),
+                svc.getNotas()
+            );
         }
 
-        return resp;
+        return new BudgetResponse(
+            b.getId(),
+            solicitudId,
+            b.getNombre(),
+            b.getDescripcion(),
+            b.getCodigoReferencia(),
+            b.getEstado(),
+            b.getManoDeObra(),
+            b.getMargenGanancia(),
+            b.getAdelantoRequerido(),
+            b.getAdelantoPorcentaje(),
+            b.getCostoMateriales(),
+            b.getSubtotal(),
+            b.getGanancia(),
+            b.getTotal(),
+            b.getAdelantoMonto(),
+            b.getClienteNombre(),
+            b.getClienteEmail(),
+            b.getClienteTelefono(),
+            b.getEsPresencial(),
+            items,
+            svcResp,
+            b.getCreatedAt(),
+            b.getUpdatedAt(),
+            isCustom,
+            isKit,
+            clienteRegistrado
+        );
     }
 
     private void crearUsuarioSiNoExiste(String nombre, String email, String telefono) {
@@ -409,16 +405,7 @@ public class BudgetServiceImpl implements BudgetService {
                 userRepository.save(user);
             }
         } catch (Exception ex) {
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
-                java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-                pw.println("--- EXCEPTION REGISTERING USER FOR EMAIL " + email + " --- " + new java.util.Date());
-                ex.printStackTrace(pw);
-                pw.close();
-                fw.close();
-            } catch (Exception e) {
-                // ignore
-            }
+            log.error("Exception registering user for email {}", email, ex);
         }
     }
 }

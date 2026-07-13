@@ -33,8 +33,20 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     @Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.roomId = :roomId AND m.isRead = false AND m.senderRole <> :senderRole")
     long countUnread(@Param("roomId") UUID roomId, @Param("senderRole") com.amazonas.backend.modules.chat.enums.ChatSenderRole senderRole);
 
+    /** Cuenta los mensajes no leídos en varias salas para un rol específico de forma masiva (Batch) */
+    @Query("SELECT m.roomId, COUNT(m) FROM ChatMessage m WHERE m.roomId IN :roomIds AND m.isRead = false AND m.senderRole <> :senderRole GROUP BY m.roomId")
+    List<Object[]> countUnreadForRooms(@Param("roomIds") List<UUID> roomIds, @Param("senderRole") com.amazonas.backend.modules.chat.enums.ChatSenderRole senderRole);
+
     /** Marca todos los mensajes de una sala como leídos para el destinatario (excluyendo los enviados por sí mismo) */
     @Modifying
     @Query("UPDATE ChatMessage m SET m.isRead = true WHERE m.roomId = :roomId AND m.senderRole <> :myRole")
     void markAllAsRead(@Param("roomId") UUID roomId, @Param("myRole") com.amazonas.backend.modules.chat.enums.ChatSenderRole myRole);
+
+    @Query("SELECT DISTINCT m.roomId FROM ChatMessage m WHERE m.isRead = false AND m.sentAt >= :start AND m.sentAt < :end")
+    List<UUID> findRoomsWithUnreadMessages(@Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
+
+    @Query("SELECT m FROM ChatMessage m WHERE m.roomId = :roomId AND m.isRead = false AND m.sentAt >= :start AND m.sentAt < :end")
+    List<ChatMessage> findUnreadMessagesInRoom(@Param("roomId") UUID roomId, @Param("start") OffsetDateTime start, @Param("end") OffsetDateTime end);
+
+    long countByIsReadFalse();
 }

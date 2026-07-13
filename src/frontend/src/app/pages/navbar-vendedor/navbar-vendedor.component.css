@@ -167,6 +167,8 @@
 .tab-content:not(.chat-active) > * {
   flex: 1;
   min-height: 0;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .tab-content.chat-active {
@@ -472,7 +474,10 @@
 @media (max-width: 768px) {
   .top-bar {
     padding: 0 16px;
-    height: 56px;
+    min-height: 56px;
+    height: auto;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
   .brand-role {
@@ -518,6 +523,101 @@
 
   .section-title {
     font-size: 20px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — 640px: Mobile L
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .top-bar {
+    padding: 8px 14px;
+  }
+  
+  .brand-name {
+    font-size: 14px;
+    white-space: normal;
+    line-height: 1.15;
+  }
+  
+  .top-bar-right {
+    gap: 6px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — 480px: Mobile M
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .brand-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .brand-name {
+    font-size: 13px;
+    max-width: 100px;
+  }
+
+  .mobile-section-badge {
+    font-size: 11.5px;
+    padding: 4px 10px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .btn-hamburger, .btn-salir {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+  }
+  
+  .hamburger-icon, .icon-salir {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — 380px: Mobile S
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .top-bar {
+    padding: 8px 10px;
+  }
+  
+  .brand {
+    gap: 6px;
+  }
+
+  .brand-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 11px;
+  }
+
+  .brand-name {
+    font-size: 12.5px;
+    max-width: 75px;
+  }
+
+  .mobile-section-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    max-width: 75px;
+  }
+
+  .top-bar-right {
+    gap: 4px;
+  }
+
+  .btn-hamburger, .btn-salir {
+    width: 34px;
+    height: 34px;
+    padding: 5px;
   }
 }
 
