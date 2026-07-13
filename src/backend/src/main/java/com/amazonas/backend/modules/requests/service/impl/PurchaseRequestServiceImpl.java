@@ -277,7 +277,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     public PurchaseRequestResponse obtenerPorId(UUID id, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada: " + id));
-        return toResponse(solicitud);
+        return toResponse(solicitud, loadPresupuestoIds());
     }
 
     /**
@@ -321,7 +321,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
         solicitud.setEstado(req.estado());
-        PurchaseRequestResponse response = toResponse(purchaseRequestRepository.save(solicitud));
+        PurchaseRequestResponse response = toResponse(purchaseRequestRepository.save(solicitud), loadPresupuestoIds());
         
         if (req.estado() == EstadoSolicitud.COMPLETADO) {
             chatRoomRepository.findByRequestId(id).ifPresent(room -> {
@@ -433,11 +433,20 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     // ─────────────────────────────────────────────────────────
-    // MAPPER
+    // MAPPER Y HELPERS
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Carga los IDs de solicitudes que tienen presupuesto asignado en una sola
+     * consulta SQL (SELECT b.solicitud.id FROM Budget b).
+     * Usar este Set evita el N+1 de @OneToOne mappedBy al llamar s.getPresupuesto().
+     */
+    private java.util.Set<UUID> loadPresupuestoIds() {
+        return new java.util.HashSet<>(budgetRepository.findSolicitudIdsWithPresupuesto());
+    }
+
     private PurchaseRequestResponse toResponse(PurchaseRequest s) {
-        return toResponse(s, null);
+        return toResponse(s, loadPresupuestoIds());
     }
 
     private PurchaseRequestResponse toResponse(PurchaseRequest s, java.util.Set<UUID> conPresupuesto) {
@@ -524,7 +533,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             customized,
             personales,
             preferidos,
-            conPresupuesto != null ? conPresupuesto.contains(s.getId()) : budgetRepository.existsBySolicitudId(s.getId()),
+            conPresupuesto != null && conPresupuesto.contains(s.getId()),
             grabacionesUrls,
             archivosUrls,
             s.getMotivoCancelacion(),
@@ -556,7 +565,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
 
         PurchaseRequest saved = purchaseRequestRepository.save(solicitud);
-        return toResponse(saved);
+        return toResponse(saved, loadPresupuestoIds());
     }
 
     @Override
@@ -619,6 +628,6 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             chatRoomRepository.save(room);
         });
 
-        return toResponse(saved);
+        return toResponse(saved, loadPresupuestoIds());
     }
 }
