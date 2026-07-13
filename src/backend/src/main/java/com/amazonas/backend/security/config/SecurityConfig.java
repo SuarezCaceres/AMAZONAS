@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import org.springframework.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
+                        // Preflight CORS: el browser envía OPTIONS antes de cualquier request
+                        // con cabeceras personalizadas (Authorization, Content-Type multipart, etc.).
+                        // Si este preflight es bloqueado, la petición real nunca se intenta.
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         // WebSocket handshake (SockJS también usa HTTP para negociación)
@@ -52,6 +57,20 @@ public class SecurityConfig {
                         .requestMatchers("/api/budgets/**").authenticated()
                         .requestMatchers("/api/chat/**").authenticated()
                         .anyRequest().authenticated())
+
+                // AuthenticationEntryPoint: cuando el usuario NO está autenticado y accede
+                // a un recurso protegido, Spring Security retorna 401 (no 403).
+                // Esto activa el handler de 401 del interceptor Angular, que puede
+                // solicitar un nuevo token o redirigir al login.
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write(
+                                    "{\"error\":\"No autenticado\",\"status\":401,\"path\":\"" + request.getRequestURI() + "\"}"
+                            );
+                        })
+                )
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

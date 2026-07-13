@@ -361,26 +361,30 @@ public class BudgetServiceImpl implements BudgetService {
             }
         }
 
-        java.util.List<BudgetItemResponse> items = b.getItems().stream().map(item -> {
-            UUID id = item.getId();
-            UUID materialId = null;
-            String materialNombre = null;
-            String materialUnidad = null;
-            if (item.getMaterial() != null) {
-                materialId = item.getMaterial().getId();
-                materialNombre = item.getMaterial().getNombre();
-                materialUnidad = item.getMaterial().getUnidad();
-            }
-            return new BudgetItemResponse(
-                id,
-                materialId,
-                materialNombre,
-                materialUnidad,
-                item.getCantidad(),
-                item.getCostoUnitario(),
-                item.getSubtotal()
-            );
-        }).collect(Collectors.toList());
+        java.util.List<BudgetItemResponse> items = b.getItems() == null
+            ? java.util.Collections.emptyList()
+            : b.getItems().stream()
+                .filter(item -> item != null)
+                .map(item -> {
+                    UUID id = item.getId();
+                    UUID materialId = null;
+                    String materialNombre = null;
+                    String materialUnidad = null;
+                    if (item.getMaterial() != null) {
+                        materialId = item.getMaterial().getId();
+                        materialNombre = item.getMaterial().getNombre();
+                        materialUnidad = item.getMaterial().getUnidad();
+                    }
+                    return new BudgetItemResponse(
+                        id,
+                        materialId,
+                        materialNombre,
+                        materialUnidad,
+                        item.getCantidad(),
+                        item.getCostoUnitario(),
+                        item.getSubtotal()
+                    );
+                }).collect(Collectors.toList());
 
         BudgetExplanationServiceResponse svcResp = null;
         if (b.getServicioExplicacion() != null) {

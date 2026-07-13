@@ -27,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtFilter.class);
+
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
     private final UserRepository userRepository;
@@ -94,6 +96,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 );
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                log.warn("Clerk token detected but X-User-Email is null or blank");
             }
             filterChain.doFilter(request, response);
             return;
