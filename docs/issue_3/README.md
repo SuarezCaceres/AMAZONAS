@@ -3,6 +3,7 @@
 Este directorio contiene la documentación, guías de diseño, detalles técnicos y bitácora de implementación de las tareas que componen el **Issue 3**.
 
 ---
+###
 
 ## 🛠️ Estructura del Issue 3
 
