@@ -223,11 +223,7 @@ public class BudgetServiceImpl implements BudgetService {
         java.util.List<Budget> lista = budgetRepository.findAllWithDetails();
         java.util.List<BudgetResponse> result = new java.util.ArrayList<>();
         for (Budget b : lista) {
-            try {
-                result.add(toResponse(b));
-            } catch (Exception ex) {
-                log.error("Exception mapping budget {}", b.getId(), ex);
-            }
+            result.add(toResponse(b));
         }
         return result;
     }

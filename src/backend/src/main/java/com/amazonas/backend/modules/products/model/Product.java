@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.BatchSize;
 
 import com.amazonas.backend.modules.categories.model.Category;
 
@@ -43,6 +44,7 @@ public class Product {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    @BatchSize(size = 20)
     @jakarta.persistence.OneToMany(mappedBy = "product", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
     private List<ProductMaterial> materiales = new java.util.ArrayList<>();
 

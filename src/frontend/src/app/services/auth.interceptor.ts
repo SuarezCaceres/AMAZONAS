@@ -82,13 +82,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       return next(outReq);
     }),
     catchError((error: HttpErrorResponse) => {
-      // Si el backend responde 401, el token es invalido o expiro.
+      // Si el backend responde 401/403, el token es invalido o expiro o no tiene permisos.
       // Solicitamos cerrar sesión en Clerk.
-      if (error.status === 401) {
+      if (error.status === 401 || error.status === 403) {
+        console.warn("[AuthInterceptor] Sesión caducada o inválida. Redirigiendo al login...");
         from(clerkService.signOut()).subscribe();
         if (!req.url.includes('/auth/')) {
           window.location.href = '/';
         }
+      } else if (error.status === 0) {
+        // ClientAbort, Timeout o backend caído -> NO matar sesión
+        console.error("[AuthInterceptor] Error de red: El servidor tardó demasiado o la conexión se interrumpió.", error);
+      } else if (error.status >= 500) {
+        // Error interno del backend -> NO matar sesión
+        console.error("[AuthInterceptor] Error en el backend:", error.message);
       }
       return throwError(() => error);
     })

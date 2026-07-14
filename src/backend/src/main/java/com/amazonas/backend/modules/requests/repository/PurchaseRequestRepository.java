@@ -56,6 +56,13 @@ public interface PurchaseRequestRepository extends JpaRepository<PurchaseRequest
     List<PurchaseRequest> findByUsuarioOrderByCreatedAtDesc(User usuario);
 
     @EntityGraph(attributePaths = {"usuario"})
+    Page<PurchaseRequest> findByEstado(EstadoSolicitud estado, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"usuario"})
+    @Query("SELECT pr FROM PurchaseRequest pr")
+    Page<PurchaseRequest> findAllPaged(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"usuario"})
     List<PurchaseRequest> findByEstadoOrderByCreatedAtDesc(EstadoSolicitud estado);
 
     @EntityGraph(attributePaths = {"usuario"})

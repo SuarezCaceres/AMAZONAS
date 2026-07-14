@@ -54,10 +54,6 @@ public class BudgetController {
                     .anyMatch(a -> a.getAuthority().equals("ADMIN"));
                     
             if (isVendor) {
-                // IMPORTANTE: el orden de argumentos debe coincidir EXACTAMENTE con
-                // la declaración del record BudgetVendorResponse (constructores posicionales).
-                // Record: manoDeObra, margenGanancia, costoMateriales, subtotal, ganancia,
-                //         total, adelantoRequerido, adelantoPorcentaje, adelantoMonto, items, svc
                 BudgetVendorResponse vendorResponse = new BudgetVendorResponse(
                     response.id(),
                     response.solicitudId(),
@@ -106,16 +102,6 @@ public class BudgetController {
                 return ResponseEntity.ok().build();
             }
             throw ex;
-        } catch (Exception ex) {
-            // Captura cualquier error inesperado (NPE, ClassCastException, mapeo DTO, etc.)
-            // para evitar que Spring retorne un 500 opaco sin información de diagnóstico.
-            return ResponseEntity
-                    .status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Map.of(
-                        "error", "Error interno al obtener el presupuesto",
-                        "detalle", ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName(),
-                        "solicitudId", solicitudId.toString()
-                    ));
         }
     }
 

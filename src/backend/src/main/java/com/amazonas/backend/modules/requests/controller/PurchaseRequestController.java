@@ -107,9 +107,14 @@ public class PurchaseRequestController {
      * Solo accesible para usuarios con rol ADMIN.
      */
     @GetMapping("/api/admin/purchase-requests")
-    public ResponseEntity<List<PurchaseRequestResponse>> listarTodas(
-            @RequestParam(required = false) EstadoSolicitud estado) {
-        return ResponseEntity.ok(purchaseRequestService.listarTodas(estado));
+    public ResponseEntity<org.springframework.data.domain.Page<PurchaseRequestResponse>> listarTodas(
+            @RequestParam(required = false) EstadoSolicitud estado,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size) {
+            
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(
+                page, size, org.springframework.data.domain.Sort.by("createdAt").descending());
+        return ResponseEntity.ok(purchaseRequestService.listarTodas(estado, pageable));
     }
 
     /**

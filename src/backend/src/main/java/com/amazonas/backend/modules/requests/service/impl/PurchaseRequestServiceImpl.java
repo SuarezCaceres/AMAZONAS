@@ -286,26 +286,21 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
      */
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "solicitudes-todas", key = "#estado != null ? #estado.name() : 'todas'")
-    public List<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado) {
+    // NOTE: Removed @Cacheable here or update key to include pagination. 
+    // Usually admin lists with pagination shouldn't be strictly cached, or at least cache first page.
+    // For simplicity, we won't cache the paginated query to avoid stale results across pages.
+    public org.springframework.data.domain.Page<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado, org.springframework.data.domain.Pageable pageable) {
         // Carga previa en memoria de los IDs de solicitudes con presupuesto
         // para evitar el N+1 del OneToOne opcional en Hibernate al listar
         java.util.Set<UUID> conPresupuesto = new java.util.HashSet<>(
                 budgetRepository.findSolicitudIdsWithPresupuesto()
         );
 
-        List<PurchaseRequest> lista = (estado != null)
-                ? purchaseRequestRepository.findByEstadoOrderByCreatedAtDesc(estado)
-                : purchaseRequestRepository.findAllByOrderByCreatedAtDesc();
-        List<PurchaseRequestResponse> result = new ArrayList<>();
-        for (PurchaseRequest s : lista) {
-            try {
-                result.add(toResponse(s, conPresupuesto));
-            } catch (Exception ex) {
-                log.error("Exception mapping request {}", s.getId(), ex);
-            }
-        }
-        return result;
+        org.springframework.data.domain.Page<PurchaseRequest> pagina = (estado != null)
+                ? purchaseRequestRepository.findByEstado(estado, pageable)
+                : purchaseRequestRepository.findAllPaged(pageable);
+                
+        return pagina.map(s -> toResponse(s, conPresupuesto));
     }
 
     /**

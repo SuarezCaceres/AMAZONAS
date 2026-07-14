@@ -16,9 +16,9 @@ import com.amazonas.backend.modules.products.model.Product;
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query(value = "SELECT DISTINCT p FROM Product p " +
-           "LEFT JOIN FETCH p.materiales pm " +
-           "LEFT JOIN FETCH pm.material m " +
-           "LEFT JOIN FETCH p.categoria c " +
+           "LEFT JOIN p.materiales pm " +
+           "LEFT JOIN pm.material m " +
+           "LEFT JOIN p.categoria c " +
            "WHERE (:categoriaId IS NULL OR c.id = :categoriaId OR " +
            "(:categoriaId = 'educativo' AND c.id = 'educativa') OR (:categoriaId = 'educativa' AND c.id = 'educativo') OR " +
            "(:categoriaId = 'inclusivo' AND c.id = 'inclusiva') OR (:categoriaId = 'inclusiva' AND c.id = 'inclusivo')) AND " +

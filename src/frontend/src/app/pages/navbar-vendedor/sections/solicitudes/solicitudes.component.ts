@@ -208,15 +208,26 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     setTimeout(() => this.chatActivoEvent.emit(false));
   }
 
-  // ── Carga de solicitudes ──────────────────────────────────────────────────
+  currentPage = 0;
+  pageSize = 15;
+  hasMoreData = true;
+  isLoadingMore = false;
 
-  loadSolicitudes(): void {
-    this.isLoading = true;
+  loadSolicitudes(reset = true): void {
+    if (reset) {
+      this.currentPage = 0;
+      this.solicitudes = [];
+      this.hasMoreData = true;
+      this.isLoading = true;
+    } else {
+      this.isLoadingMore = true;
+    }
+
     this.chatService.getMyRooms().subscribe({
       next: (rooms) => {
-        this.requestService.listarTodas().subscribe({
-          next: (responses) => {
-            this.solicitudes = responses.map((res): Solicitud => {
+        this.requestService.listarTodas(undefined, true, this.currentPage, this.pageSize).subscribe({
+          next: (response) => {
+            const nuevasSolicitudes = response.content.map((res: any): Solicitud => {
               let hash = 0;
               const idStr = res.id || '';
               for (let i = 0; i < idStr.length; i++) {
@@ -225,7 +236,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
               const num = Math.abs(hash % 9000) + 1000;
               const numeroSolicitud = `#${num}`;
 
-              const room = rooms ? rooms.find(r => r.requestId === res.id) : null;
+              const room = rooms ? rooms.find((r: any) => r.requestId === res.id) : null;
               const unreadCount = room ? room.unreadCount || 0 : 0;
               const lastMessageAt = room && room.lastMessageAt ? new Date(room.lastMessageAt) : null;
 
@@ -256,12 +267,17 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
                 motivoCancelacion: res.motivoCancelacion
               };
             });
-            if (this.solicitudes.length > 0) {
+
+            this.solicitudes.push(...nuevasSolicitudes);
+            this.hasMoreData = !response.last;
+            
+            if (this.solicitudes.length > 0 && reset) {
               this.solicitudes[0].expanded = true;
             }
             this.isLoading = false;
+            this.isLoadingMore = false;
 
-            if (this.inicialSolicitudId) {
+            if (this.inicialSolicitudId && reset) {
               const found = this.solicitudes.find(s => s.id === this.inicialSolicitudId);
               if (found) {
                 this.abrirChat(found);
@@ -272,14 +288,15 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
           error: (err) => {
             console.error('Error loading solicitudes:', err);
             this.isLoading = false;
+            this.isLoadingMore = false;
           }
         });
       },
       error: (err) => {
         console.error('Error loading chat rooms, loading requests directly:', err);
-        this.requestService.listarTodas().subscribe({
-          next: (responses) => {
-            this.solicitudes = responses.map((res): Solicitud => {
+        this.requestService.listarTodas(undefined, true, this.currentPage, this.pageSize).subscribe({
+          next: (response) => {
+            const nuevasSolicitudes = response.content.map((res: any): Solicitud => {
               let hash = 0;
               const idStr = res.id || '';
               for (let i = 0; i < idStr.length; i++) {
@@ -314,12 +331,17 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
                 motivoCancelacion: res.motivoCancelacion
               };
             });
-            if (this.solicitudes.length > 0) {
+
+            this.solicitudes.push(...nuevasSolicitudes);
+            this.hasMoreData = !response.last;
+
+            if (this.solicitudes.length > 0 && reset) {
               this.solicitudes[0].expanded = true;
             }
             this.isLoading = false;
+            this.isLoadingMore = false;
 
-            if (this.inicialSolicitudId) {
+            if (this.inicialSolicitudId && reset) {
               const found = this.solicitudes.find(s => s.id === this.inicialSolicitudId);
               if (found) {
                 this.abrirChat(found);
@@ -330,10 +352,18 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
           error: (err) => {
             console.error('Error loading solicitudes:', err);
             this.isLoading = false;
+            this.isLoadingMore = false;
           }
         });
       }
     });
+  }
+
+  cargarMas(): void {
+    if (this.hasMoreData && !this.isLoadingMore) {
+      this.currentPage++;
+      this.loadSolicitudes(false);
+    }
   }
 
   private mapEstado(estado: EstadoSolicitud): 'pendiente' | 'procesando' | 'completado' | 'rechazado' {

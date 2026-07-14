@@ -23,7 +23,7 @@ public interface PurchaseRequestService {
     PurchaseRequestResponse obtenerPorId(UUID id, String usuarioEmail);
 
     /** [Admin] Lista todas las solicitudes, con filtro opcional por estado */
-    List<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado);
+    org.springframework.data.domain.Page<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado, org.springframework.data.domain.Pageable pageable);
 
     /** [Admin] Actualiza el estado de una solicitud */
     PurchaseRequestResponse actualizarEstado(UUID id, UpdateEstadoRequest request);

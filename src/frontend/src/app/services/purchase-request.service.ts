@@ -91,26 +91,26 @@ export class PurchaseRequestService {
    * @param estado Filtro opcional por estado.
    * @param forceRefresh Fuerza recarga desde el backend ignorando la caché.
    */
-  listarTodas(estado?: EstadoSolicitud, forceRefresh = false): Observable<PurchaseRequestResponse[]> {
-    const current = this._solicitudesAdmin$.getValue();
-    const mismoFiltro = this._lastEstadoCacheado === estado;
-
-    if (current.length > 0 && !forceRefresh && mismoFiltro) {
-      // Caché hit: retorna observable del BehaviorSubject actual
-      return of(current);
-    }
-
-    let params = new HttpParams();
+  listarTodas(estado?: EstadoSolicitud, forceRefresh = false, page: number = 0, size: number = 15): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+      
     if (estado) {
       params = params.set('estado', estado);
     }
 
-    return this.http.get<PurchaseRequestResponse[]>(
+    return this.http.get<any>(
       `${this.API_URL}/admin/purchase-requests`, { params }
     ).pipe(
-      tap(solicitudes => {
+      tap(response => {
         this._lastEstadoCacheado = estado;
-        this._solicitudesAdmin$.next(solicitudes);
+        if (page === 0) {
+          this._solicitudesAdmin$.next(response.content);
+        } else {
+          const current = this._solicitudesAdmin$.getValue();
+          this._solicitudesAdmin$.next([...current, ...response.content]);
+        }
       })
     );
   }
