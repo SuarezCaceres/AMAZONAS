@@ -66,8 +66,30 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => new Error('Token de autenticación no disponible. Por favor, recarga la página.'));
       }
 
-      const email = sessionStorage.getItem('auth_email') || '';
-      const name = sessionStorage.getItem('auth_nombre') || '';
+      // Intentar obtener el email primero de sessionStorage.
+      // Si está vacío (p.ej. durante un refresh de token), obtenerlo directamente del SDK de Clerk como fallback.
+      let email = sessionStorage.getItem('auth_email') || '';
+      if (!email) {
+        const clerkUser = clerkService.user$.getValue();
+        email = clerkUser?.primaryEmailAddress?.emailAddress || '';
+        if (email) {
+          // Re-sincronizar sessionStorage para las próximas peticiones
+          sessionStorage.setItem('auth_email', email);
+          console.warn('[AuthInterceptor] auth_email vacío en sessionStorage, recuperado desde Clerk SDK:', email);
+        }
+      }
+
+      let name = sessionStorage.getItem('auth_nombre') || '';
+      if (!name) {
+        const clerkUser = clerkService.user$.getValue();
+        name = clerkUser?.username || clerkUser?.fullName || clerkUser?.firstName || email;
+        if (name) {
+          sessionStorage.setItem('auth_nombre', name);
+        }
+      }
+
+      console.log('[AuthInterceptor] Adjuntando headers para:', req.url, '| Email:', email || '(VACÍO!)');
+
       const headers: { [key: string]: string } = {
         Authorization: `Bearer ${token}`
       };
@@ -83,12 +105,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     }),
     catchError((error: HttpErrorResponse) => {
       // Si el backend responde 401/403, el token es invalido o expiro o no tiene permisos.
-      // Solicitamos cerrar sesión en Clerk.
+      // Solicitamos cerrar sesión en Clerk SOLO para endpoints de autenticación reales,
+      // no para errores de subida de archivos u otras operaciones.
       if (error.status === 401 || error.status === 403) {
         console.warn("[AuthInterceptor] Sesión caducada o inválida. Redirigiendo al login...");
-        from(clerkService.signOut()).subscribe();
-        if (!req.url.includes('/auth/')) {
-          window.location.href = '/';
+        // Solo cerrar sesión si NO es una subida de archivo (evitar logout por fallos de upload)
+        const isFileUpload = req.url.includes('/files/upload');
+        if (!isFileUpload) {
+          from(clerkService.signOut()).subscribe();
+          if (!req.url.includes('/auth/')) {
+            window.location.href = '/';
+          }
+        } else {
+          console.error('[AuthInterceptor] Fallo de autenticación en subida de archivo. No cerrando sesión.');
         }
       } else if (error.status === 0) {
         // ClientAbort, Timeout o backend caído -> NO matar sesión

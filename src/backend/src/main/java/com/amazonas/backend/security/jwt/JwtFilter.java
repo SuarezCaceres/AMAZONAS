@@ -60,6 +60,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (isClerkToken) {
             String clerkEmail = request.getHeader("X-User-Email");
             String clerkName = request.getHeader("X-User-Name");
+            
             if (clerkEmail != null && !clerkEmail.isBlank()) {
                 UserDetails userDetails = null;
 
@@ -145,19 +146,15 @@ public class JwtFilter extends OncePerRequestFilter {
             if (parts.length != 3) {
                 return null;
             }
-            String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]), java.nio.charset.StandardCharsets.UTF_8);
-            String searchPattern = "\"" + claimName + "\":\"";
-            int index = payload.indexOf(searchPattern);
-            if (index == -1) {
-                return null;
+            String payloadStr = parts[1];
+            while (payloadStr.length() % 4 != 0) {
+                payloadStr += "=";
             }
-            int start = index + searchPattern.length();
-            int end = payload.indexOf("\"", start);
-            if (end == -1) {
-                return null;
-            }
-            return payload.substring(start, end);
+            String payload = new String(java.util.Base64.getUrlDecoder().decode(payloadStr), java.nio.charset.StandardCharsets.UTF_8);
+            com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(payload);
+            return node.has(claimName) ? node.get(claimName).asText() : null;
         } catch (Exception e) {
+            log.error("Error parsing JWT payload to get claim: " + claimName, e);
             return null;
         }
     }

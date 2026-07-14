@@ -547,8 +547,8 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
 
         // Validar acceso: creador de la solicitud o admin
-        boolean isAdmin = userRepository.findByEmail(usuarioEmail).isEmpty() && vendorRepository.findByEmail(usuarioEmail).isPresent();
-        if (!isAdmin && !solicitud.getUsuario().getEmail().equals(usuarioEmail)) {
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail).isEmpty() && vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
+        if (!isAdmin && !solicitud.getUsuario().getEmail().equalsIgnoreCase(usuarioEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para actualizar esta solicitud.");
         }
 
@@ -574,7 +574,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
 
         // Validar que la solicitud sea del usuario actual O que el usuario que ejecuta sea ADMIN o VENDEDOR
         boolean isOwner = solicitud.getUsuario().getEmail().equalsIgnoreCase(usuarioEmail);
-        boolean isAdmin = userRepository.findByEmail(usuarioEmail)
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .map(u -> u.getRole().name().equals("ADMIN"))
                 .orElse(false);
         boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
@@ -603,7 +603,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
 
         // Validar que el usuario que ejecuta sea ADMIN o VENDEDOR
-        boolean isAdmin = userRepository.findByEmail(usuarioEmail)
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .map(u -> u.getRole().name().equals("ADMIN"))
                 .orElse(false);
         boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
