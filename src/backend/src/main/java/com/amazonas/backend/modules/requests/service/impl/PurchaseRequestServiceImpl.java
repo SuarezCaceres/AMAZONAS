@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import com.amazonas.backend.modules.materials.model.Material;
 import com.amazonas.backend.modules.materials.repository.MaterialRepository;
@@ -64,7 +67,14 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     // CREAR SOLICITUD
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Crea una solicitud e invalida la caché del usuario y la caché de admin.
+     */
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", key = "#usuarioEmail"),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse crear(PurchaseRequestRequest req, String usuarioEmail) {
         // Validar duplicidad de materiales seleccionados (si es personalización)
         if (Boolean.TRUE.equals(req.isCustom())) {
@@ -239,14 +249,26 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     // CONSULTAS
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Lista las solicitudes del usuario autenticado.
+     * Cacheada por email en Redis: cada usuario tiene su propia entrada.
+     * Se invalida automáticamente al crear o actualizar una solicitud.
+     */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "solicitudes", key = "#usuarioEmail")
     public List<PurchaseRequestResponse> listarMisSolicitudes(String usuarioEmail) {
+        // Carga previa en memoria de los IDs de solicitudes con presupuesto
+        // para evitar el N+1 del OneToOne opcional
+        java.util.Set<UUID> conPresupuesto = new java.util.HashSet<>(
+                budgetRepository.findSolicitudIdsWithPresupuesto()
+        );
+
         // Si el email corresponde a un vendedor/admin (no existe en tabla users), retornar lista vacía
         // en lugar de lanzar una excepción que produce HTTP 500.
         return userRepository.findByEmail(usuarioEmail)
                 .map(usuario -> purchaseRequestRepository.findByUsuarioOrderByCreatedAtDesc(usuario)
-                        .stream().map(this::toResponse).collect(Collectors.toList()))
+                        .stream().map(s -> this.toResponse(s, conPresupuesto)).collect(Collectors.toList()))
                 .orElse(List.of());
     }
 
@@ -255,32 +277,46 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     public PurchaseRequestResponse obtenerPorId(UUID id, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada: " + id));
-        return toResponse(solicitud);
+        return toResponse(solicitud, loadPresupuestoIds());
     }
 
+    /**
+     * Lista todas las solicitudes filtradas por estado.
+     * Caché de Redis configurada para administradores (vendedores).
+     */
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado) {
-        List<PurchaseRequest> lista = (estado != null)
-                ? purchaseRequestRepository.findByEstadoOrderByCreatedAtDesc(estado)
-                : purchaseRequestRepository.findAllByOrderByCreatedAtDesc();
-        List<PurchaseRequestResponse> result = new ArrayList<>();
-        for (PurchaseRequest s : lista) {
-            try {
-                result.add(toResponse(s));
-            } catch (Exception ex) {
-                log.error("Exception mapping request {}", s.getId(), ex);
-            }
-        }
-        return result;
+    // NOTE: Removed @Cacheable here or update key to include pagination. 
+    // Usually admin lists with pagination shouldn't be strictly cached, or at least cache first page.
+    // For simplicity, we won't cache the paginated query to avoid stale results across pages.
+    public org.springframework.data.domain.Page<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado, org.springframework.data.domain.Pageable pageable) {
+        // Carga previa en memoria de los IDs de solicitudes con presupuesto
+        // para evitar el N+1 del OneToOne opcional en Hibernate al listar
+        java.util.Set<UUID> conPresupuesto = new java.util.HashSet<>(
+                budgetRepository.findSolicitudIdsWithPresupuesto()
+        );
+
+        org.springframework.data.domain.Page<PurchaseRequest> pagina = (estado != null)
+                ? purchaseRequestRepository.findByEstado(estado, pageable)
+                : purchaseRequestRepository.findAllPaged(pageable);
+                
+        return pagina.map(s -> toResponse(s, conPresupuesto));
     }
 
+    /**
+     * Actualiza el estado de una solicitud e invalida toda la caché de solicitudes
+     * (tanto individuales de usuario como la global de admin).
+     */
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse actualizarEstado(UUID id, UpdateEstadoRequest req) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
         solicitud.setEstado(req.estado());
-        PurchaseRequestResponse response = toResponse(purchaseRequestRepository.save(solicitud));
+        PurchaseRequestResponse response = toResponse(purchaseRequestRepository.save(solicitud), loadPresupuestoIds());
         
         if (req.estado() == EstadoSolicitud.COMPLETADO) {
             chatRoomRepository.findByRequestId(id).ifPresent(room -> {
@@ -392,10 +428,23 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     // ─────────────────────────────────────────────────────────
-    // MAPPER
+    // MAPPER Y HELPERS
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Carga los IDs de solicitudes que tienen presupuesto asignado en una sola
+     * consulta SQL (SELECT b.solicitud.id FROM Budget b).
+     * Usar este Set evita el N+1 de @OneToOne mappedBy al llamar s.getPresupuesto().
+     */
+    private java.util.Set<UUID> loadPresupuestoIds() {
+        return new java.util.HashSet<>(budgetRepository.findSolicitudIdsWithPresupuesto());
+    }
+
     private PurchaseRequestResponse toResponse(PurchaseRequest s) {
+        return toResponse(s, loadPresupuestoIds());
+    }
+
+    private PurchaseRequestResponse toResponse(PurchaseRequest s, java.util.Set<UUID> conPresupuesto) {
         UUID productoId = (s.getProducto() != null) ? s.getProducto().getId() : null;
 
         List<KitMaquetaResponse> kits = s.getKits().stream().map(k -> {
@@ -479,7 +528,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             customized,
             personales,
             preferidos,
-            s.getPresupuesto() != null,
+            conPresupuesto != null && conPresupuesto.contains(s.getId()),
             grabacionesUrls,
             archivosUrls,
             s.getMotivoCancelacion(),
@@ -489,13 +538,17 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", key = "#usuarioEmail"),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse actualizarArchivos(UUID id, RequestFilesUpdateRequest req, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
 
         // Validar acceso: creador de la solicitud o admin
-        boolean isAdmin = userRepository.findByEmail(usuarioEmail).isEmpty() && vendorRepository.findByEmail(usuarioEmail).isPresent();
-        if (!isAdmin && !solicitud.getUsuario().getEmail().equals(usuarioEmail)) {
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail).isEmpty() && vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
+        if (!isAdmin && !solicitud.getUsuario().getEmail().equalsIgnoreCase(usuarioEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para actualizar esta solicitud.");
         }
 
@@ -507,17 +560,21 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
 
         PurchaseRequest saved = purchaseRequestRepository.save(solicitud);
-        return toResponse(saved);
+        return toResponse(saved, loadPresupuestoIds());
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public void eliminar(UUID id, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
 
         // Validar que la solicitud sea del usuario actual O que el usuario que ejecuta sea ADMIN o VENDEDOR
         boolean isOwner = solicitud.getUsuario().getEmail().equalsIgnoreCase(usuarioEmail);
-        boolean isAdmin = userRepository.findByEmail(usuarioEmail)
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .map(u -> u.getRole().name().equals("ADMIN"))
                 .orElse(false);
         boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
@@ -537,12 +594,16 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse rechazar(UUID id, RejectRequest req, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
 
         // Validar que el usuario que ejecuta sea ADMIN o VENDEDOR
-        boolean isAdmin = userRepository.findByEmail(usuarioEmail)
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .map(u -> u.getRole().name().equals("ADMIN"))
                 .orElse(false);
         boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
@@ -562,6 +623,6 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             chatRoomRepository.save(room);
         });
 
-        return toResponse(saved);
+        return toResponse(saved, loadPresupuestoIds());
     }
 }

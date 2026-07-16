@@ -12,7 +12,7 @@ import org.hibernate.annotations.BatchSize;
 import com.amazonas.backend.modules.users.model.User;
 import com.amazonas.backend.modules.products.model.Product;
 import com.amazonas.backend.modules.requests.enums.EstadoSolicitud;
-import com.amazonas.backend.modules.budgets.model.Budget;
+
 
 import jakarta.persistence.*;
 
@@ -113,8 +113,6 @@ public class PurchaseRequest {
     @OneToMany(mappedBy = "purchaseRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RequestPreferredMaterial> materialesPreferidos = new ArrayList<>();
 
-    @OneToOne(mappedBy = "solicitud", cascade = CascadeType.ALL)
-    private Budget presupuesto;
 
     @PrePersist
     protected void onCreate() {
@@ -335,13 +333,6 @@ public class PurchaseRequest {
         this.materialesPreferidos = materialesPreferidos;
     }
 
-    public Budget getPresupuesto() {
-        return presupuesto;
-    }
-
-    public void setPresupuesto(Budget presupuesto) {
-        this.presupuesto = presupuesto;
-    }
 
     public String getMotivoCancelacion() {
         return motivoCancelacion;

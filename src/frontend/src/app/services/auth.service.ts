@@ -24,14 +24,12 @@ export class AuthService {
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
   constructor() {
-    this.clerkService.session$.subscribe(async (session) => {
-      if (session) {
+    this.clerkService.user$.subscribe(async (user) => {
+      if (user) {
         try {
           const token = await this.clerkService.getToken();
-          const clerk = this.clerkService.getClerkInstance();
-          const user = clerk?.user;
           
-          if (token && user) {
+          if (token) {
             const email = user.primaryEmailAddress?.emailAddress || '';
             const nombre = user.username || user.fullName || user.firstName || email;
 

@@ -594,8 +594,8 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                                                     }
                                                 }
 
-                                                if (solicitudId && reqs) {
-                                                    const sol = reqs.find(r => r.id === solicitudId);
+                                                if (solicitudId && reqs && reqs.content) {
+                                                    const sol = reqs.content.find((r: any) => r.id === solicitudId);
                                                     if (sol) {
                                                         projectName = sol.productoNombre || '';
                                                     }
@@ -752,8 +752,9 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     }
 
     loadPendingBalances(): void {
-        this.requestService.listarTodas().subscribe({
-            next: (reqs) => {
+        this.requestService.listarTodas(undefined, true, 0, 1000).subscribe({
+            next: (reqPage: any) => {
+                const reqs = reqPage.content || [];
                 this.budgetService.listarTodos().subscribe({
                     next: (budgets) => {
                         this.allBudgets = budgets || [];
@@ -809,10 +810,10 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
 
                         // 2. Procesar Solicitudes Online activas sin presupuesto finalizado
                         if (reqs && reqs.length > 0) {
-                            reqs.filter(r => {
+                            reqs.filter((r: any) => {
                                 const st = String(r.estado);
                                 return (st === 'PROCESANDO' || st === 'PRESUPUESTADO' || st === 'ACEPTADO') && !processedBudgetIds.has(r.id);
-                            }).forEach(r => {
+                            }).forEach((r: any) => {
                                 const amount = r.isCustom ? 187.85 : 120.00;
                                 const fecha = r.createdAt ? new Date(r.createdAt) : new Date();
 

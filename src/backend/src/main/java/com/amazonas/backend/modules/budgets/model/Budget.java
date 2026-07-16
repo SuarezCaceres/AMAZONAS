@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.amazonas.backend.modules.requests.model.PurchaseRequest;
 import com.amazonas.backend.modules.vendors.model.Vendor;
+import org.hibernate.annotations.BatchSize;
 
 import jakarta.persistence.*;
 
@@ -79,6 +80,7 @@ public class Budget {
     private LocalDateTime updatedAt;
 
     // Relaciones
+    @BatchSize(size = 30)
     @OneToMany(mappedBy = "presupuesto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BudgetItem> items = new ArrayList<>();
 

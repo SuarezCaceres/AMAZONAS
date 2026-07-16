@@ -76,6 +76,7 @@ public class BudgetController {
                 return ResponseEntity.ok(vendorResponse);
             } else {
                 List<String> materialesIncluidos = response.items().stream()
+                        .filter(item -> item.materialNombre() != null)
                         .map(item -> item.materialNombre() + " (" + item.cantidad() + ")")
                         .collect(Collectors.toList());
                         
@@ -97,6 +98,7 @@ public class BudgetController {
             }
         } catch (org.springframework.web.server.ResponseStatusException ex) {
             if (ex.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND) {
+                // No hay presupuesto aún para esta solicitud — respuesta limpia para el cliente
                 return ResponseEntity.ok().build();
             }
             throw ex;
