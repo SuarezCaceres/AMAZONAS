@@ -8,7 +8,8 @@
   "scripts": {
     "build": "npm run build --workspace=src/frontend",
     "start": "npm run start --workspace=src/frontend",
-    "test": "npm run test --workspace=src/frontend"
+    "test": "npm run test --workspace=src/frontend",
+    "dev": "node scripts/dev.js"
   },
   "dependencies": {
     "@stomp/stompjs": "^7.3.0"
