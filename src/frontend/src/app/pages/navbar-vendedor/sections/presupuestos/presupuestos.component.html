@@ -676,38 +676,76 @@
 
       <!-- Materiales solicitados por el cliente (Ocultar si el pago está confirmado / venta cerrada) -->
       <div class="form-card client-request-card" *ngIf="isMaquetaPersonalizada && !pagoConfirmado && (materialesSolicitados.length > 0 || materialesDeseados)">
-        <h2 class="card-title purple">📦 Materiales Solicitados por el Cliente</h2>
+        <h2 class="card-title purple" style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons" style="font-size: 20px; color: #7c3aed;">inventory_2</span>
+          Materiales Solicitados por el Cliente
+        </h2>
         <div class="client-materials-notice">
           <span class="notice-icon">💡</span>
-          <span>Haz clic en "Agregar" para incluirlos en el presupuesto.</span>
+          <span>El sistema verifica automáticamente la disponibilidad y el stock en inventario de cada material.</span>
         </div>
-        <div class="solicited-materials" *ngIf="materialesSolicitados.length > 0">
-          <div class="solicited-item" *ngFor="let mat of materialesSolicitados" [class.added]="mat.agregado">
-            <div class="solicited-info">
-              <span class="solicited-nombre">{{ mat.nombre }}</span>
-              <span class="solicited-precio" *ngIf="mat.costoVenta">S/ {{ mat.costoVenta.toFixed(2) }} / {{ mat.unidad || 'unidad' }}</span>
-              <span class="solicited-precio no-price" *ngIf="!mat.costoVenta">Sin precio en inventario</span>
+        <div class="solicited-materials" *ngIf="materialesSolicitados.length > 0" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div class="solicited-item" *ngFor="let mat of materialesSolicitados" [class.added]="mat.agregado" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; transition: all 0.2s;">
+            <div class="solicited-info" style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="solicited-nombre" style="font-weight: 700; font-size: 14px; color: #1e293b;">{{ mat.nombre }}</span>
+                
+                <!-- Badge Estado 1: Con Stock -->
+                @if (mat.estadoInventario === 'con_stock') {
+                  <span style="background: #dcfce7; color: #166534; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-icons" style="font-size: 12px; color: #16a34a;">check_circle</span>
+                    En inventario (Stock: {{ mat.stockActual }} {{ mat.unidad || 'und' }})
+                  </span>
+                }
+
+                <!-- Badge Estado 2: Sin Stock -->
+                @if (mat.estadoInventario === 'sin_stock') {
+                  <span style="background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-icons" style="font-size: 12px; color: #d97706;">warning</span>
+                    En inventario, pero SIN STOCK (Stock: 0)
+                  </span>
+                }
+
+                <!-- Badge Estado 3: No Registrado -->
+                @if (mat.estadoInventario === 'no_registrado') {
+                  <span style="background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; border: 1px solid #fca5a5; display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-icons" style="font-size: 12px; color: #dc2626;">cancel</span>
+                    No se encuentra en el inventario
+                  </span>
+                }
+              </div>
+
+              <div style="font-size: 12px; color: #64748b;">
+                <span *ngIf="mat.costoVenta">Precio catálogo: <strong>S/ {{ mat.costoVenta.toFixed(2) }}</strong> / {{ mat.unidad || 'unidad' }}</span>
+                <span *ngIf="!mat.costoVenta" style="color: #94a3b8; font-style: italic;">Sin precio predefinido</span>
+              </div>
             </div>
+
             <div style="display: flex; gap: 6px; align-items: center;">
-              <button 
-                *ngIf="!mat.costoVenta"
-                type="button"
-                class="btn-registrar-material" 
-                (click)="irARegistrarMaterial(mat)"
-              >
-                ⚙️ Registrar
-              </button>
+              @if (mat.estadoInventario === 'no_registrado' || !mat.costoVenta) {
+                <button 
+                  type="button"
+                  class="btn-registrar-material" 
+                  (click)="irARegistrarMaterial(mat)"
+                  title="Ir a registrar este material en el catálogo de inventario"
+                  style="padding: 6px 12px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 4px;"
+                >
+                  <span class="material-icons" style="font-size: 14px;">settings</span> Registrar
+                </button>
+              }
               <button class="btn-agregar-solicitado" (click)="agregarMaterialSolicitado(mat)" [disabled]="mat.agregado">
                 {{ mat.agregado ? '✓ Agregado' : '+ Agregar' }}
               </button>
             </div>
           </div>
         </div>
-        <div class="desired-materials" *ngIf="materialesDeseados">
-          <h3 class="subsection-title">Otros Materiales Específicos</h3>
-          <div class="desired-text">
-            <span class="desired-icon">📝</span>
-            <p>{{ materialesDeseados }}</p>
+        <div class="desired-materials" *ngIf="materialesDeseados" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+          <h3 class="subsection-title" style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <span class="material-icons" style="font-size: 15px; color: #7c3aed;">description</span>
+            Especificaciones y Nota del Cliente
+          </h3>
+          <div class="desired-text" style="background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12.5px; color: #334155;">
+            <p style="margin: 0;">{{ materialesDeseados }}</p>
           </div>
         </div>
       </div>
@@ -722,7 +760,7 @@
           </div>
           <div class="form-group">
             <label for="margen">Margen de Ganancia (%)</label>
-            <input type="number" id="margen" min="0" max="100" [(ngModel)]="margenGanancia" [disabled]="pagoConfirmado">
+            <input type="number" id="margen" min="0" max="100" [(ngModel)]="margenGanancia" (input)="validarMargenGanancia($event)" (change)="validarMargenGanancia($event)" (blur)="validarMargenGanancia($event)" [disabled]="pagoConfirmado">
           </div>
         </div>
       </div>
@@ -749,7 +787,7 @@
           </div>
           <div class="form-group">
             <label for="porcentaje">Porcentaje del Adelanto (%)</label>
-            <input type="number" id="porcentaje" min="0" max="100" [(ngModel)]="porcentajeAdelanto" [disabled]="pagoConfirmado">
+            <input type="number" id="porcentaje" min="0" max="100" [(ngModel)]="porcentajeAdelanto" (input)="validarPorcentajeAdelanto($event)" (change)="validarPorcentajeAdelanto($event)" (blur)="validarPorcentajeAdelanto($event)" [disabled]="pagoConfirmado">
             <small>Porcentaje del total que se solicita como adelanto (típicamente 50%)</small>
           </div>
           <div class="adelanto-monto">

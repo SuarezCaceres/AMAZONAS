@@ -115,7 +115,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             }
         }
 
-        User usuario = userRepository.findByEmail(usuarioEmail)
+        User usuario = userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioEmail));
 
         PurchaseRequest solicitud = new PurchaseRequest();
@@ -266,7 +266,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
 
         // Si el email corresponde a un vendedor/admin (no existe en tabla users), retornar lista vacía
         // en lugar de lanzar una excepción que produce HTTP 500.
-        return userRepository.findByEmail(usuarioEmail)
+        return userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .map(usuario -> purchaseRequestRepository.findByUsuarioOrderByCreatedAtDesc(usuario)
                         .stream().map(s -> this.toResponse(s, conPresupuesto)).collect(Collectors.toList()))
                 .orElse(List.of());

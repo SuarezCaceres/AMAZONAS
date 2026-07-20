@@ -3,21 +3,28 @@ import { inject } from '@angular/core';
 import { catchError, throwError, from, switchMap, of } from 'rxjs';
 import { ClerkService } from './clerk.service';
 
-// Rutas publicas que NO deben llevar el token en la cabecera.
+// Rutas públicas que NO deben llevar el token en la cabecera.
 // Si el backend recibe un token expirado/invalido incluso en rutas permitidas,
 // el JwtFilter lo rechaza antes de llegar a la capa de autorizacion.
-const PUBLIC_GET_PATTERNS = [
-  /^\/api\/products(\/|$)/,
-  /^\/api\/products$/,
-  /^\/api\/admin\/materials(\/|$)/,
-  /^\/api\/admin\/material-categories(\/|$)/,
+const PUBLIC_REQUESTS = [
+  { method: 'GET', pattern: /^\/api\/products(\/|$)/ },
+  { method: 'GET', pattern: /^\/api\/categories(\/|$)/ },
+  { method: 'GET', pattern: /^\/api\/admin\/materials(\/|$)/ },
+  { method: 'GET', pattern: /^\/api\/admin\/material-categories(\/|$)/ },
+  { method: 'POST', pattern: /^\/api\/products\/classify-intent(\/|$)/ }
 ];
 
-function isPublicGetRequest(method: string, url: string): boolean {
-  if (method.toUpperCase() !== 'GET') return false;
+function isPublicRequest(method: string, url: string): boolean {
   try {
-    const path = new URL(url).pathname;
-    return PUBLIC_GET_PATTERNS.some(pattern => pattern.test(path));
+    let path = url;
+    if (url.includes('://')) {
+      path = new URL(url).pathname;
+    } else {
+      path = url.split('?')[0].split('#')[0];
+    }
+    return PUBLIC_REQUESTS.some(route => 
+      route.method === method.toUpperCase() && route.pattern.test(path)
+    );
   } catch {
     return false;
   }
@@ -51,7 +58,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Para rutas publicas de productos: no enviar el token aunque exista.
   // Esto evita que un token expirado/corrupto bloquee la carga del catalogo.
-  const skipToken = isPublicGetRequest(req.method, req.url);
+  const skipToken = isPublicRequest(req.method, req.url);
 
   if (skipToken || req.headers.has('Authorization')) {
     return next(req);

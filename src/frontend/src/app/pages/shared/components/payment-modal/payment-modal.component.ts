@@ -100,6 +100,18 @@ export class PaymentModalComponent {
         this.prefilledVoucherUrl = '';
     }
 
+    onNumeroOperacionInput(event: any): void {
+        const raw = event.target.value || '';
+        this.numeroOperacion = raw.replace(/\D/g, '').slice(0, 8);
+        event.target.value = this.numeroOperacion;
+    }
+
+    onCodigoSeguridadInput(event: any): void {
+        const raw = event.target.value || '';
+        this.codigoSeguridad = raw.replace(/\D/g, '').slice(0, 3);
+        event.target.value = this.codigoSeguridad;
+    }
+
     submitPayment(): void {
         if (this.amountToPay <= 0) {
             alert('El monto debe ser mayor a cero.');
@@ -111,23 +123,39 @@ export class PaymentModalComponent {
         let metodoPagoTipo: 'ONLINE' | 'FISICO' = 'ONLINE';
 
         if (this.activePaymentMethod === 'yape') {
-            if (!this.numeroOperacion?.trim()) {
-                alert('Por favor ingresa el número de operación.');
+            const numOp = this.numeroOperacion ? this.numeroOperacion.trim() : '';
+            const codSeg = this.codigoSeguridad ? this.codigoSeguridad.trim() : '';
+
+            if (!numOp) {
+                alert('Por favor ingresa el número de operación de Yape / Plin.');
                 return;
             }
-            if (!this.codigoSeguridad?.trim()) {
+            if (numOp.length !== 8) {
+                alert('El número de operación de Yape / Plin debe tener exactamente 8 dígitos numéricos.');
+                return;
+            }
+            if (!codSeg) {
                 alert('Por favor ingresa el código de seguridad.');
                 return;
             }
-            codigoOp = `YAPE-${this.numeroOperacion.trim()}`;
+            if (codSeg.length !== 3) {
+                alert('El código de seguridad debe tener exactamente 3 dígitos numéricos.');
+                return;
+            }
+            codigoOp = `YAPE-${numOp}`;
             metodoTexto = 'Yape / Plin';
             metodoPagoTipo = 'ONLINE';
         } else if (this.activePaymentMethod === 'transferencia') {
-            if (!this.numeroOperacion?.trim()) {
+            const numOp = this.numeroOperacion ? this.numeroOperacion.trim() : '';
+            if (!numOp) {
                 alert('Por favor ingresa el número de operación de la transferencia.');
                 return;
             }
-            codigoOp = `TRANSF-${this.numeroOperacion.trim()}`;
+            if (numOp.length !== 8) {
+                alert('El número de operación de la transferencia debe tener exactamente 8 dígitos numéricos.');
+                return;
+            }
+            codigoOp = `TRANSF-${numOp}`;
             metodoTexto = 'Transferencia Bancaria';
             metodoPagoTipo = 'ONLINE';
         } else {

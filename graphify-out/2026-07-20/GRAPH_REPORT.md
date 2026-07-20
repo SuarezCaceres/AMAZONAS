@@ -1,16 +1,16 @@
-# Graph Report - AMAZONAS  (2026-07-20)
+# Graph Report - AMAZONAS  (2026-07-14)
 
 ## Corpus Check
-- 248 files · ~156,480 words
+- 258 files · ~152,585 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2653 nodes · 4788 edges · 157 communities (134 shown, 23 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 354 edges (avg confidence: 0.8)
+- 2617 nodes · 4747 edges · 166 communities (143 shown, 23 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 352 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `023e2bad`
+- Built from commit: `1e3d02ac`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -45,9 +45,6 @@
 - [[_COMMUNITY_EstadoSolicitud|EstadoSolicitud]]
 - [[_COMMUNITY_.onCreate|.onCreate]]
 - [[_COMMUNITY_.onUpdate|.onUpdate]]
-- [[_COMMUNITY_.abrirModalCancelacion|.abrirModalCancelacion]]
-- [[_COMMUNITY_.addPreloadedFile|.addPreloadedFile]]
-- [[_COMMUNITY_.clearPreloadedFiles|.clearPreloadedFiles]]
 - [[_COMMUNITY_CLAUDE|CLAUDE.md]]
 - [[_COMMUNITY_Vendor|Vendor]]
 - [[_COMMUNITY_Documentación Técnica — Correcciones de Integración Frontend ↔ Backend|Documentación Técnica — Correcciones de Integración Frontend ↔ Backend]]
@@ -124,7 +121,9 @@
 - [[_COMMUNITY_Documentación de Autenticación y Flujo Automático de Roles|Documentación de Autenticación y Flujo Automático de Roles]]
 - [[_COMMUNITY_ShedLockConfig.java|ShedLockConfig.java]]
 - [[_COMMUNITY_mvnw|mvnw]]
+- [[_COMMUNITY_ChatRoomStatus|ChatRoomStatus]]
 - [[_COMMUNITY_MaterialCategory|MaterialCategory]]
+- [[_COMMUNITY_HeaderComponent|HeaderComponent]]
 - [[_COMMUNITY_🛠️ Modificaciones y Pasos de Configuración Realizados|🛠️ Modificaciones y Pasos de Configuración Realizados]]
 - [[_COMMUNITY_BaseEntity|BaseEntity]]
 - [[_COMMUNITY_Role|Role]]
@@ -143,8 +142,12 @@
 - [[_COMMUNITY_CloudinaryConfig.java|CloudinaryConfig.java]]
 - [[_COMMUNITY_PasswordEncoderConfig.java|PasswordEncoderConfig.java]]
 - [[_COMMUNITY_scripts|scripts]]
+- [[_COMMUNITY_flujodepagos.component.ts|flujodepagos.component.ts]]
+- [[_COMMUNITY_.registrarCobroSaldoConRoomId|.registrarCobroSaldoConRoomId]]
 - [[_COMMUNITY_📑 Sub-issue 3.7 Panel de auditoría de transacciones con visualización de comprobantes cargados|📑 Sub-issue 3.7: Panel de auditoría de transacciones con visualización de comprobantes cargados]]
+- [[_COMMUNITY_HtmlSanitizerService|HtmlSanitizerService]]
 - [[_COMMUNITY_Getting Started|Getting Started]]
+- [[_COMMUNITY_MaterialCategoryRepository|MaterialCategoryRepository]]
 - [[_COMMUNITY_Database|Database]]
 - [[_COMMUNITY_📋 Issue 3 Diseño de Prototipos, Formulario de Pagos Presencial y Auditoría Transaccional|📋 Issue 3: Diseño de Prototipos, Formulario de Pagos Presencial y Auditoría Transaccional]]
 - [[_COMMUNITY_ProductRequest|ProductRequest]]
@@ -165,10 +168,10 @@
 - [[_COMMUNITY_com.amazonasbackend|com.amazonas:backend]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `PurchaseRequest` - 97 edges
+1. `PurchaseRequest` - 95 edges
 2. `Budget` - 72 edges
 3. `PresupuestosComponent` - 71 edges
-4. `SolicitudesComponent` - 67 edges
+4. `SolicitudesComponent` - 66 edges
 5. `FlujoDePagosComponent` - 65 edges
 6. `ChatComponent` - 56 edges
 7. `User` - 51 edges
@@ -191,19 +194,19 @@
 ## Import Cycles
 - None detected.
 
-## Communities (157 total, 23 thin omitted)
+## Communities (166 total, 23 thin omitted)
 
 ### Community 0 - "ChatServiceImpl"
-Cohesion: 0.05
-Nodes (55): AccessDeniedException, EntityNotFoundException, ExceptionHandler, MethodArgumentNotValidException, PolicyFactory, RestControllerAdvice, SimpMessagingTemplate, ErrorResponse (+47 more)
+Cohesion: 0.18
+Nodes (16): AccessDeniedException, EntityNotFoundException, SimpMessagingTemplate, ChatServiceImpl, ChatMessageResponse, ChatOfferResponse, ChatRoomResponse, ChatSenderRole (+8 more)
 
 ### Community 1 - "PurchaseRequestServiceImpl"
-Cohesion: 0.20
+Cohesion: 0.19
 Nodes (9): EntityGraph, EstadoSolicitud, Modifying, Page, Pageable, Query, Repository, Transactional (+1 more)
 
 ### Community 2 - "PurchaseRequestController"
-Cohesion: 0.16
-Nodes (15): DeleteMapping, EstadoSolicitud, GetMapping, Page, PostMapping, Principal, PurchaseRequestRequest, PurchaseRequestResponse (+7 more)
+Cohesion: 0.05
+Nodes (39): KitCustomizedMaterialRequest, KitCustomizedMaterialResponse, KitMaquetaRequest, KitMaquetaResponse, KitPersonalMaterialRequest, KitPersonalMaterialResponse, MaterialPresupuestoDTO, MaterialSolicitadoDTO (+31 more)
 
 ### Community 3 - "MyRequestsComponent"
 Cohesion: 0.11
@@ -226,7 +229,7 @@ Cohesion: 0.05
 Nodes (4): PresupuestosComponent, Component, Input, Output
 
 ### Community 8 - "SolicitudesComponent"
-Cohesion: 0.05
+Cohesion: 0.06
 Nodes (5): SolicitudesComponent, Component, Input, Output, ViewChild
 
 ### Community 9 - "PaymentServiceImpl"
@@ -242,16 +245,16 @@ Cohesion: 0.15
 Nodes (12): 1. Contexto y Requerimientos, 2.1. Exclusión de Soft-Delete en Repositorio, 2.2. Nuevo Endpoint en Controller, 2.3. Lógica del Servicio (`PurchaseRequestServiceImpl.java`), 2. Diseño del Backend, 3.1. Botón en "Mis Solicitudes" (`my-requests.component.html`), 3.2. Botón en Cabecera de Chat (`chat.component.html`), 3.3. Diálogo de Confirmación (+4 more)
 
 ### Community 12 - "ChatMessageRepository"
-Cohesion: 0.14
-Nodes (14): KitCustomizedMaterialResponse, KitMaquetaResponse, KitPersonalMaterialResponse, MaterialPresupuestoDTO, MaterialSolicitadoDTO, RequestPreferredMaterialResponse, EstadoSolicitud, PurchaseRequestResponse (+6 more)
+Cohesion: 0.11
+Nodes (22): ChatMessage, AllArgsConstructor, Builder, ChatMessageType, ChatSenderRole, Entity, Getter, NoArgsConstructor (+14 more)
 
 ### Community 13 - "PaymentModalComponent"
-Cohesion: 0.10
-Nodes (10): PaymentForm, PaymentKind, PaymentMethod, PendingBalance, Transaction, PaymentConfirmPayload, PaymentModalComponent, Component (+2 more)
+Cohesion: 0.17
+Nodes (4): PaymentModalComponent, Component, Input, Output
 
 ### Community 15 - "BackendApplication.java"
-Cohesion: 0.20
-Nodes (10): ApplicationArguments, ApplicationRunner, CacheManager, EnableCaching, SpringBootApplication, BackendApplication, Configuration, Logger (+2 more)
+Cohesion: 0.16
+Nodes (13): ApplicationArguments, ApplicationRunner, CacheManager, CommandLineRunner, EnableCaching, JdbcTemplate, SpringBootApplication, BackendApplication (+5 more)
 
 ### Community 16 - "PurchaseRequest.java"
 Cohesion: 0.08
@@ -270,56 +273,44 @@ Cohesion: 0.10
 Nodes (5): Entity, PrePersist, Product, Table, KitMaqueta
 
 ### Community 26 - "KitPersonalMaterial"
-Cohesion: 0.11
-Nodes (4): Entity, PrePersist, Table, KitPersonalMaterial
+Cohesion: 0.10
+Nodes (6): Entity, PrePersist, Table, KitPersonalMaterial, Repository, KitPersonalMaterialRepository
 
 ### Community 27 - "RequestPreferredMaterial"
-Cohesion: 0.13
-Nodes (5): Entity, Material, PrePersist, Table, RequestPreferredMaterial
+Cohesion: 0.12
+Nodes (7): Entity, Material, PrePersist, Table, RequestPreferredMaterial, Repository, RequestPreferredMaterialRepository
 
 ### Community 28 - "EstadoSolicitud"
 Cohesion: 0.08
 Nodes (7): BudgetExplanationServiceResponse, BudgetItemResponse, Budget, Entity, PrePersist, PreUpdate, Table
 
 ### Community 29 - "KitMaquetaResponse"
-Cohesion: 0.05
-Nodes (43): AuthenticationConfiguration, AuthenticationManager, CorsConfigurationSource, FilterChain, HttpSecurity, HttpServletRequest, HttpServletResponse, ObjectMapper (+35 more)
+Cohesion: 0.09
+Nodes (24): ObjectMapper, RedisCacheManager, RestTemplate, Bean, Configuration, RedisConnectionFactory, RedisCacheConfig, PostMapping (+16 more)
 
 ### Community 30 - "KitCustomizedMaterialResponse"
 Cohesion: 0.07
 Nodes (9): Entity, GrantedAuthority, Override, PrePersist, PreUpdate, SQLDelete, SQLRestriction, Table (+1 more)
 
 ### Community 31 - "KitPersonalMaterialResponse"
-Cohesion: 0.10
-Nodes (8): Category, Entity, PrePersist, PreUpdate, SQLDelete, SQLRestriction, Table, Product
+Cohesion: 0.09
+Nodes (10): trim(), Category, Entity, PrePersist, PreUpdate, SQLDelete, SQLRestriction, Table (+2 more)
 
 ### Community 32 - "RequestPreferredMaterialResponse"
 Cohesion: 0.07
 Nodes (3): CategoriesComponent, Component, Output
 
 ### Community 33 - "EstadoSolicitud"
-Cohesion: 0.15
-Nodes (13): EstadoSolicitud, Cacheable, Caching, EstadoSolicitud, Override, Page, Pageable, PurchaseRequestResponse (+5 more)
+Cohesion: 0.18
+Nodes (11): EstadoSolicitud, Cacheable, Caching, EstadoSolicitud, Override, PurchaseRequestResponse, Service, Slf4j (+3 more)
 
 ### Community 34 - ".onCreate"
-Cohesion: 0.05
+Cohesion: 0.06
 Nodes (4): FlujoDePagosComponent, Component, Input, Output
 
 ### Community 35 - ".onUpdate"
-Cohesion: 0.13
-Nodes (11): Material, MaterialCategory, MaterialRequest, CartKit, CartMaterial, MaterialCategoryGroup, PrecioMaqueta, MaterialItem (+3 more)
-
-### Community 38 - ".abrirModalCancelacion"
-Cohesion: 0.16
-Nodes (8): EstadoSolicitud, Page, Pageable, PurchaseRequestRequest, PurchaseRequestResponse, SolicitudParaPresupuestoResponse, UpdateEstadoRequest, PurchaseRequestService
-
-### Community 39 - ".addPreloadedFile"
-Cohesion: 0.18
-Nodes (9): ProductMaterialDetail, RelatedProduct, ProductMaterialDetail, ProductResponse, RelatedProduct, Page, Pageable, ProductRequest (+1 more)
-
-### Community 40 - ".clearPreloadedFiles"
-Cohesion: 0.14
-Nodes (13): Backend (Spring Boot), Causa raiz: async dispatch de CompletableFuture, Como diagnosticar en el futuro, Contexto, Frontend (Angular), Guia: Clerk Auth + Spring Boot + Angular - Solucion al 401, Notas finales, Problema 1 — Race condition en la suscripcion de Clerk (+5 more)
+Cohesion: 0.11
+Nodes (14): CategoryResponse, Material, MaterialCategory, MaterialRequest, CartKit, CartMaterial, MaterialCategoryGroup, PrecioMaqueta (+6 more)
 
 ### Community 42 - "Vendor"
 Cohesion: 0.08
@@ -330,16 +321,16 @@ Cohesion: 0.06
 Nodes (31): 1. Arquitectura general de comunicación, 2. Fix 1 — Serialización Jackson y N+1 queries en Productos, 3. Fix 2 — Sesión colgada, token expirado y carga del catálogo, 4. Fix 3 — Error UUID vs String en MaterialCategory, 5. Tabla de archivos modificados, 6. Referencia de endpoints consumidos, Archivos modificados, Archivos modificados (+23 more)
 
 ### Community 44 - "Material"
-Cohesion: 0.08
-Nodes (10): Entity, MaterialCategory, PrePersist, PreUpdate, SQLDelete, SQLRestriction, Table, Material (+2 more)
+Cohesion: 0.09
+Nodes (9): Entity, MaterialCategory, PrePersist, PreUpdate, SQLDelete, SQLRestriction, Table, Material (+1 more)
 
 ### Community 45 - "ModelItem"
 Cohesion: 0.11
 Nodes (17): CATEGORIES, Category, defaultFeatures, ModelItem, MODELS, CatalogComponent, categoryMap, mapProductToModelItem() (+9 more)
 
 ### Community 46 - "ProductResponse"
-Cohesion: 0.17
-Nodes (11): trim(), Category, Override, Page, Pageable, Product, ProductRequest, RequiredArgsConstructor (+3 more)
+Cohesion: 0.14
+Nodes (16): ProductMaterialDetail, RelatedProduct, ProductResponse, Override, Page, Pageable, Product, ProductRequest (+8 more)
 
 ### Community 47 - "Category"
 Cohesion: 0.11
@@ -352,6 +343,10 @@ Nodes (28): 3. Preparación de Integración Inmediata (Listo para Conectar), [au
 ### Community 49 - "NightlyReport"
 Cohesion: 0.10
 Nodes (4): Entity, PrePersist, Table, NightlyReport
+
+### Community 50 - "AuthService"
+Cohesion: 0.13
+Nodes (7): AuthResponse, CurrentUserResponse, LoginRequest, LoginVendorRequest, RegisterRequest, AuthService, Injectable
 
 ### Community 52 - "BudgetExplanationService"
 Cohesion: 0.09
@@ -374,43 +369,43 @@ Cohesion: 0.11
 Nodes (5): NavbarClienteComponent, Component, Output, RequestMode, SessionUser
 
 ### Community 58 - "ChatOffer"
-Cohesion: 0.05
-Nodes (28): ChatMessageResponse, ChatMessageType, ChatSenderRole, ChatOfferResponse, ChatOfferStatus, ChatSenderRole, ChatRoomResponse, ChatRoomStatus (+20 more)
+Cohesion: 0.11
+Nodes (17): ChatOfferResponse, ChatOfferStatus, ChatSenderRole, ChatOfferStatus, ChatOffer, AllArgsConstructor, Builder, ChatOfferStatus (+9 more)
 
 ### Community 59 - "CloudinaryService"
 Cohesion: 0.14
 Nodes (15): FileController, MultipartFile, PostMapping, RequestMapping, RequiredArgsConstructor, ResponseEntity, RestController, CloudinaryService (+7 more)
 
 ### Community 60 - "BuscadorInteligente"
-Cohesion: 0.18
-Nodes (3): BuscadorInteligente, Component, Output
+Cohesion: 0.11
+Nodes (8): InicioComponent, Component, Input, Output, ViewChild, BuscadorInteligente, Component, Output
 
 ### Community 61 - "BudgetRepository"
-Cohesion: 0.22
-Nodes (6): BudgetGuardianScheduler, Component, Scheduled, SchedulerLock, Slf4j, Transactional
+Cohesion: 0.16
+Nodes (10): BudgetRepository, EntityGraph, Query, Repository, BudgetGuardianScheduler, Component, Scheduled, SchedulerLock (+2 more)
 
 ### Community 62 - "BudgetItem"
-Cohesion: 0.12
+Cohesion: 0.10
 Nodes (5): BudgetItem, Entity, Material, PrePersist, Table
 
 ### Community 63 - "ChatRoom"
-Cohesion: 0.28
-Nodes (5): AuthResponse, CurrentUserResponse, LoginRequest, LoginVendorRequest, RegisterRequest
+Cohesion: 0.13
+Nodes (13): ChatRoom, AllArgsConstructor, Builder, ChatRoomStatus, Entity, Getter, NoArgsConstructor, PreUpdate (+5 more)
 
 ### Community 64 - "ProductMaterial"
-Cohesion: 0.14
+Cohesion: 0.13
 Nodes (6): Entity, Material, PrePersist, Product, Table, ProductMaterial
 
 ### Community 65 - "KitCustomizedMaterial"
-Cohesion: 0.10
-Nodes (7): Entity, Material, PrePersist, Table, KitCustomizedMaterial, Repository, KitCustomizedMaterialRepository
+Cohesion: 0.11
+Nodes (5): Entity, Material, PrePersist, Table, KitCustomizedMaterial
 
 ### Community 66 - "solicitudes.component.ts"
-Cohesion: 0.20
-Nodes (12): ChatMessageType, ChatOfferResponse, ChatOfferStatus, ChatRoomStatus, ChatSenderRole, CreateExtraRequest, CreateOfferRequest, SendMessageRequest (+4 more)
+Cohesion: 0.19
+Nodes (13): ChatMessageType, ChatOfferResponse, ChatOfferStatus, ChatRoomResponse, ChatRoomStatus, ChatSenderRole, CreateExtraRequest, CreateOfferRequest (+5 more)
 
 ### Community 67 - "Product"
-Cohesion: 0.14
+Cohesion: 0.12
 Nodes (3): Product, GestionStockComponent, Component
 
 ### Community 68 - "MaterialController.java"
@@ -422,12 +417,16 @@ Cohesion: 0.15
 Nodes (5): MyRequestsComponent, Component, Input, Output, SavedRequest
 
 ### Community 70 - "BudgetServiceImpl.java"
-Cohesion: 0.15
-Nodes (16): BudgetRepository, EntityGraph, Query, Repository, BudgetServiceImpl, BudgetResponse, Cacheable, Override (+8 more)
+Cohesion: 0.19
+Nodes (11): BudgetServiceImpl, BudgetResponse, Cacheable, Override, PasswordEncoder, Service, Slf4j, Transactional (+3 more)
+
+### Community 71 - ".mapToResponse"
+Cohesion: 0.13
+Nodes (3): ProductMaterialDetail, RelatedProduct, RelatedProduct
 
 ### Community 72 - "MaterialServiceImpl.java"
-Cohesion: 0.33
-Nodes (8): CacheEvict, Cacheable, MaterialRequest, Override, RequiredArgsConstructor, Service, Transactional, MaterialServiceImpl
+Cohesion: 0.25
+Nodes (9): CacheEvict, Cacheable, Material, MaterialRequest, Override, RequiredArgsConstructor, Service, Transactional (+1 more)
 
 ### Community 73 - "AuthServiceImpl.java"
 Cohesion: 0.16
@@ -438,19 +437,15 @@ Cohesion: 0.22
 Nodes (12): DeleteMapping, GetMapping, Page, PostMapping, ProductRequest, PutMapping, RequestMapping, RequiredArgsConstructor (+4 more)
 
 ### Community 75 - "navbar-cliente.component.ts"
-Cohesion: 0.08
-Nodes (18): FooterComponent, Component, Output, HeaderComponent, PageView, Component, Input, Output (+10 more)
+Cohesion: 0.13
+Nodes (12): FooterComponent, Component, Output, AuthView, PageView, NosotrosComponent, Component, Output (+4 more)
 
 ### Community 77 - "2. Backend (Spring Boot) y Base de Datos"
 Cohesion: 0.12
 Nodes (16): 1. Arquitectura General y Estructura, 2. Backend (Spring Boot) y Base de Datos, 3. Frontend (Angular) e Integración, 4. Resumen de Recomendaciones de Prioridad Alta, Auditoría Técnica de Integración Frontend + Backend (AMAZONAS), 🔍 CORS Hardcodeado en Código Fuente, 🔍 Desincronización del Esquema de la Base de Datos (Flyway), ⚠️ Duplicidad de Enlace de Eventos (Event Binding) en Frontend (+8 more)
 
-### Community 78 - "ChatService"
-Cohesion: 0.15
-Nodes (3): ChatRoomResponse, ChatService, Injectable
-
 ### Community 79 - "WebSocketConfig.java"
-Cohesion: 0.24
+Cohesion: 0.22
 Nodes (11): ChannelRegistration, EnableWebSocketMessageBroker, MessageBrokerRegistry, Configuration, Override, PasswordEncoder, RequiredArgsConstructor, Slf4j (+3 more)
 
 ### Community 80 - "📖 Explicación del Buscador Inteligente y Formulario Centrado (Modo Junior)"
@@ -470,20 +465,20 @@ Cohesion: 0.28
 Nodes (7): Page, Pageable, Product, Query, Repository, ProductRepository, Override
 
 ### Community 84 - "GlobalExceptionHandler.java"
-Cohesion: 0.31
-Nodes (4): CategoryResponse, CategoryService, Injectable, environment
+Cohesion: 0.36
+Nodes (7): ExceptionHandler, MethodArgumentNotValidException, RestControllerAdvice, ErrorResponse, GlobalExceptionHandler, ResponseEntity, Slf4j
 
 ### Community 85 - "VendorServiceImpl.java"
 Cohesion: 0.22
 Nodes (7): DashboardStatsResponse, MaquetaStatsResponse, ProductAnalysisResponse, RequiredArgsConstructor, Service, VendorServiceImpl, VendorService
 
 ### Community 86 - "VendorRepository"
-Cohesion: 0.11
-Nodes (17): SpringBootTest, ChatAlertScheduler, Component, JavaMailSender, Scheduled, SchedulerLock, Slf4j, Repository (+9 more)
+Cohesion: 0.19
+Nodes (8): Repository, VendorRepository, CustomUserDetailsService, Override, RequiredArgsConstructor, Service, UserDetails, UserDetailsService
 
 ### Community 87 - "api.config.ts"
-Cohesion: 0.21
-Nodes (4): AppComponent, appConfig, routes, Component
+Cohesion: 0.18
+Nodes (5): AppComponent, appConfig, routes, Component, environment
 
 ### Community 88 - "BudgetService"
 Cohesion: 0.22
@@ -494,8 +489,8 @@ Cohesion: 0.14
 Nodes (13): cli, analytics, prefix, projectType, root, schematics, sourceRoot, newProjectRoot (+5 more)
 
 ### Community 90 - "SecurityConfig.java"
-Cohesion: 0.29
-Nodes (4): ResetPasswordComponent, Component, Input, Output
+Cohesion: 0.28
+Nodes (9): AuthenticationConfiguration, AuthenticationManager, CorsConfigurationSource, HttpSecurity, SecurityFilterChain, Bean, Configuration, RequiredArgsConstructor (+1 more)
 
 ### Community 91 - "Documentación: Integración de Cloudinary para Carga de Imágenes"
 Cohesion: 0.15
@@ -510,12 +505,12 @@ Cohesion: 0.26
 Nodes (8): EventListener, SessionConnectedEvent, SessionDisconnectEvent, Component, RequiredArgsConstructor, Slf4j, WebSocketSessionListener, StringRedisTemplate
 
 ### Community 94 - "JwtFilter.java"
-Cohesion: 0.33
-Nodes (5): KitCustomizedMaterialRequest, KitMaquetaRequest, KitPersonalMaterialRequest, RequestPreferredMaterialRequest, PurchaseRequestRequest
+Cohesion: 0.26
+Nodes (10): FilterChain, HttpServletRequest, HttpServletResponse, OncePerRequestFilter, Component, Logger, Override, PasswordEncoder (+2 more)
 
 ### Community 95 - "JpaRepository"
-Cohesion: 0.19
-Nodes (11): JpaRepository, BudgetExplanationServiceRepository, Repository, BudgetItemRepository, Repository, Repository, KitMaquetaRepository, Repository (+3 more)
+Cohesion: 0.26
+Nodes (9): JpaRepository, BudgetExplanationServiceRepository, Repository, BudgetItemRepository, Repository, Repository, KitCustomizedMaterialRepository, Repository (+1 more)
 
 ### Community 96 - "AuthService"
 Cohesion: 0.21
@@ -530,7 +525,7 @@ Cohesion: 0.15
 Nodes (13): dependencies, @angular/common, @angular/compiler, @angular/core, @angular/forms, @angular/platform-browser, @angular/router, @clerk/clerk-js (+5 more)
 
 ### Community 99 - "navbar-vendedor.component.ts"
-Cohesion: 0.23
+Cohesion: 0.21
 Nodes (7): NavItem, VendedorTab, DashboardComponent, QuickAction, StatCard, Component, Output
 
 ### Community 100 - "ComboboxInputComponent"
@@ -542,12 +537,12 @@ Cohesion: 0.17
 Nodes (11): 1. Comportamiento en el Frontend (`auth.interceptor.ts`), 2. Comportamiento en el Backend (`SecurityConfig.java` y `JwtFilter.java`), 🔍 Análisis Técnico y Causas Raíz, Escenario A: Usuario no autenticado en el frontend (Sin Token), Escenario B: Usuario autenticado en el frontend con Clerk (Token Inválido para el Backend), ¿Por qué ocurre el HTTP 403 Forbidden?, Reporte de Errores de Conexión (HTTP 403 Forbidden) - Integración de Clerk, 📋 Resumen del Problema (+3 more)
 
 ### Community 102 - "NightlyReportScheduler.java"
-Cohesion: 0.22
+Cohesion: 0.24
 Nodes (8): Repository, NightlyReportRepository, Component, Scheduled, SchedulerLock, Slf4j, Transactional, NightlyReportScheduler
 
 ### Community 103 - "ChatMessageType"
-Cohesion: 0.40
-Nodes (3): install, path, { spawn }
+Cohesion: 0.18
+Nodes (7): ChatMessageResponse, ChatMessageType, ChatSenderRole, ChatMessageType, SendMessageRequest, ChatMessageType, ChatSenderRole
 
 ### Community 104 - "MaterialResponse"
 Cohesion: 0.24
@@ -563,11 +558,15 @@ Nodes (6): AuthComponent, AuthView, Component, Input, Output, UserAccount
 
 ### Community 107 - "ClerkService"
 Cohesion: 0.27
-Nodes (6): authInterceptor(), getTokenWithRetry(), isPublicRequest(), PUBLIC_REQUESTS, ClerkService, Injectable
+Nodes (6): authInterceptor(), getTokenWithRetry(), isPublicGetRequest(), PUBLIC_GET_PATTERNS, ClerkService, Injectable
 
 ### Community 108 - "JwtService"
 Cohesion: 0.35
 Nodes (4): Claims, SecretKey, Service, JwtService
+
+### Community 109 - "UserRepository"
+Cohesion: 0.27
+Nodes (4): SpringBootTest, UserRepository, BackendApplicationTests, Test
 
 ### Community 110 - "VendorController.java"
 Cohesion: 0.40
@@ -597,9 +596,17 @@ Nodes (7): EnableSchedulerLock, EnableScheduling, LockProvider, Bean, Configurat
 Cohesion: 0.39
 Nodes (6): mvnw script, clean(), die(), exec_maven(), set_java_home(), verbose()
 
+### Community 117 - "ChatRoomStatus"
+Cohesion: 0.22
+Nodes (4): ChatRoomResponse, ChatRoomStatus, EstadoSolicitud, ChatRoomStatus
+
 ### Community 118 - "MaterialCategory"
-Cohesion: 0.19
-Nodes (6): Entity, Table, MaterialCategory, MaterialCategory, Repository, MaterialCategoryRepository
+Cohesion: 0.28
+Nodes (3): Entity, Table, MaterialCategory
+
+### Community 119 - "HeaderComponent"
+Cohesion: 0.22
+Nodes (5): HeaderComponent, PageView, Component, Input, Output
 
 ### Community 122 - "🛠️ Modificaciones y Pasos de Configuración Realizados"
 Cohesion: 0.25
@@ -669,13 +676,25 @@ Nodes (4): Bean, Configuration, PasswordEncoder, PasswordEncoderConfig
 Cohesion: 0.33
 Nodes (6): scripts, build, ng, start, test, watch
 
+### Community 140 - "flujodepagos.component.ts"
+Cohesion: 0.33
+Nodes (5): PaymentForm, PaymentKind, PaymentMethod, PendingBalance, Transaction
+
 ### Community 143 - "📑 Sub-issue 3.7: Panel de auditoría de transacciones con visualización de comprobantes cargados"
 Cohesion: 0.40
 Nodes (4): 🔎 Layout del Panel de Auditoría, 📋 Lista de Tareas, 🎯 Objetivo, 📑 Sub-issue 3.7: Panel de auditoría de transacciones con visualización de comprobantes cargados
 
+### Community 144 - "HtmlSanitizerService"
+Cohesion: 0.60
+Nodes (3): PolicyFactory, HtmlSanitizerService, Service
+
 ### Community 145 - "Getting Started"
 Cohesion: 0.40
 Nodes (4): Getting Started, Guides, Maven Parent overrides, Reference Documentation
+
+### Community 146 - "MaterialCategoryRepository"
+Cohesion: 0.60
+Nodes (3): MaterialCategory, Repository, MaterialCategoryRepository
 
 ### Community 147 - "Database"
 Cohesion: 0.50
@@ -689,29 +708,25 @@ Nodes (3): 🛠️ Estructura del Issue 3, 📋 Issue 3: Diseño de Prototipos, 
 Cohesion: 0.50
 Nodes (3): ProductMaterialInput, ProductMaterialInput, ProductRequest
 
-### Community 150 - "dependencies"
-Cohesion: 0.17
-Nodes (11): dependencies, @stomp/stompjs, name, private, scripts, build, dev, start (+3 more)
-
 ## Knowledge Gaps
-- **305 isolated node(s):** `recordToolUse.sh script`, `name`, `version`, `private`, `workspaces` (+300 more)
+- **281 isolated node(s):** `recordToolUse.sh script`, `@stomp/stompjs`, `com.amazonas:backend`, `JpaAuditingConfig`, `BudgetExplanationServiceRequest` (+276 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **23 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `PurchaseRequest` connect `PurchaseRequest` to `ChatServiceImpl`, `KitCustomizedMaterial`, `EstadoSolicitud`, `PurchaseRequestServiceImpl`, `BudgetServiceImpl.java`, `NightlyReportScheduler.java`, `.actualizar`, `KitCustomizedMaterial`, `KitMaqueta`, `KitPersonalMaterial`, `RequestPreferredMaterial`, `EstadoSolicitud`, `BudgetRepository`, `KitCustomizedMaterialResponse`?**
-  _High betweenness centrality (0.092) - this node is a cross-community bridge._
-- **Why does `ChatServiceImpl` connect `ChatServiceImpl` to `PurchaseRequestServiceImpl`, `PurchaseRequestResponse`, `BudgetServiceImpl.java`, `ChatExtra`, `VendorRepository`, `ChatOffer`, `WebSocketSessionListener`?**
-  _High betweenness centrality (0.066) - this node is a cross-community bridge._
-- **Why does `UserRepository` connect `BudgetServiceImpl.java` to `ChatServiceImpl`, `EstadoSolicitud`, `AuthServiceImpl.java`, `PaymentServiceImpl`, `WebSocketConfig.java`, `AuthController.java`, `VendorRepository`, `KitMaquetaResponse`, `KitCustomizedMaterialResponse`, `JpaRepository`?**
-  _High betweenness centrality (0.061) - this node is a cross-community bridge._
-- **What connects `recordToolUse.sh script`, `name`, `version` to the rest of the system?**
-  _305 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `ChatServiceImpl` be split into smaller, more focused modules?**
-  _Cohesion score 0.05025699600228441 - nodes in this community are weakly interconnected._
+- **Why does `PurchaseRequest` connect `PurchaseRequest` to `ChatServiceImpl`, `KitCustomizedMaterial`, `EstadoSolicitud`, `PurchaseRequestServiceImpl`, `BudgetServiceImpl.java`, `NightlyReportScheduler.java`, `.actualizar`, `KitCustomizedMaterial`, `KitMaqueta`, `KitPersonalMaterial`, `RequestPreferredMaterial`, `EstadoSolicitud`, `BudgetRepository`, `KitCustomizedMaterialResponse`, `ChatRoom`?**
+  _High betweenness centrality (0.088) - this node is a cross-community bridge._
+- **Why does `UserRepository` connect `UserRepository` to `ChatServiceImpl`, `EstadoSolicitud`, `BudgetServiceImpl.java`, `AuthServiceImpl.java`, `PaymentServiceImpl`, `ChatMessageRepository`, `WebSocketConfig.java`, `AuthController.java`, `VendorRepository`, `JwtFilter.java`, `KitCustomizedMaterialResponse`, `JpaRepository`?**
+  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+- **Why does `VendorRepository` connect `VendorRepository` to `ChatServiceImpl`, `EstadoSolicitud`, `BudgetServiceImpl.java`, `AuthServiceImpl.java`, `Vendor`, `ChatMessageRepository`, `UserRepository`, `WebSocketConfig.java`, `AuthController.java`, `JwtFilter.java`, `JpaRepository`?**
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+- **What connects `recordToolUse.sh script`, `@stomp/stompjs`, `com.amazonas:backend` to the rest of the system?**
+  _281 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `PurchaseRequestController` be split into smaller, more focused modules?**
+  _Cohesion score 0.05174825174825175 - nodes in this community are weakly interconnected._
 - **Should `MyRequestsComponent` be split into smaller, more focused modules?**
-  _Cohesion score 0.11290322580645161 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11491935483870967 - nodes in this community are weakly interconnected._
 - **Should `ChatComponent` be split into smaller, more focused modules?**
   _Cohesion score 0.061224489795918366 - nodes in this community are weakly interconnected._

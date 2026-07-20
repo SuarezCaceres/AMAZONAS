@@ -1,121 +1,246 @@
 <section class="request-page" [class.standalone-layout]="standaloneRequest">
+  
+  <!-- PREVIEW COLUMN (ONLY FOR NON-STANDALONE) -->
   <div class="preview-column" *ngIf="!standaloneRequest">
-    <figure class="model-preview">
-      <img [src]="model.imageUrl" [alt]="model.title">
-      <figcaption>{{ model.category }}</figcaption>
-    </figure>
+    <div class="glass-container preview-card">
+      <figure class="model-preview">
+        <img [src]="model.imageUrl" [alt]="model.title">
+        <figcaption class="premium-badge">{{ model.category }}</figcaption>
+      </figure>
+      <div class="preview-info">
+        <h2>{{ model.title }}</h2>
+        <p class="preview-desc">{{ model.description }}</p>
+        
+        <div class="features-list">
+          <div class="feature-item" *ngFor="let feat of model.features">
+            <span class="material-icons feature-icon">check_circle</span>
+            <span>{{ feat }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <!-- FORM COLUMN -->
   <section class="form-column">
     <header class="request-header">
-      <h1>
-        <span aria-hidden="true">{{ isCustomization ? '&#128393;' : '&#128722;' }}</span>
-        {{ title }}
-      </h1>
-      <button type="button" *ngIf="!standaloneRequest" (click)="changedMode.emit(alternateMode)">Cambiar</button>
+      <div class="header-title-wrapper">
+        <span class="material-icons header-icon">{{ isCustomization ? 'design_services' : 'shopping_bag' }}</span>
+        <h1>{{ title }}</h1>
+      </div>
+      <button type="button" class="change-mode-btn" *ngIf="!standaloneRequest" (click)="changedMode.emit(alternateMode)">
+        <span class="material-icons">swap_horiz</span>
+        <span>Cambiar a {{ isCustomization ? 'Compra' : 'Personalización' }}</span>
+      </button>
     </header>
 
-    <form class="request-card" (ngSubmit)="submitRequest()" #requestForm="ngForm">
-      <h2>
-        <span aria-hidden="true">{{ isCustomization ? '&#128393;' : '&#128722;' }}</span>
-        {{ actionTitle }}
-      </h2>
-      <p *ngIf="isCustomization">Cuentanos como quieres que sea tu maqueta personalizada</p>
+    <form class="request-card glass-container" (ngSubmit)="submitRequest()" #requestForm="ngForm">
+      <div class="form-header-badge">
+        <span class="material-icons">{{ isCustomization ? 'architecture' : 'shopping_cart' }}</span>
+        <span>{{ actionTitle }}</span>
+      </div>
+      <p class="section-intro" *ngIf="isCustomization">Cuéntanos cómo quieres que sea tu maqueta personalizada</p>
 
-      <label for="fullName">Nombre Completo *</label>
-      <input id="fullName" name="fullName" type="text" required [(ngModel)]="form.fullName" readonly class="bg-slate-100 text-slate-500 cursor-not-allowed select-none border-slate-200">
+      <!-- BASIC INFO FIELDS -->
+      <div class="fields-grid">
+        <div class="form-group readonly-group">
+          <label for="fullName">
+            <span class="material-icons field-icon">person</span>
+            Nombre Completo
+          </label>
+          <div class="input-wrapper">
+            <input id="fullName" name="fullName" type="text" required [(ngModel)]="form.fullName" readonly class="readonly-input">
+            <span class="material-icons lock-icon">lock</span>
+          </div>
+        </div>
 
-      <label for="email">Correo Electronico *</label>
-      <input id="email" name="email" type="email" required [(ngModel)]="form.email" readonly class="bg-slate-100 text-slate-500 cursor-not-allowed select-none border-slate-200">
+        <div class="form-group readonly-group">
+          <label for="email">
+            <span class="material-icons field-icon">email</span>
+            Correo Electrónico
+          </label>
+          <div class="input-wrapper">
+            <input id="email" name="email" type="email" required [(ngModel)]="form.email" readonly class="readonly-input">
+            <span class="material-icons lock-icon">lock</span>
+          </div>
+        </div>
 
-      <label for="phone">Telefono *</label>
-      <input id="phone" name="phone" type="tel" required [(ngModel)]="form.phone">
+        <div class="form-group">
+          <label for="phone">
+            <span class="material-icons field-icon">phone</span>
+            Teléfono celular *
+          </label>
+          <div class="input-wrapper">
+            <input id="phone" name="phone" type="tel" required [(ngModel)]="form.phone" placeholder="+51 987 654 321">
+          </div>
+        </div>
+      </div>
 
+      <!-- CUSTOMIZATION DETAILS -->
       <ng-container *ngIf="isCustomization; else purchaseMessage">
-        <label for="description">Descripcion de la Personalizacion *</label>
-        <textarea id="description" name="description" required rows="4"
-          placeholder="Describe como quieres tu maqueta personalizada (tamano, colores, caracteristicas especiales, etc.)"
-          [(ngModel)]="form.description"></textarea>
+        <div class="form-group">
+          <label for="description">
+            <span class="material-icons field-icon">description</span>
+            Descripción de la Personalización *
+          </label>
+          <textarea id="description" name="description" required rows="4"
+            placeholder="Describe a detalle cómo quieres tu maqueta: dimensiones aproximadas, colores principales, estructura, acabados especiales..."
+            [(ngModel)]="form.description"></textarea>
+        </div>
 
+        <!-- MATERIAL SWAP SECTION -->
         <section class="materials-section" *ngIf="!standaloneRequest">
-          <h3>Materiales de la Maqueta</h3>
-          <p>Puedes cambiar los materiales originales por otros de tu preferencia</p>
-
-          <div class="material-control" *ngFor="let original of model.materials.slice(0, 4); let i = index">
-            <div class="material-row">
-              <strong>Material {{ i + 1 }}:</strong>
-              <span>Original: {{ original }}</span>
+          <div class="section-title-wrapper">
+            <span class="material-icons section-icon">published_with_changes</span>
+            <div>
+              <h3>Reemplazar Materiales Originales</h3>
+              <p>Puedes cambiar los materiales originales de la maqueta por tus favoritos</p>
             </div>
-            <select [name]="'material' + i" [(ngModel)]="selectedMaterials[i]">
-              <option *ngFor="let material of (materialDropdownOptions[i] || materialOptions)" [value]="material">
-                {{ material }}{{ material === original ? ' (Original)' : '' }}
-              </option>
-            </select>
+          </div>
+
+          <div class="materials-grid">
+            <div class="material-control-card" *ngFor="let original of model.materials.slice(0, 4); let i = index">
+              <div class="material-card-header">
+                <span class="material-badge-index">#{{ i + 1 }}</span>
+                <span class="original-label">Original: {{ original }}</span>
+              </div>
+              <div class="select-wrapper">
+                <select [name]="'material' + i" [(ngModel)]="selectedMaterials[i]">
+                  <option *ngFor="let material of (materialDropdownOptions[i] || materialOptions)" [value]="material">
+                    {{ material }}{{ material === original ? ' (Original)' : '' }}
+                  </option>
+                </select>
+                <span class="material-icons select-arrow">expand_more</span>
+              </div>
+            </div>
           </div>
         </section>
 
+        <!-- EXTRA MATERIALS SECTION -->
         <section class="extras-section">
-          <h3>Materiales Adicionales (opcional)</h3>
-          <p>Selecciona materiales extras que quieras agregar a tu maqueta</p>
+          <div class="section-title-wrapper">
+            <span class="material-icons section-icon">add_circle_outline</span>
+            <div>
+              <h3>Materiales Adicionales (Opcional)</h3>
+              <p>Selecciona los materiales extra que desees añadir al diseño</p>
+            </div>
+          </div>
 
           <div class="extras-grid">
             <button type="button" *ngFor="let material of additionalMaterials"
-              [class.selected]="isExtraSelected(material)" (click)="toggleExtra(material)">
-              {{ material }}
+              [class.selected]="isExtraSelected(material)" (click)="toggleExtra(material)" class="extra-chip">
+              <span class="material-icons chip-check" *ngIf="isExtraSelected(material)">check</span>
+              <span>{{ material }}</span>
             </button>
           </div>
         </section>
 
-        <label for="otherMaterials">Otros Materiales Especificos (opcional)</label>
-        <textarea id="otherMaterials" name="otherMaterials" rows="2"
-          placeholder="Si necesitas algun material especifico que no esta en la lista, escribelo aqui"
-          [(ngModel)]="form.otherMaterials"></textarea>
+        <div class="form-group mt-6">
+          <label for="otherMaterials">
+            <span class="material-icons field-icon">edit_note</span>
+            Otros Materiales Específicos (Opcional)
+          </label>
+          <textarea id="otherMaterials" name="otherMaterials" rows="2"
+            placeholder="Si necesitas algún material muy específico que no figura arriba, indícalo aquí..."
+            [(ngModel)]="form.otherMaterials"></textarea>
+        </div>
       </ng-container>
 
+      <!-- STANDARD PURCHASE MESSAGE -->
       <ng-template #purchaseMessage>
-        <label for="message">Mensaje (opcional)</label>
-        <textarea id="message" name="message" rows="5" placeholder="Detalles adicionales sobre tu solicitud..."
-          [(ngModel)]="form.message"></textarea>
+        <div class="form-group">
+          <label for="message">
+            <span class="material-icons field-icon">message</span>
+            Mensaje de Solicitud (Opcional)
+          </label>
+          <textarea id="message" name="message" rows="5" 
+            placeholder="Detalles adicionales sobre tu pedido, fecha de entrega requerida u otras indicaciones..."
+            [(ngModel)]="form.message"></textarea>
+        </div>
       </ng-template>
 
-      <label class="explanation-option">
-        <input type="checkbox" name="explanation" [(ngModel)]="form.explanation">
-        <span class="explanation-icon" aria-hidden="true">&#128250;</span>
-        <strong>Solicitar Servicio de Explicacion</strong>
-        <small>Demostracion de como se armo el proyecto (para clases, eventos o grupos)</small>
-      </label>
+      <!-- EXPLANATION SERVICE SECTION -->
+      <div class="explanation-card-option" [class.active]="form.explanation">
+        <label class="explanation-checkbox-label">
+          <input type="checkbox" name="explanation" [(ngModel)]="form.explanation">
+          <span class="custom-checkbox">
+            <span class="material-icons">done</span>
+          </span>
+          <div class="checkbox-info">
+            <div class="info-title-wrapper">
+              <span class="material-icons explanation-card-icon">school</span>
+              <strong>¿Deseas el servicio de explicación?</strong>
+            </div>
+            <p>Un especialista te enseñará detalladamente cómo se armó la maqueta, ideal para exposiciones escolares, universitarias o eventos.</p>
+          </div>
+        </label>
+      </div>
 
-      <section class="explanation-details" *ngIf="form.explanation">
-        <fieldset>
-          <legend>Tipo de Explicacion *</legend>
+      <!-- EXPLANATION SUB-FORM -->
+      <section class="explanation-details-box" *ngIf="form.explanation">
+        <fieldset class="explanation-fieldset">
+          <legend>
+            <span class="material-icons inline-icon">settings_voice</span>
+            Tipo de Explicación *
+          </legend>
 
-          <label class="explanation-type" *ngFor="let type of explanationTypes">
-            <input type="radio" name="explanationType" [value]="type.value" required [(ngModel)]="form.explanationType">
-            <span class="type-icon" aria-hidden="true" [innerHTML]="type.icon"></span>
-            {{ type.label }}
-          </label>
+          <div class="explanation-types-grid">
+            <label class="explanation-type-card" *ngFor="let type of explanationTypes" [class.active]="form.explanationType === type.value">
+              <input type="radio" name="explanationType" [value]="type.value" required [(ngModel)]="form.explanationType">
+              <span class="type-custom-radio"></span>
+              <div class="type-card-content">
+                <span class="material-icons type-card-icon">
+                  {{ type.value === 'video' ? 'videocam' : type.value === 'presencial' ? 'groups' : 'laptop_mac' }}
+                </span>
+                <span class="type-label">{{ type.label }}</span>
+              </div>
+            </label>
+          </div>
         </fieldset>
 
-        <label for="explanationModel">Modelo de Explicacion *</label>
-        <select id="explanationModel" name="explanationModel" required [(ngModel)]="form.explanationModel"
-          (ngModelChange)="updateExplanationPeopleMinimum()">
-          <option value="" disabled>Seleccionar modelo...</option>
-          <option *ngFor="let option of explanationModels" [value]="option">{{ option }}</option>
-        </select>
+        <div class="fields-grid mt-6">
+          <div class="form-group">
+            <label for="explanationModel">
+              <span class="material-icons field-icon">diversity_3</span>
+              Modelo de Explicación *
+            </label>
+            <div class="select-wrapper">
+              <select id="explanationModel" name="explanationModel" required [(ngModel)]="form.explanationModel"
+                (ngModelChange)="updateExplanationPeopleMinimum()">
+                <option value="" disabled>Seleccionar modelo...</option>
+                <option *ngFor="let option of explanationModels" [value]="option">{{ option }}</option>
+              </select>
+              <span class="material-icons select-arrow">expand_more</span>
+            </div>
+          </div>
 
-        <div class="people-control" *ngIf="requiresExplanationPeople">
-          <label for="explanationPeople">Cantidad de Personas *</label>
-          <input id="explanationPeople" name="explanationPeople" type="number" required [min]="explanationPeopleMinimum"
-            [(ngModel)]="form.explanationPeople">
-          <small>Minimo {{ explanationPeopleMinimum }} personas</small>
+          <div class="form-group people-control" *ngIf="requiresExplanationPeople">
+            <label for="explanationPeople">
+              <span class="material-icons field-icon">group_add</span>
+              Cantidad de Personas *
+            </label>
+            <input id="explanationPeople" name="explanationPeople" type="number" required [min]="explanationPeopleMinimum"
+              [(ngModel)]="form.explanationPeople">
+            <small class="helper-text">Mínimo requerido: {{ explanationPeopleMinimum }} personas</small>
+          </div>
         </div>
       </section>
 
-      <div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
-      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+      <!-- MESSAGES -->
+      <div class="success-alert" *ngIf="successMessage">
+        <span class="material-icons">check_circle</span>
+        <span>{{ successMessage }}</span>
+      </div>
+      <div class="error-alert" *ngIf="errorMessage">
+        <span class="material-icons">error</span>
+        <span>{{ errorMessage }}</span>
+      </div>
 
-      <button class="submit-button" type="submit" [class.purchase]="!isCustomization" [disabled]="loading">
-        {{ loading ? 'Enviando...' : submitLabel }}
+      <!-- SUBMIT BUTTON -->
+      <button class="submit-premium-button" type="submit" [class.purchase-btn]="!isCustomization" [disabled]="loading">
+        <span class="spinner" *ngIf="loading"></span>
+        <span class="material-icons button-icon" *ngIf="!loading">{{ isCustomization ? 'send' : 'shopping_bag' }}</span>
+        <span>{{ loading ? 'Procesando solicitud...' : submitLabel }}</span>
       </button>
     </form>
   </section>

@@ -50,7 +50,7 @@ public class BudgetController {
         try {
             BudgetResponse response = budgetService.obtenerPorSolicitudId(solicitudId);
             
-            boolean isVendor = userDetails.getAuthorities().stream()
+            boolean isVendor = userDetails != null && userDetails.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMIN"));
                     
             if (isVendor) {

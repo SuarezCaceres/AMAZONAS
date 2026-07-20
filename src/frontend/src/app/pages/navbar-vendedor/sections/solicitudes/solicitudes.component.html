@@ -587,10 +587,22 @@
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span class="font-bold text-xs text-slate-700">Sala de Negociación Activa</span>
             </div>
-            <span class="text-[9px] font-semibold text-slate-400 bg-white border px-2 py-0.5 rounded flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full" [class.bg-emerald-500]="wsConnected" [class.bg-slate-400]="!wsConnected"></span>
-              {{ wsConnected ? 'Conectado STOMP' : 'Reconectando...' }}
-            </span>
+            <div class="flex items-center gap-2">
+              @if (room && room.status === 'AGREED') {
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                  <span class="material-icons text-xs" style="font-size: 12px;">check_circle</span>
+                  Presupuesto Aceptado
+                </span>
+              }
+              <button type="button" (click)="enviarDatosDePagoAlCliente()" class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1" title="Enviar QR Yape y Cuentas Bancarias al chat">
+                <span class="material-icons text-xs" style="font-size: 13px;">qr_code</span>
+                Enviar Datos de Pago
+              </button>
+              <span class="text-[9px] font-semibold text-slate-400 bg-white border px-2 py-0.5 rounded flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full" [class.bg-emerald-500]="wsConnected" [class.bg-slate-400]="!wsConnected"></span>
+                {{ wsConnected ? 'Conectado STOMP' : 'Reconectando...' }}
+              </span>
+            </div>
           </div>
 
           <!-- Step Tracker del Prototipo (Misma lógica visual) -->
@@ -785,51 +797,75 @@
 
                         @else if (msg.messageType === 'VOUCHER') {
                         @let fileData = parseMetadata(msg.metadata);
+                        @let msgEstado = getMsgEstado(msg.id);
+                        @let voucherTipo = getVoucherType(msg);
                         <div class="py-0.5 space-y-2">
-                          <span class="inline-block text-[8px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded uppercase tracking-wider">
-                            Comprobante de Adelanto Recibido
+                          <span class="inline-block text-[8px] font-bold px-2 py-0.5 rounded uppercase tracking-wider"
+                            [class]="voucherTipo === 'saldo' ? 'bg-blue-200 text-blue-900 border border-blue-300' : 'bg-emerald-200 text-emerald-900 border border-emerald-300'">
+                            {{ voucherTipo === 'saldo' ? 'Comprobante de Saldo Recibido' : 'Comprobante de Adelanto Recibido' }}
                           </span>
                           
                           <!-- Preview Box -->
-                          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-emerald-200 text-teal-800 shadow-sm">
+                          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white border text-teal-800 shadow-sm"
+                            [class]="msgEstado === 'adelanto_confirmado' ? 'border-emerald-300 bg-emerald-50/50' : msgEstado === 'saldo_confirmado' ? 'border-blue-300 bg-blue-50/50' : msgEstado === 'rechazado' ? 'border-rose-300 bg-rose-50/50 opacity-60' : 'border-emerald-200'">
                             <span class="material-icons text-2xl" [class]="isImageFile(fileData.fileType) ? 'text-emerald-600' : getFileIconColorClass(fileData.fileType)">{{ isImageFile(fileData.fileType) ? 'receipt_long' : getFileIcon(fileData.fileType) }}</span>
                             <div class="flex-1 min-w-0 text-left">
                               <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
                               <span class="text-[9px] text-slate-400 block mt-0.5">
                                 @if (isImageFile(fileData.fileType)) {
-                                  Captura de Yape • S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
+                                  Captura de Yape • S/ {{ (voucherTipo === 'completo' ? (room?.agreedPrice || 375.70) : (room?.agreedPrice ? (room?.agreedPrice ?? 0) / 2 : 187.85)) | number:'1.2-2' }}
                                 } @else {
-                                  Documento Comprobante • S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
+                                  Documento Comprobante • S/ {{ (voucherTipo === 'completo' ? (room?.agreedPrice || 375.70) : (room?.agreedPrice ? (room?.agreedPrice ?? 0) / 2 : 187.85)) | number:'1.2-2' }}
                                 }
                               </span>
                             </div>
                           </div>
 
-                          <!-- Botones Rápidos en el Mensaje -->
-                          <div class="flex gap-2 pt-1.5 border-t border-emerald-100/50">
-                            <button type="button" (click)="openVoucherZoom(fileData.fileUrl, fileData.fileName, msg)" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-bold py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
-                              <span class="material-icons text-[12px]">zoom_in</span>
-                              Ver Detalle
-                            </button>
-                            <button type="button" (click)="descartarComprobante(msg.id)" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 text-[10px] font-bold py-1.5 rounded-lg border border-rose-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
-                              <span class="material-icons text-[12px]">cancel</span>
-                              Rechazar
-                            </button>
-                            <button *ngIf="activeBudget?.adelantoRequerido && !isAdelantoPagado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
-                              <span class="material-icons text-[12px]">payments</span>
-                              Confirmar Adelanto
-                            </button>
-                            
-                            <button *ngIf="activeBudget?.adelantoRequerido && isAdelantoPagado(activeBudget?.codigoReferencia) && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
-                              <span class="material-icons text-[12px]">payments</span>
-                              Completar Pago
-                            </button>
-
-                            <button *ngIf="!activeBudget?.adelantoRequerido && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
-                              <span class="material-icons text-[12px]">payment</span>
-                              Confirmar Pago
-                            </button>
-                          </div>
+                          <!-- Badges de estado ya procesado -->
+                          @if (msgEstado === 'adelanto_confirmado') {
+                            <div class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800">
+                              <span class="material-icons text-[14px]">verified</span>
+                              <span class="text-[10px] font-extrabold uppercase tracking-wider">Adelanto Verificado</span>
+                            </div>
+                          } @else if (msgEstado === 'saldo_confirmado') {
+                            <div class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 border border-blue-200 rounded-xl text-blue-800">
+                              <span class="material-icons text-[14px]">verified</span>
+                              <span class="text-[10px] font-extrabold uppercase tracking-wider">Pago Final Verificado</span>
+                            </div>
+                          } @else if (msgEstado === 'rechazado') {
+                            <div class="flex items-center gap-1.5 px-3 py-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-700">
+                              <span class="material-icons text-[14px]">cancel</span>
+                              <span class="text-[10px] font-extrabold uppercase tracking-wider">Comprobante Rechazado</span>
+                            </div>
+                          } @else {
+                            <!-- Botones de acción para mensajes SIN estado procesado -->
+                            <div class="flex gap-2 pt-1.5 border-t border-emerald-100/50">
+                              <button type="button" (click)="openVoucherZoom(fileData.fileUrl, fileData.fileName, msg)" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-bold py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
+                                <span class="material-icons text-[12px]">zoom_in</span>
+                                Ver Detalle
+                              </button>
+                              <button type="button" (click)="abrirModalRechazo(msg)" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 text-[10px] font-bold py-1.5 rounded-lg border border-rose-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
+                                <span class="material-icons text-[12px]">cancel</span>
+                                Rechazar
+                              </button>
+                              @if (voucherTipo === 'adelanto') {
+                                <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Confirmar Adelanto
+                                </button>
+                              } @else if (voucherTipo === 'saldo') {
+                                <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Completar Pago
+                                </button>
+                              } @else {
+                                <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">payment</span>
+                                  Confirmar Pago
+                                </button>
+                              }
+                            </div>
+                          }
                         </div>
                       }
 
@@ -1388,22 +1424,43 @@
         <button (click)="closeVoucherZoom()" class="flex-1 bg-white hover:bg-slate-100 text-slate-650 font-bold py-2.5 rounded-xl border border-slate-250 transition-all cursor-pointer text-xs">
           Cerrar Vista
         </button>
-        <button type="button" (click)="descartarComprobante(currentVoucherMessage!.id)" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 font-bold py-2.5 rounded-xl border border-rose-250 transition-all cursor-pointer text-xs flex items-center justify-center gap-1">
-          <span class="material-icons text-sm" style="font-size: 16px;">cancel</span>
-          Rechazar
-        </button>
-        <button *ngIf="activeBudget?.adelantoRequerido && !isAdelantoPagado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
-          <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
-          Confirmar Adelanto
-        </button>
-        <button *ngIf="activeBudget?.adelantoRequerido && isAdelantoPagado(activeBudget?.codigoReferencia) && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
-          <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
-          Completar Pago
-        </button>
-        <button *ngIf="!activeBudget?.adelantoRequerido && !isPagoConfirmado(activeBudget?.codigoReferencia)" type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
-          <span class="material-icons text-sm" style="font-size: 16px;">task_alt</span>
-          Confirmar Pago
-        </button>
+        @if (currentVoucherMessage && getMsgEstado(currentVoucherMessage.id) === 'adelanto_confirmado') {
+          <div class="flex-1 flex items-center justify-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 py-2.5">
+            <span class="material-icons text-sm" style="font-size: 16px;">verified</span>
+            <span class="text-xs font-extrabold uppercase tracking-wider">Adelanto Verificado</span>
+          </div>
+        } @else if (currentVoucherMessage && getMsgEstado(currentVoucherMessage.id) === 'saldo_confirmado') {
+          <div class="flex-1 flex items-center justify-center gap-1.5 bg-blue-50 border border-blue-200 rounded-xl text-blue-800 py-2.5">
+            <span class="material-icons text-sm" style="font-size: 16px;">verified</span>
+            <span class="text-xs font-extrabold uppercase tracking-wider">Pago Final Verificado</span>
+          </div>
+        } @else if (currentVoucherMessage && getMsgEstado(currentVoucherMessage.id) === 'rechazado') {
+          <div class="flex-1 flex items-center justify-center gap-1.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 py-2.5">
+            <span class="material-icons text-sm" style="font-size: 16px;">cancel</span>
+            <span class="text-xs font-extrabold uppercase tracking-wider">Rechazado</span>
+          </div>
+        } @else if (currentVoucherMessage) {
+          <button type="button" (click)="abrirModalRechazo()" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 font-bold py-2.5 rounded-xl border border-rose-250 transition-all cursor-pointer text-xs flex items-center justify-center gap-1">
+            <span class="material-icons text-sm" style="font-size: 16px;">cancel</span>
+            Rechazar
+          </button>
+          @if (getVoucherType(currentVoucherMessage) === 'adelanto') {
+            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarAdelantoDesdeChat(currentVoucherMessage)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+              <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
+              Confirmar Adelanto
+            </button>
+          } @else if (getVoucherType(currentVoucherMessage) === 'saldo') {
+            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(currentVoucherMessage)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+              <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
+              Completar Pago
+            </button>
+          } @else {
+            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(currentVoucherMessage)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+              <span class="material-icons text-sm" style="font-size: 16px;">task_alt</span>
+              Confirmar Pago
+            </button>
+          }
+        }
       </div>
     </div>
   </div>
@@ -1450,6 +1507,43 @@
       <div class="cancelation-modal-footer">
         <button class="btn-cancelation-back" (click)="cerrarModalCancelacion()">Volver</button>
         <button class="btn-cancelation-confirm" (click)="confirmarRechazo()">Confirmar Cancelación</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de Rechazo de Comprobante -->
+@if (mostrarModalRechazo) {
+  <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4 border border-rose-100 animate-scaleUp">
+      <div class="flex items-center gap-3 pb-3 border-b border-rose-100">
+        <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center font-bold">
+          <span class="material-icons text-xl">gpp_bad</span>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800 m-0">Observar / Rechazar Comprobante</h3>
+          <p class="text-xs text-slate-400 m-0">Notificarás al cliente para que vuelva a subir su pago</p>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-xs font-bold text-slate-700 block">Indica el motivo del rechazo:</label>
+        <textarea 
+          [(ngModel)]="motivoRechazo"
+          rows="3"
+          placeholder="Ej: Captura borrosa, número de operación no visible o monto no coincide..."
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-rose-500 focus:bg-white resize-none">
+        </textarea>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button (click)="cerrarModalRechazo()" class="flex-1 bg-white hover:bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl border border-slate-200 text-xs cursor-pointer">
+          Cancelar
+        </button>
+        <button (click)="confirmarRechazoComprobante()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl border-none shadow text-xs cursor-pointer flex items-center justify-center gap-1">
+          <span class="material-icons text-sm" style="font-size: 16px;">send</span>
+          Enviar Rechazo
+        </button>
       </div>
     </div>
   </div>

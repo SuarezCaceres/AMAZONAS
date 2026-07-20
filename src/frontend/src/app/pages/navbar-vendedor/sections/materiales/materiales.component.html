@@ -98,6 +98,12 @@
           </h2>
         </div>
         <div class="section-card-body">
+          @if (formError) {
+            <div style="background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-weight: 600; font-size: 13.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <span class="material-icons" style="font-size: 18px; color: #ef4444;">error</span>
+              <span>{{ formError }}</span>
+            </div>
+          }
           <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Nombre *</label>

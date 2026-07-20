@@ -8,12 +8,18 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.cache.annotation.CachingConfigurer;
+import org.springframework.cache.interceptor.CacheErrorHandler;
+import org.springframework.cache.interceptor.SimpleCacheErrorHandler;
+import org.springframework.cache.Cache;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -23,12 +29,11 @@ import java.util.Map;
  * Configuración explícita del CacheManager de Redis.
  *
  * <p>Usa {@code GenericJackson2JsonRedisSerializer} con un ObjectMapper configurado
- * con Default Typing. Esto añade información de clase (@class) en el JSON guardado
- * en Redis para que Jackson pueda deserializar los DTOs complejos (LocalDateTime, Records)
- * de vuelta a sus tipos correspondientes en Java sin producir errores de tipado.</p>
+ * con Default Typing y CachingConfigurer para manejo resiliente de errores de caché.</p>
  */
 @Configuration
-public class RedisCacheConfig {
+@Slf4j
+public class RedisCacheConfig implements CachingConfigurer {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
@@ -39,7 +44,7 @@ public class RedisCacheConfig {
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 // Ignora propiedades desconocidas como '@class' en Records (clases final)
                 .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                // Activa el tipado por defecto (polimorfismo) para guardar la información de la clase
+                // Activa el tipado por defecto (polimorfismo) para guardar la información de la clase (incluyendo Records)
                 .activateDefaultTyping(
                     LaissezFaireSubTypeValidator.instance,
                     ObjectMapper.DefaultTyping.NON_FINAL,
@@ -82,6 +87,40 @@ public class RedisCacheConfig {
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(cacheConfigs)
                 .build();
+    }
+
+    /**
+     * Manejador de errores de caché: Si Redis falla al leer o deserializar un objeto corrupto,
+     * se loguea una advertencia, se evicta la clave y se consulta directamente la BD sin lanzar 500.
+     */
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new SimpleCacheErrorHandler() {
+            @Override
+            public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
+                log.warn("Error al leer cache Redis '{}' para la clave '{}'. Evictando clave corrupta y consultando BD.", cache.getName(), key, exception);
+                try {
+                    cache.evict(key);
+                } catch (Exception e) {
+                    log.error("No se pudo evictar la clave corrupta de Redis", e);
+                }
+            }
+
+            @Override
+            public void handleCachePutError(RuntimeException exception, Cache cache, Object key, Object value) {
+                log.warn("Error al escribir en cache Redis '{}' para la clave '{}'.", cache.getName(), key, exception);
+            }
+
+            @Override
+            public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
+                log.warn("Error al evictar de cache Redis '{}' para la clave '{}'.", cache.getName(), key, exception);
+            }
+
+            @Override
+            public void handleCacheClearError(RuntimeException exception, Cache cache) {
+                log.warn("Error al limpiar cache Redis '{}'.", cache.getName(), exception);
+            }
+        };
     }
 }
 
