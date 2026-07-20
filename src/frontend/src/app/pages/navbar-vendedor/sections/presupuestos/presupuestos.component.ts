@@ -25,6 +25,8 @@ interface MaterialSolicitado {
   nombre: string;
   unidad?: string;
   costoVenta?: number;
+  stockActual?: number;
+  estadoInventario: 'con_stock' | 'sin_stock' | 'no_registrado';
   agregado: boolean;
 }
 
@@ -108,7 +110,7 @@ export class PresupuestosComponent implements OnChanges, OnInit {
   duracionExplicacion = 60;
   precioExplicacion: number = 0;
 
-  materialesDisponibles: { id?: string, nombre: string, precio: number }[] = [];
+  materialesDisponibles: { id?: string, nombre: string, precio: number, stockActual: number, unidad?: string }[] = [];
 
   // ── Selector de Maquetas del Catálogo ───────────────────────────────────
   catalogMaquetas: Product[] = [];
@@ -188,15 +190,22 @@ export class PresupuestosComponent implements OnChanges, OnInit {
     }
   }
 
+  private currentSolicitudRawData: any = null;
+
   loadMateriales(): void {
     this.materialService.getAllMaterials().subscribe({
       next: (mats) => {
         this.materialesDisponibles = mats.map(m => ({
           id: m.id,
           nombre: m.nombre,
-          precio: m.costoVenta
+          precio: m.costoVenta,
+          stockActual: m.stockActual !== undefined ? m.stockActual : 0,
+          unidad: m.unidad
         }));
         this.materialesFiltrados = [...this.materialesDisponibles];
+        if (this.currentSolicitudRawData) {
+          this.analizarMaterialesSolicitados(this.currentSolicitudRawData);
+        }
       },
       error: (err) => console.error('Error loading materials:', err)
     });
@@ -505,6 +514,7 @@ export class PresupuestosComponent implements OnChanges, OnInit {
   }
 
   private inicializarConDatosSolicitud(data: any): void {
+    this.currentSolicitudRawData = data;
     this.materialesAgregados = (data.materialesProducto || []).map((mat: any, index: number) => ({
       id: index + 1,
       materialId: mat.materialId || mat.id || '',
@@ -516,15 +526,9 @@ export class PresupuestosComponent implements OnChanges, OnInit {
     }));
     this.nextId = this.materialesAgregados.length + 1;
 
-    this.materialesSolicitados = (data.materialesPreferidos || []).map((mat: any) => ({
-      materialId: mat.materialId,
-      nombre: mat.nombre,
-      unidad: mat.unidad,
-      costoVenta: mat.costoVenta ? Number(mat.costoVenta) : undefined,
-      agregado: false
-    }));
-
     this.materialesDeseados = data.materialesDeseados || '';
+    this.analizarMaterialesSolicitados(data);
+
     this.solicitarExplicacion = data.solicitarExplicacion || false;
     this.tipoEvento = data.tipoEvento || '';
     this.cantidadPersonas = (this.solicitarExplicacion && (!data.cantidadPersonas || data.cantidadPersonas <= 0))
@@ -540,6 +544,81 @@ export class PresupuestosComponent implements OnChanges, OnInit {
     this.isLoading = false;
   }
 
+  analizarMaterialesSolicitados(data: any): void {
+    if (!data) return;
+    const list: MaterialSolicitado[] = [];
+    const processedKeys = new Set<string>();
+
+    // 1. Procesar materialesPreferidos del cliente
+    const preferidos = data.materialesPreferidos || [];
+    for (const mat of preferidos) {
+      const key = (mat.nombre || '').trim().toLowerCase();
+      if (!key) continue;
+      processedKeys.add(key);
+
+      const match = this.materialesDisponibles.find(m =>
+        m.nombre.trim().toLowerCase() === key || (mat.materialId && m.id === mat.materialId)
+      );
+
+      if (match) {
+        const hasStock = (match.stockActual || 0) > 0;
+        list.push({
+          materialId: match.id,
+          nombre: match.nombre,
+          unidad: match.unidad || mat.unidad,
+          costoVenta: match.precio,
+          stockActual: match.stockActual,
+          estadoInventario: hasStock ? 'con_stock' : 'sin_stock',
+          agregado: this.materialesAgregados.some(m => m.nombre.toLowerCase().trim() === key)
+        });
+      } else {
+        list.push({
+          materialId: mat.materialId,
+          nombre: mat.nombre,
+          unidad: mat.unidad,
+          costoVenta: mat.costoVenta ? Number(mat.costoVenta) : undefined,
+          stockActual: 0,
+          estadoInventario: 'no_registrado',
+          agregado: this.materialesAgregados.some(m => m.nombre.toLowerCase().trim() === key)
+        });
+      }
+    }
+
+    // 2. Procesar materialesDeseados (texto libre especificando materiales, ej: "Miel", "Silicona, Fideos")
+    const deseadosText = data.materialesDeseados || '';
+    if (deseadosText) {
+      const rawTokens = deseadosText.split(/[,;\n]+/).map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+      for (const token of rawTokens) {
+        const key = token.toLowerCase();
+        if (processedKeys.has(key)) continue;
+        processedKeys.add(key);
+
+        const match = this.materialesDisponibles.find(m => m.nombre.trim().toLowerCase() === key);
+        if (match) {
+          const hasStock = (match.stockActual || 0) > 0;
+          list.push({
+            materialId: match.id,
+            nombre: match.nombre,
+            unidad: match.unidad,
+            costoVenta: match.precio,
+            stockActual: match.stockActual,
+            estadoInventario: hasStock ? 'con_stock' : 'sin_stock',
+            agregado: this.materialesAgregados.some(m => m.nombre.toLowerCase().trim() === key)
+          });
+        } else {
+          list.push({
+            nombre: token,
+            stockActual: 0,
+            estadoInventario: 'no_registrado',
+            agregado: this.materialesAgregados.some(m => m.nombre.toLowerCase().trim() === key)
+          });
+        }
+      }
+    }
+
+    this.materialesSolicitados = list;
+  }
+
   // ── Getters calculados ────────────────────────────────────────────────────
 
   get totalMateriales(): number {
@@ -551,7 +630,8 @@ export class PresupuestosComponent implements OnChanges, OnInit {
   }
 
   get ganancia(): number {
-    return this.subtotal * ((this.margenGanancia || 0) / 100);
+    const margen = Math.min(100, Math.max(0, this.margenGanancia || 0));
+    return this.subtotal * (margen / 100);
   }
 
   get total(): number {
@@ -560,7 +640,50 @@ export class PresupuestosComponent implements OnChanges, OnInit {
 
   get montoAdelanto(): number {
     if (!this.requiereAdelanto) return 0;
-    return this.total * ((this.porcentajeAdelanto || 0) / 100);
+    const pct = Math.min(100, Math.max(0, this.porcentajeAdelanto || 0));
+    return this.total * (pct / 100);
+  }
+
+  validarMargenGanancia(event?: any): void {
+    if (event && event.target && event.target.value !== undefined) {
+      const rawStr = String(event.target.value).trim();
+      if (rawStr === '') return; // Permite borrar temporalmente para escribir
+      let val = parseFloat(rawStr);
+      if (isNaN(val) || val < 0) {
+        val = 0;
+      } else if (val > 100) {
+        val = 100;
+      }
+      this.margenGanancia = val;
+      event.target.value = val;
+    } else {
+      if (this.margenGanancia === null || this.margenGanancia === undefined || isNaN(this.margenGanancia) || this.margenGanancia < 0) {
+        this.margenGanancia = 0;
+      } else if (this.margenGanancia > 100) {
+        this.margenGanancia = 100;
+      }
+    }
+  }
+
+  validarPorcentajeAdelanto(event?: any): void {
+    if (event && event.target && event.target.value !== undefined) {
+      const rawStr = String(event.target.value).trim();
+      if (rawStr === '') return; // Permite borrar temporalmente para escribir
+      let val = parseFloat(rawStr);
+      if (isNaN(val) || val < 0) {
+        val = 0;
+      } else if (val > 100) {
+        val = 100;
+      }
+      this.porcentajeAdelanto = val;
+      event.target.value = val;
+    } else {
+      if (this.porcentajeAdelanto === null || this.porcentajeAdelanto === undefined || isNaN(this.porcentajeAdelanto) || this.porcentajeAdelanto < 0) {
+        this.porcentajeAdelanto = 0;
+      } else if (this.porcentajeAdelanto > 100) {
+        this.porcentajeAdelanto = 100;
+      }
+    }
   }
 
   get explicacionLabel(): string {

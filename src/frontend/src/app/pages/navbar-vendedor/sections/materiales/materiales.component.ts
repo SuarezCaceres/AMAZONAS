@@ -35,6 +35,7 @@ export class MaterialesComponent implements OnInit, OnDestroy {
   products: Product[] = [];
   loading = false;
   saving = false;
+  formError = '';
   collapsedCategories: Record<string, boolean> = {};
 
   // Formulario Material
@@ -127,38 +128,57 @@ export class MaterialesComponent implements OnInit, OnDestroy {
   handleEdit(material: Material): void {
     this.editingId = material.id;
     this.isAdding = false;
+    this.formError = '';
+
+    let catId = material.categoriaId || '';
+    if (!catId && material.categoriaNombre && this.categories.length > 0) {
+      const found = this.categories.find(c => c.nombre.toLowerCase() === material.categoriaNombre.toLowerCase());
+      if (found) {
+        catId = found.id;
+      }
+    }
+    if (!catId && this.categories.length > 0) {
+      catId = this.categories[0].id;
+    }
+
     this.formData = {
       nombre: material.nombre,
       unidad: material.unidad,
       costoCompra: material.costoCompra,
       costoVenta: material.costoVenta,
       stockActual: material.stockActual,
-      categoriaId: material.categoriaId,
+      categoriaId: catId,
       proveedor: material.proveedor || '',
       activo: material.activo
     };
   }
 
   handleSave(): void {
-    if (!this.formData.nombre || !this.formData.unidad || !this.formData.categoriaId) {
-      alert('Por favor, completa los campos obligatorios: Nombre, Unidad y Categoría.');
+    this.formError = '';
+
+    if (!this.formData.nombre?.trim() || !this.formData.unidad?.trim() || !this.formData.categoriaId?.trim()) {
+      const msg = 'Por favor, completa los campos obligatorios: Nombre, Unidad y Categoría.';
+      this.formError = msg;
+      alert(msg);
       return;
     }
 
     if (/\d/.test(this.formData.unidad)) {
-      alert('La unidad de medida no debe contener números (ej. usa "hoja", "kg", "paquete").');
+      const msg = 'La unidad de medida no debe contener números (ej. usa "hoja", "kg", "paquete").';
+      this.formError = msg;
+      alert(msg);
       return;
     }
 
     this.saving = true;
     const request: MaterialRequest = {
-      nombre: this.formData.nombre,
-      unidad: this.formData.unidad,
-      costoCompra: this.formData.costoCompra,
-      costoVenta: this.formData.costoVenta,
-      stockActual: this.formData.stockActual,
-      categoriaId: this.formData.categoriaId,
-      proveedor: this.formData.proveedor || undefined,
+      nombre: this.formData.nombre.trim(),
+      unidad: this.formData.unidad.trim(),
+      costoCompra: Number(this.formData.costoCompra) || 0,
+      costoVenta: Number(this.formData.costoVenta) || 0,
+      stockActual: Number(this.formData.stockActual) || 0,
+      categoriaId: this.formData.categoriaId.trim(),
+      proveedor: this.formData.proveedor?.trim() || undefined,
       activo: this.formData.activo
     };
 
@@ -167,12 +187,15 @@ export class MaterialesComponent implements OnInit, OnDestroy {
         next: () => {
           this.saving = false;
           this.editingId = null;
+          this.formError = '';
           this.resetMaterialForm();
           this.loadAllData();
         },
         error: (err) => {
           console.error('Error al actualizar material:', err);
-          alert('Hubo un error al actualizar el material.');
+          const msg = err?.error?.message || err?.message || 'Hubo un error al actualizar el material.';
+          this.formError = msg;
+          alert(msg);
           this.saving = false;
         }
       });
@@ -181,12 +204,15 @@ export class MaterialesComponent implements OnInit, OnDestroy {
         next: () => {
           this.saving = false;
           this.isAdding = false;
+          this.formError = '';
           this.resetMaterialForm();
           this.loadAllData();
         },
         error: (err) => {
           console.error('Error al crear material:', err);
-          alert('Hubo un error al crear el material.');
+          const msg = err?.error?.message || err?.message || 'Hubo un error al crear el material.';
+          this.formError = msg;
+          alert(msg);
           this.saving = false;
         }
       });
@@ -210,17 +236,20 @@ export class MaterialesComponent implements OnInit, OnDestroy {
   handleCancel(): void {
     this.editingId = null;
     this.isAdding = false;
+    this.formError = '';
     this.resetMaterialForm();
   }
 
   resetMaterialForm(): void {
+    this.formError = '';
+    const defaultCatId = this.categories.length > 0 ? this.categories[0].id : '';
     this.formData = {
       nombre: '',
       unidad: '',
       costoCompra: 0,
       costoVenta: 0,
       stockActual: 0,
-      categoriaId: '',
+      categoriaId: defaultCatId,
       proveedor: '',
       activo: true
     };

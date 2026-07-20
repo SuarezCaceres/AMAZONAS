@@ -4243,32 +4243,239 @@
    Aplica en todos los breakpoints que lo necesiten
    ============================================================ */
 
-/* ── Corrección crítica: min-width: 0 en hijos de grid/flex ──
-   Sin esto, los hijos del grid pueden exceder su celda       */
+/* ── Grid contenedor principal de Analytics ── */
 .modern-dashboard-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+  width: 100%;
   min-width: 0;
+  align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+  .modern-dashboard-columns {
+    grid-template-columns: 1fr;
+  }
 }
 
 .modern-chart-card,
 .recent-transactions-card {
-  min-width: 0;        /* CRÍTICO: evita que el grid se desborde */
-  overflow: hidden;    /* Clip en el borde redondeado de la tarjeta */
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Encabezado del gráfico ── */
+.chart-header,
+.transactions-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chart-title,
+.transactions-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-actions {
+  display: flex;
+  align-items: center;
+}
+
+.chart-select {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chart-select:hover {
+  border-color: #94a3b8;
+  background-color: #f1f5f9;
+}
+
+/* ── Cuerpo del Gráfico y Alineación de Ejes ── */
+.chart-body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+  padding-top: 4px;
+}
+
+.y-axis-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  height: 180px;
+  padding-top: 18px;    /* Alinea con la línea superior de la cuadrícula en y=30 */
+  padding-bottom: 18px; /* Alinea con la línea inferior de la cuadrícula en y=170 */
+  text-align: right;
+  min-width: 55px;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 /* ── Scroll wrapper del gráfico ── */
 .chart-inner-scroll {
-  /* En desktop: sin scroll, el gráfico usa todo el ancho disponible */
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   overflow-x: visible;
 }
 
 .chart-inner-scroll .chart-svg-container {
   width: 100%;
+  height: 180px;
+  position: relative;
+}
+
+.historical-line-chart {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
 }
 
 .chart-inner-scroll .x-axis-labels {
   display: flex;
   justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+/* ── Estilos de la Tabla de Transacciones ── */
+.recent-transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.recent-transactions-table th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.recent-transactions-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.recent-transactions-table tr:last-child td {
+  border-bottom: none;
+}
+
+.tx-index-td {
+  color: #94a3b8;
+  font-weight: 600;
+  width: 24px;
+}
+
+.tx-date-td {
+  color: #64748b;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.tx-desc-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.tx-client-name {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.tx-project-name {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.tx-amount-td {
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.tx-profit-td {
+  font-weight: 700;
+  color: #059669;
+  white-space: nowrap;
+}
+
+.status-pill-modern {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-online {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.status-fisico {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.empty-tx-td {
+  text-align: center;
+  color: #94a3b8;
+  padding: 24px 0 !important;
+  font-style: italic;
 }
 
 /* ── Tabla de Transacciones Recientes: scroll interno siempre ── */

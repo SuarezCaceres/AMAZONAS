@@ -253,6 +253,13 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     this.activeOffer = null;
     this.extras = [];
 
+    // Si la sala ya fue acordada previamente y no ha terminado, abrir automáticamente el panel de pagos
+    if (room.status === 'AGREED' && room.requestStatus !== 'COMPLETADO' && room.requestStatus !== 'RECHAZADO') {
+      this.showPaymentPanel = true;
+    } else {
+      this.showPaymentPanel = false;
+    }
+
     // Load messages history
     this.loadMessages(room.id);
 
@@ -275,6 +282,22 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
         this.shouldScrollToBottom = true;
         this.refreshActiveOffer();
         this.extractExtras();
+
+        // Extraer metadatos del presupuesto más reciente para alimentar la pasarela de pagos al reingresar
+        const budgetMsg = this.messages.slice().reverse().find(m => m.messageType === 'BUDGET');
+        if (budgetMsg) {
+          try {
+            this.activeBudgetMetadata = JSON.parse(budgetMsg.metadata);
+            if (!this.activeBudgetMetadata.requiereAdelanto) {
+              this.selectedPaymentOption = 'completo';
+            }
+          } catch (e) {}
+        }
+
+        // Si hay un rechazo activo de comprobante, aperturar de inmediato la ventana de pago
+        if (this.isAdelantoRechazado) {
+          this.showPaymentPanel = true;
+        }
       },
       error: (err) => console.error('Error loading messages history', err)
     });
@@ -452,11 +475,17 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
         );
       });
 
-      // 5. Limpiar archivos pre-cargados y apagar loading
+      // 5. Limpiar archivos pre-cargados, borrar banderas de rechazo y apagar loading
+      const budgetId = this.activeBudgetMetadata?.budgetId || this.activeBudgetMetadata?.id || this.selectedRoom!.requestId;
+      if (budgetId) {
+        localStorage.removeItem('adelanto_rechazado_' + budgetId);
+        localStorage.removeItem('adelanto_motivo_rechazo_' + budgetId);
+      }
+
       this.clearPreloadedFiles();
       this.uploadingFile = false;
       this.showPaymentPanel = false;
-      alert('¡Comprobante(s) definitivo(s) enviado(s) y guardado(s) exitosamente!');
+      alert('¡Comprobante(s) enviado(s) exitosamente!');
     } catch (error) {
       console.error('Error al subir/guardar comprobante definitivo', error);
       alert('Hubo un error al guardar y enviar el comprobante. Por favor, inténtalo de nuevo.');
@@ -699,6 +728,131 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
   }
 
   showPaymentPanel: boolean = false;
+  selectedPaymentOption: 'adelanto' | 'completo' = 'adelanto';
+  selectedPaymentMethod: 'yape' | 'transferencia' = 'yape';
+  activeBudgetMetadata: any = null;
+  zoomedImage: string | null = null;
+
+  zoomImage(imgUrl: string): void {
+    this.zoomedImage = imgUrl;
+  }
+
+  closeZoom(): void {
+    this.zoomedImage = null;
+  }
+
+  get isAdelantoRechazado(): boolean {
+    const budgetId = this.activeBudgetMetadata?.budgetId || this.activeBudgetMetadata?.id || this.selectedRoom?.requestId;
+    if (budgetId && localStorage.getItem('adelanto_rechazado_' + budgetId) === 'true') {
+      return true;
+    }
+    return this.messages.some(m => 
+      m.senderRole === 'SYSTEM' && m.content.includes('COMPROBANTE DE ADELANTO RECHAZADO')
+    );
+  }
+
+  get motivoRechazoUltimo(): string {
+    const budgetId = this.activeBudgetMetadata?.budgetId || this.activeBudgetMetadata?.id || this.selectedRoom?.requestId;
+    if (budgetId) {
+      const storedMotivo = localStorage.getItem('adelanto_motivo_rechazo_' + budgetId);
+      if (storedMotivo) return storedMotivo;
+    }
+    const lastSysRejection = this.messages.slice().reverse().find(m => 
+      m.senderRole === 'SYSTEM' && m.content.includes('COMPROBANTE DE ADELANTO RECHAZADO')
+    );
+    if (lastSysRejection) {
+      const parts = lastSysRejection.content.split('Motivo:');
+      if (parts.length > 1) {
+        return parts[1].split('\n')[0].trim();
+      }
+    }
+    return 'El comprobante presentado no es legible o no coincide.';
+  }
+
+  get isAdelantoConfirmado(): boolean {
+    const budgetId = this.activeBudgetMetadata?.budgetId || this.activeBudgetMetadata?.id || this.selectedRoom?.requestId;
+    if (budgetId && localStorage.getItem('adelanto_pagado_' + budgetId) === 'true') {
+      return true;
+    }
+    return this.messages.some(m => 
+      m.senderRole === 'SYSTEM' && (m.content.includes('confirmado el pago de adelanto') || m.content.includes('en proceso de elaboración'))
+    ) || (this.selectedRoom?.requestStatus === 'PROCESANDO' || this.selectedRoom?.requestStatus === 'COMPLETADO');
+  }
+
+  get saldoRestanteMonto(): number {
+    if (!this.selectedRoom) return 0;
+    const total = this.selectedRoom.agreedPrice || Number(this.activeBudgetMetadata?.totalAmount) || 0;
+    if (this.activeBudgetMetadata?.requiereAdelanto) {
+      const pct = Number(this.activeBudgetMetadata.porcentajeAdelanto) || 50;
+      return total - (total * pct) / 100;
+    }
+    return total / 2;
+  }
+
+  get paymentAmountToPay(): number {
+    if (!this.selectedRoom) return 0;
+    const total = this.selectedRoom.agreedPrice || Number(this.activeBudgetMetadata?.totalAmount) || 0;
+    
+    // Si el adelanto ya fue confirmado o la maqueta está en producción (PROCESANDO), el monto a pagar es el saldo restante
+    if (this.selectedRoom.requestStatus === 'PROCESANDO' || this.isAdelantoConfirmado) {
+      return this.saldoRestanteMonto;
+    }
+
+    if (this.activeBudgetMetadata?.requiereAdelanto && this.selectedPaymentOption === 'adelanto') {
+      const pct = Number(this.activeBudgetMetadata.porcentajeAdelanto) || 50;
+      return (total * pct) / 100;
+    }
+    return total;
+  }
+
+  get porcentajeAdelantoActual(): number {
+    return Number(this.activeBudgetMetadata?.porcentajeAdelanto) || 50;
+  }
+
+  /**
+   * Detecta si el cliente ya envió un comprobante (VOUCHER) después de que el
+   * vendedor confirmara el adelanto. Si es así, el botón "Pagar Saldo" se oculta
+   * y se muestra un estado de espera.
+   */
+  get isSaldoVoucherEnviado(): boolean {
+    if (!this.isAdelantoConfirmado) return false;
+
+    // Encontrar el índice del mensaje de sistema que confirma el adelanto
+    const idxConfirmacion = this.messages.findIndex(m =>
+      m.senderRole === 'SYSTEM' &&
+      (m.content.includes('confirmado el pago de adelanto') || m.content.includes('en proceso de elaboración'))
+    );
+
+    if (idxConfirmacion === -1) {
+      // Si no hay mensaje de confirmación explícito pero el requestStatus es PROCESANDO,
+      // verificar si hay un VOUCHER del cliente posterior al primer VOUCHER confirmado
+      const vouchersCliente = this.messages.filter(m =>
+        m.messageType === 'VOUCHER' && m.senderRole === 'CLIENT'
+      );
+      // Si hay más de 1 voucher, el segundo es el del saldo
+      return vouchersCliente.length > 1;
+    }
+
+    // Buscar si hay algún VOUCHER del cliente DESPUÉS de la confirmación del adelanto
+    const msgsPostConfirmacion = this.messages.slice(idxConfirmacion + 1);
+    return msgsPostConfirmacion.some(m =>
+      m.messageType === 'VOUCHER' && m.senderRole === 'CLIENT'
+    );
+  }
+
+  /**
+   * Detecta si el pago final (saldo restante) ya fue confirmado por el vendedor.
+   */
+  get isPagoFinalConfirmado(): boolean {
+    const budgetId = this.activeBudgetMetadata?.budgetId || this.activeBudgetMetadata?.id || this.selectedRoom?.requestId;
+    if (budgetId && localStorage.getItem('pago_confirmado_' + budgetId) === 'true') {
+      return true;
+    }
+    return this.messages.some(m =>
+      m.senderRole === 'SYSTEM' &&
+      (m.content.includes('pago de liquidación final') || m.content.includes('pago final'))
+    ) || this.selectedRoom?.requestStatus === 'COMPLETADO';
+  }
 
   reloadRoomInfo(): void {
     if (this.selectedRoom) {
@@ -711,8 +865,23 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     }
   }
 
-  aceptarPresupuestoYProcederAlPago(totalAmount: number): void {
+  aceptarPresupuestoYProcederAlPago(totalAmount: number, budgetMeta?: any): void {
     if (!this.selectedRoom) return;
+
+    if (budgetMeta) {
+      this.activeBudgetMetadata = budgetMeta;
+      if (!budgetMeta.requiereAdelanto) {
+        this.selectedPaymentOption = 'completo';
+      } else {
+        this.selectedPaymentOption = 'adelanto';
+      }
+    }
+
+    // Si ya está aceptado, desplegar directamente el panel sin enviar petición/notificación duplicada
+    if (this.selectedRoom.status === 'AGREED') {
+      this.showPaymentPanel = true;
+      return;
+    }
 
     this.chatService.acceptBudget(this.selectedRoom.id, totalAmount).subscribe({
       next: (updatedRoom) => {
@@ -727,14 +896,29 @@ export class ChatComponent implements OnInit, OnDestroy, OnChanges, AfterViewChe
     });
   }
 
-  aceptarPresupuestoDesdeCard(totalAmount: number): void {
+  aceptarPresupuestoDesdeCard(totalAmount: number, budgetMeta?: any): void {
     if (!this.selectedRoom) return;
+
+    if (budgetMeta) {
+      this.activeBudgetMetadata = budgetMeta;
+      if (!budgetMeta.requiereAdelanto) {
+        this.selectedPaymentOption = 'completo';
+      } else {
+        this.selectedPaymentOption = 'adelanto';
+      }
+    }
+
+    // Si ya está aceptado, desplegar directamente el panel sin enviar petición/notificación duplicada
+    if (this.selectedRoom.status === 'AGREED') {
+      this.showPaymentPanel = true;
+      return;
+    }
 
     this.chatService.acceptBudget(this.selectedRoom.id, totalAmount).subscribe({
       next: (updatedRoom) => {
         this.selectedRoom = updatedRoom;
         this.loadRoomsList();
-        alert('Has aceptado el presupuesto. El vendedor iniciará la producción tras confirmar el pago del adelanto.');
+        this.showPaymentPanel = true;
       },
       error: (err) => {
         console.error('Error al aceptar presupuesto:', err);

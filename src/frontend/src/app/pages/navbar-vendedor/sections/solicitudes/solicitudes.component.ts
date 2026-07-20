@@ -544,6 +544,15 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     );
   }
 
+  enviarDatosDePagoAlCliente(): void {
+    if (!this.room) return;
+    const msg = `💳 *MÉTODOS DE PAGO DISPONIBLES*\n\n` +
+      `📱 *Yape*: 918 632 522 (Titular: ${this.currentUserName || 'Alberto Suárez Cáceres'})\n` +
+      `🏦 *BCP Soles*: 193-98765432-0-12 (CCI: 00219300987654320128)\n\n` +
+      `Por favor, adjunta la captura o comprobante en esta sala para validar tu pedido.`;
+    this.chatService.sendMessage(this.room.id, msg, 'TEXT');
+  }
+
   irAPresupuesto(): void {
     if (this.solicitudActiva) {
       this.crearPresupuestoEvent.emit(this.solicitudActiva.id);
@@ -893,6 +902,8 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
   activeVoucherUrl: string | null = null;
   activeVoucherName: string = '';
   currentVoucherMessage: ChatMessageResponse | null = null;
+  mostrarModalRechazo: boolean = false;
+  motivoRechazo: string = '';
 
   openVoucherZoom(url: string, name: string, msg: ChatMessageResponse): void {
     this.activeVoucherUrl = url;
@@ -904,6 +915,42 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     this.activeVoucherUrl = null;
     this.activeVoucherName = '';
     this.currentVoucherMessage = null;
+  }
+
+  abrirModalRechazo(msg?: ChatMessageResponse): void {
+    if (msg) {
+      this.currentVoucherMessage = msg;
+    }
+    this.motivoRechazo = '';
+    this.mostrarModalRechazo = true;
+  }
+
+  cerrarModalRechazo(): void {
+    this.mostrarModalRechazo = false;
+    this.motivoRechazo = '';
+  }
+
+  confirmarRechazoComprobante(): void {
+    if (!this.room) return;
+    const motivo = this.motivoRechazo.trim() || 'El comprobante presentado no es legible o no corresponde al monto del adelanto.';
+    
+    const budgetId = this.selectedBudgetMetadata?.budgetId || this.activeBudget?.codigoReferencia || this.room.requestId;
+    if (budgetId) {
+      localStorage.setItem('adelanto_rechazado_' + budgetId, 'true');
+      localStorage.setItem('adelanto_motivo_rechazo_' + budgetId, motivo);
+    }
+
+    // Persistir estado por mensaje
+    if (this.currentVoucherMessage?.id) {
+      localStorage.setItem('pago_msg_estado_' + this.currentVoucherMessage.id, 'rechazado');
+    }
+
+    const sysMessage = `⚠️ COMPROBANTE DE ADELANTO RECHAZADO\nMotivo: ${motivo}\n\nPor favor, verifica tus datos de pago (Yape/BCP) y sube un nuevo comprobante válido.`;
+    this.chatService.sendMessage(this.room.id, sysMessage, 'SYSTEM');
+
+    this.mostrarModalRechazo = false;
+    this.closeVoucherZoom();
+    alert('Se ha enviado la notificación de rechazo del comprobante al cliente.');
   }
 
   confirmarAdelantoDesdeChat(msg: ChatMessageResponse): void {
@@ -976,22 +1023,34 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     this.proyectoCobro = this.solicitudActiva?.productoNombre || 'Proyecto Maqueta';
     this.materialesCobro = this.solicitudActiva?.materialesDeseados || '';
 
-    const hasAdelanto = this.messages.some(m => 
-      m.senderRole === 'SYSTEM' && 
-      m.content.includes('pago de adelanto')
-    );
-    this.tipoCobro = hasAdelanto ? 'saldo' : 'completo';
+    const budgetId = this.selectedBudgetMetadata?.budgetId || this.activeBudget?.codigoReferencia || this.room.requestId;
+    const hasAdelanto = (budgetId && localStorage.getItem('adelanto_pagado_' + budgetId) === 'true') ||
+                        this.solicitudActiva?.estado === 'procesando' ||
+                        this.room?.requestStatus === 'PROCESANDO' ||
+                        this.messages.some(m => 
+                          m.senderRole === 'SYSTEM' && 
+                          (m.content.includes('pago de adelanto') || m.content.includes('en proceso de elaboración'))
+                        );
+
+    const voucherKind = this.getVoucherType(msg);
+    this.tipoCobro = (voucherKind === 'saldo' || hasAdelanto) ? 'saldo' : (voucherKind === 'completo' ? 'completo' : 'adelanto');
 
     const requestId = this.solicitudActiva?.id;
     if (requestId) {
       this.budgetService.obtenerPorSolicitud(requestId).subscribe({
         next: (budget) => {
           let total = this.room!.agreedPrice || 375.70;
-          let monto = hasAdelanto ? (total / 2) : total;
+          let monto = (this.tipoCobro === 'saldo' || this.tipoCobro === 'adelanto') ? (total / 2) : total;
 
           if (budget) {
             total = Number(budget.total);
-            monto = hasAdelanto ? (Number(budget.total) - Number(budget.adelantoMonto)) : total;
+            if (this.tipoCobro === 'saldo') {
+              monto = Number(budget.total) - Number(budget.adelantoMonto);
+            } else if (this.tipoCobro === 'adelanto') {
+              monto = Number(budget.adelantoMonto);
+            } else {
+              monto = total;
+            }
             this.selectedBudgetMetadata = {
               budgetId: budget.codigoReferencia,
               porcentajeAdelanto: budget.adelantoPorcentaje || 50
@@ -1003,14 +1062,14 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error("Error al buscar presupuesto para pago final, usando fallback:", err);
           const total = this.room!.agreedPrice || 375.70;
-          const monto = hasAdelanto ? (total / 2) : total;
+          const monto = (this.tipoCobro === 'saldo' || this.tipoCobro === 'adelanto') ? (total / 2) : total;
           this.montoCobro = monto;
           this.mostrarModalPago = true;
         }
       });
     } else {
       const total = this.room.agreedPrice || 375.70;
-      const monto = hasAdelanto ? (total / 2) : total;
+      const monto = (this.tipoCobro === 'saldo' || this.tipoCobro === 'adelanto') ? (total / 2) : total;
       this.montoCobro = monto;
       this.mostrarModalPago = true;
     }
@@ -1061,6 +1120,12 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
             } else {
               localStorage.setItem('pago_confirmado_' + budgetId, 'true');
             }
+          }
+
+          // Persistir estado por mensaje
+          if (this.currentVoucherMessage?.id) {
+            const msgEstado = this.tipoCobro === 'adelanto' ? 'adelanto_confirmado' : 'saldo_confirmado';
+            localStorage.setItem('pago_msg_estado_' + this.currentVoucherMessage.id, msgEstado);
           }
 
           if (this.tipoCobro === 'adelanto') {
@@ -1167,6 +1232,42 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
   isPagoConfirmado(budgetId: string): boolean {
     if (!budgetId) return false;
     return localStorage.getItem('pago_confirmado_' + budgetId) === 'true';
+  }
+
+  // ── Estado por Mensaje Individual ──────────────────────────────────────────
+
+  getMsgEstado(msgId: string): string {
+    if (!msgId) return '';
+    return localStorage.getItem('pago_msg_estado_' + msgId) || '';
+  }
+
+  /**
+   * Determina el tipo de un VOUCHER basado en el contexto global.
+   * 'adelanto' → primer comprobante antes de que se confirme el adelanto.
+   * 'saldo'    → comprobante enviado después de que el adelanto ya fue confirmado.
+   * 'completo' → presupuesto sin adelanto requerido (100% pago de inicio).
+   */
+  getVoucherType(msg: ChatMessageResponse): 'adelanto' | 'saldo' | 'completo' {
+    // 1. Si este mensaje ya tiene un estado individual guardado
+    const estado = this.getMsgEstado(msg.id);
+    if (estado === 'adelanto_confirmado' || estado === 'rechazado') return 'adelanto';
+    if (estado === 'saldo_confirmado') return 'saldo';
+
+    // 2. Si el presupuesto explícitamente NO requiere adelanto (pago 100% de inicio)
+    if (this.activeBudget && this.activeBudget.adelantoRequerido === false) return 'completo';
+
+    // 3. Verificar si el adelanto ya fue verificado previamente
+    const budgetId = this.selectedBudgetMetadata?.budgetId || this.activeBudget?.codigoReferencia || this.room?.requestId;
+    const adelantoYaPagado = (budgetId && localStorage.getItem('adelanto_pagado_' + budgetId) === 'true') ||
+                             this.solicitudActiva?.estado === 'procesando' ||
+                             this.room?.requestStatus === 'PROCESANDO' ||
+                             this.messages.some(m => m.senderRole === 'SYSTEM' && (m.content.includes('pago de adelanto') || m.content.includes('en proceso de elaboración')));
+
+    if (adelantoYaPagado) {
+      return 'saldo';
+    }
+
+    return 'adelanto';
   }
 
   isMensajeDescartado(msgId: string): boolean {

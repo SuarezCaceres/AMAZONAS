@@ -1168,9 +1168,21 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
         }
     }
 
-    submitCobroFisico(): void {
+    onCobroNumeroOperacionInput(event: any): void {
+        const raw = event.target.value || '';
+        this.cobroNumeroOperacion = raw.replace(/\D/g, '').slice(0, 8);
+        event.target.value = this.cobroNumeroOperacion;
+    }
+
+    onCobroCodigoSeguridadInput(event: any): void {
+        const raw = event.target.value || '';
+        this.cobroCodigoSeguridad = raw.replace(/\D/g, '').slice(0, 3);
+        event.target.value = this.cobroCodigoSeguridad;
+    }
+
+    confirmarCobroFisico(confirmPayload?: PaymentConfirmPayload): void {
         if (this.cobroMonto <= 0) {
-            alert('El monto debe ser mayor a cero.');
+            alert('El monto a cobrar debe ser mayor a cero.');
             return;
         }
 
@@ -1179,23 +1191,39 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
         let metodoPagoTipo: 'ONLINE' | 'FISICO' = 'ONLINE';
 
         if (this.activePaymentMethod === 'yape') {
-            if (!this.cobroNumeroOperacion?.trim()) {
+            const numOp = this.cobroNumeroOperacion ? this.cobroNumeroOperacion.trim() : '';
+            const codSeg = this.cobroCodigoSeguridad ? this.cobroCodigoSeguridad.trim() : '';
+
+            if (!numOp) {
                 alert('Por favor ingresa el número de operación.');
                 return;
             }
-            if (!this.cobroCodigoSeguridad?.trim()) {
+            if (numOp.length !== 8) {
+                alert('El número de operación de Yape / Plin debe tener exactamente 8 dígitos numéricos.');
+                return;
+            }
+            if (!codSeg) {
                 alert('Por favor ingresa el código de seguridad.');
                 return;
             }
-            codigoOp = `YAPE-${this.cobroNumeroOperacion.trim()}`;
+            if (codSeg.length !== 3) {
+                alert('El código de seguridad debe tener exactamente 3 dígitos numéricos.');
+                return;
+            }
+            codigoOp = `YAPE-${numOp}`;
             metodoTexto = 'Yape / Plin';
             metodoPagoTipo = 'ONLINE';
         } else if (this.activePaymentMethod === 'transferencia') {
-            if (!this.cobroNumeroOperacion?.trim()) {
+            const numOp = this.cobroNumeroOperacion ? this.cobroNumeroOperacion.trim() : '';
+            if (!numOp) {
                 alert('Por favor ingresa el número de operación de la transferencia.');
                 return;
             }
-            codigoOp = `TRANSF-${this.cobroNumeroOperacion.trim()}`;
+            if (numOp.length !== 8) {
+                alert('El número de operación de la transferencia debe tener exactamente 8 dígitos numéricos.');
+                return;
+            }
+            codigoOp = `TRANSF-${numOp}`;
             metodoTexto = 'Transferencia Bancaria';
             metodoPagoTipo = 'ONLINE';
         } else { // efectivo
@@ -1558,10 +1586,69 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     }
 
     exportCsv(): void {
-        this.exportLabel = 'CSV exportado';
+        const dataToExport = this.filteredTransactions;
+        if (!dataToExport || dataToExport.length === 0) {
+            alert('No hay transacciones registradas para exportar en este momento.');
+            return;
+        }
+
+        // Definición de columnas para la auditoría de transacciones
+        const headers = [
+            'Cliente',
+            'Correo Electrónico',
+            'Proyecto / Producto',
+            'Materiales Utilizados',
+            'Método de Pago',
+            'Tipo de Abono',
+            'Monto (S/)',
+            'Ganancia Estimada (S/)',
+            'Código / Nro Operación',
+            'Fecha y Hora'
+        ];
+
+        // Mapeo de filas sanitizando caracteres especiales y comillas
+        const rows = dataToExport.map(tx => [
+            this.escapeCsvField(tx.client),
+            this.escapeCsvField(tx.email),
+            this.escapeCsvField(tx.projectName || tx.productType),
+            this.escapeCsvField(tx.materials),
+            this.escapeCsvField(tx.method),
+            this.escapeCsvField(tx.kind),
+            tx.amount ? tx.amount.toFixed(2) : '0.00',
+            tx.realProfit ? tx.realProfit.toFixed(2) : '0.00',
+            this.escapeCsvField(tx.operation || 'N/A'),
+            this.escapeCsvField(tx.date)
+        ]);
+
+        // Construir contenido CSV con BOM UTF-8 (\uFEFF) para compatibilidad total con Excel y tildes
+        const csvContent = '\uFEFF' + [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        // Generar Blob y descargar el archivo en el navegador
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        const fechaActual = new Date().toISOString().substring(0, 10);
+        link.setAttribute('download', `auditoria_transacciones_${fechaActual}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        // Feedback visual en el botón de la interfaz
+        this.exportLabel = '¡CSV Exportado!';
         window.setTimeout(() => {
             this.exportLabel = 'Exportar CSV';
-        }, 1200);
+        }, 2000);
+    }
+
+    private escapeCsvField(field: string | undefined | null): string {
+        if (!field) return '""';
+        const stringified = String(field).replace(/"/g, '""');
+        return `"${stringified}"`;
     }
 
     registerTransaction(): void {

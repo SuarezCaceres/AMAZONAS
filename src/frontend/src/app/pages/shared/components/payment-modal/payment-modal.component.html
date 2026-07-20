@@ -60,14 +60,28 @@
                                     <label>NÚMERO DE OPERACIÓN <span class="required-star">*</span></label>
                                     <div class="input-with-icon">
                                         <span class="material-icons input-icon">tag</span>
-                                        <input type="text" name="pmNumeroOperacion" [(ngModel)]="numeroOperacion" placeholder="Ej: 12345678" required>
+                                        <input type="text" 
+                                               inputmode="numeric" 
+                                               name="pmNumeroOperacion" 
+                                               [(ngModel)]="numeroOperacion" 
+                                               (input)="onNumeroOperacionInput($event)" 
+                                               placeholder="Ej: 12345678" 
+                                               maxlength="8" 
+                                               required>
                                     </div>
                                 </div>
                                 <div class="checkout-input-group">
                                     <label>CÓDIGO DE SEGURIDAD <span class="required-star">*</span></label>
                                     <div class="input-with-icon">
                                         <span class="material-icons input-icon">lock</span>
-                                        <input type="text" name="pmCodigoSeguridad" [(ngModel)]="codigoSeguridad" placeholder="Ej: 123" maxlength="4" required>
+                                        <input type="text" 
+                                               inputmode="numeric" 
+                                               name="pmCodigoSeguridad" 
+                                               [(ngModel)]="codigoSeguridad" 
+                                               (input)="onCodigoSeguridadInput($event)" 
+                                               placeholder="Ej: 123" 
+                                               maxlength="3" 
+                                               required>
                                     </div>
                                 </div>
                             </div>
@@ -104,7 +118,14 @@
                                 <label>NÚMERO DE OPERACIÓN DE LA TRANSFERENCIA <span class="required-star">*</span></label>
                                 <div class="input-with-icon">
                                     <span class="material-icons input-icon">receipt_long</span>
-                                    <input type="text" name="pmNumeroOperacion" [(ngModel)]="numeroOperacion" placeholder="Ej: 99887766" required>
+                                    <input type="text" 
+                                           inputmode="numeric" 
+                                           name="pmNumeroOperacionTransf" 
+                                           [(ngModel)]="numeroOperacion" 
+                                           (input)="onNumeroOperacionInput($event)" 
+                                           placeholder="Ej: 99887766" 
+                                           maxlength="8" 
+                                           required>
                                 </div>
                             </div>
                         </div>

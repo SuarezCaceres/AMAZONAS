@@ -15,6 +15,8 @@ import com.amazonas.backend.modules.materials.repository.MaterialCategoryReposit
 import com.amazonas.backend.modules.materials.repository.MaterialRepository;
 import com.amazonas.backend.modules.materials.service.MaterialService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 
@@ -39,7 +41,7 @@ public class MaterialServiceImpl implements MaterialService {
     @Cacheable(value = "materials", key = "#id")
     public MaterialResponse getMaterialById(UUID id) {
         Material material = materialRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Material no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Material no encontrado"));
         return mapToResponse(material);
     }
 
@@ -48,12 +50,12 @@ public class MaterialServiceImpl implements MaterialService {
     @CacheEvict(value = "materials", allEntries = true)
     public MaterialResponse createMaterial(MaterialRequest request) {
         if (materialRepository.findByNombreIgnoreCase(request.nombre()).isPresent()) {
-            throw new RuntimeException("Ya existe un material con el nombre: " + request.nombre());
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un material con el nombre: " + request.nombre());
         }
 
-        MaterialCategory category = materialCategoryRepository
-                .findById(UUID.fromString(request.categoriaId()))
-                .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.categoriaId()));
+        UUID catUuid = parseUuid(request.categoriaId());
+        MaterialCategory category = materialCategoryRepository.findById(catUuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría de material no encontrada: " + request.categoriaId()));
 
         Material material = new Material();
         updateMaterialFields(material, request, category);
@@ -67,23 +69,34 @@ public class MaterialServiceImpl implements MaterialService {
     @CacheEvict(value = "materials", allEntries = true)
     public MaterialResponse updateMaterial(UUID id, MaterialRequest request) {
         Material material = materialRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Material no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Material no encontrado"));
 
         materialRepository.findByNombreIgnoreCase(request.nombre())
                 .ifPresent(existing -> {
                     if (!existing.getId().equals(id)) {
-                        throw new RuntimeException("Ya existe otro material con el nombre: " + request.nombre());
+                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe otro material con el nombre: " + request.nombre());
                     }
                 });
 
-        MaterialCategory category = materialCategoryRepository
-                .findById(UUID.fromString(request.categoriaId()))
-                .orElseThrow(() -> new RuntimeException("Categoría de material no encontrada: " + request.categoriaId()));
+        UUID catUuid = parseUuid(request.categoriaId());
+        MaterialCategory category = materialCategoryRepository.findById(catUuid)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría de material no encontrada: " + request.categoriaId()));
 
         updateMaterialFields(material, request, category);
 
         Material saved = materialRepository.save(material);
         return mapToResponse(saved);
+    }
+
+    private UUID parseUuid(String uuidStr) {
+        if (uuidStr == null || uuidStr.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La categoría del material es obligatoria");
+        }
+        try {
+            return UUID.fromString(uuidStr);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID de categoría con formato inválido: " + uuidStr);
+        }
     }
 
     @Override
