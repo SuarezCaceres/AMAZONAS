@@ -393,6 +393,40 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             materiales.addAll(originalMateriales);
         }
 
+        // Si es un kit y no tiene materiales customizados/personales, cargamos los materiales por defecto del kit
+        if (materiales.isEmpty() && Boolean.TRUE.equals(solicitud.getIsKit()) && solicitud.getKits() != null) {
+            java.util.Map<UUID, SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO> aggregated = new java.util.LinkedHashMap<>();
+            for (KitMaqueta kit : solicitud.getKits()) {
+                if (kit.getProduct() != null && kit.getProduct().getMateriales() != null) {
+                    BigDecimal kitQty = kit.getCantidad() != null ? BigDecimal.valueOf(kit.getCantidad()) : BigDecimal.ONE;
+                    for (com.amazonas.backend.modules.products.model.ProductMaterial pm : kit.getProduct().getMateriales()) {
+                        Material mat = pm.getMaterial();
+                        if (mat != null) {
+                            BigDecimal qty = pm.getCantidadSugerida() != null ? pm.getCantidadSugerida().multiply(kitQty) : kitQty;
+                            aggregated.merge(mat.getId(), 
+                                new SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO(
+                                    mat.getId(),
+                                    mat.getNombre(),
+                                    mat.getUnidad(),
+                                    mat.getCostoVenta(),
+                                    qty,
+                                    pm.getEsOpcional()
+                                ), (existing, newDto) -> new SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO(
+                                    existing.id(),
+                                    existing.nombre(),
+                                    existing.unidad(),
+                                    existing.costoVenta(),
+                                    existing.cantidadSugerida().add(newDto.cantidadSugerida()),
+                                    existing.esOpcional() && newDto.esOpcional()
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+            materiales.addAll(aggregated.values());
+        }
+
         // Get client's preferred materials (selected from list)
         List<SolicitudParaPresupuestoResponse.MaterialSolicitadoDTO> materialesPreferidos = 
             solicitud.getMaterialesPreferidos().stream()
