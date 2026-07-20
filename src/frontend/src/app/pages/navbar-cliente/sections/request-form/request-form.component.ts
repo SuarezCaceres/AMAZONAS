@@ -60,6 +60,7 @@ export class RequestFormComponent implements OnInit {
   @Output() submitted = new EventEmitter<SavedRequest>();
 
   loading = false;
+  allMaterialsDb: any[] = [];
 
   materialOptions = [
     'Carton reciclado',
@@ -136,6 +137,7 @@ export class RequestFormComponent implements OnInit {
     this.materialService.getAllMaterials().subscribe({
       next: (mats) => {
         if (mats && mats.length > 0) {
+          this.allMaterialsDb = mats;
           const activeMats = mats.filter(m => m.activo !== false).map(m => m.nombre);
           if (activeMats.length > 0) {
             this.materialOptions = activeMats;
@@ -340,7 +342,23 @@ export class RequestFormComponent implements OnInit {
         : []
     };
 
-    if (this.isCustomization && this.model?.rawProduct?.materialesDetalle) {
+    if (this.standaloneRequest && this.selectedExtras.length > 0) {
+      this.selectedExtras.forEach((matName) => {
+        const found = this.allMaterialsDb.find(m => m.nombre.toLowerCase().trim() === matName.toLowerCase().trim());
+        if (found) {
+          reqBody.materialesCustomizados?.push({
+            materialId: found.id,
+            cantidad: 1
+          });
+        } else {
+          reqBody.materialesPersonales?.push({
+            materialName: matName,
+            cantidad: 1,
+            descripcion: 'Material adicional seleccionado por el cliente'
+          });
+        }
+      });
+    } else if (!this.standaloneRequest && this.isCustomization && this.model?.rawProduct?.materialesDetalle) {
       const details: any[] = this.model.rawProduct.materialesDetalle;
       this.selectedMaterials.forEach((matName) => {
         const found = details.find((d: any) => d.nombre === matName);

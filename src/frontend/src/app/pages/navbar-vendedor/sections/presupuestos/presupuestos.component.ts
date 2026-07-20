@@ -444,11 +444,17 @@ export class PresupuestosComponent implements OnChanges, OnInit {
             } else {
               this.pagoConfirmado = false;
             }
+            if (reqFull.isKit) {
+              this.currentMaquetaTipo = 'kit';
+            } else {
+              this.currentMaquetaTipo = this.isCustom ? 'personalizada' : 'catalogo';
+            }
           },
           error: (err) => {
             console.error('Error cargando estado detallado de la solicitud:', err);
             const estadoStr = (data.estado || '').toUpperCase();
             this.pagoConfirmado = estadoStr === 'COMPLETADO';
+            this.currentMaquetaTipo = this.isCustom ? 'personalizada' : 'catalogo';
           }
         });
 
@@ -478,6 +484,12 @@ export class PresupuestosComponent implements OnChanges, OnInit {
               esSolicitado: false
             }));
             this.nextId = this.materialesAgregados.length + 1;
+
+            if (budget.isKit) {
+              this.currentMaquetaTipo = 'kit';
+            } else {
+              this.currentMaquetaTipo = this.isCustom ? 'personalizada' : 'catalogo';
+            }
 
             if (budget.servicioExplicacion) {
               this.solicitarExplicacion = budget.servicioExplicacion.incluido;
