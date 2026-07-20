@@ -309,13 +309,18 @@ export class RequestFormComponent implements OnInit {
           : undefined
     };
 
+    const isValidUuid = (id?: string) => {
+      if (!id) return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    };
+
     // Construct the backend request matching V1__init_schema.sql and DTOs
     const reqBody: PurchaseRequestRequest = {
       clienteNombre: this.form.fullName.trim(),
       clienteEmail: this.form.email.trim(),
       clienteTelefono: this.form.phone.trim(),
       mensaje: !this.isCustomization ? this.form.message : undefined,
-      productoId: this.model?.id || undefined,
+      productoId: (!this.standaloneRequest && isValidUuid(this.model?.id)) ? this.model.id : undefined,
       isKit: false,
       isCustom: this.isCustomization,
       descripcionPersonalizacion: this.isCustomization ? this.form.description : undefined,
