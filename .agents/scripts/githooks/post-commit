@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Asegurar que el directorio de contexto local de los agentes existe
+mkdir -p .agents/context
+
+# Obtener nombre de la rama actual
+BRANCH_NAME=$(git branch --show-current 2>/dev/null)
+if [ -z "$BRANCH_NAME" ]; then
+    BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+fi
+
+# Si no estamos en ninguna rama válida, no hacemos nada
+if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" = "HEAD" ]; then
+    exit 0
+fi
+
+# Sanitizar el nombre de la rama (reemplazar '/' por '_') para evitar problemas de carpetas
+SANITIZED_BRANCH=$(echo "$BRANCH_NAME" | sed 's/\//_/g')
+
+ARCHIVO_CONTEXTO=".agents/context/historial_${SANITIZED_BRANCH}.md"
+
+# Obtener detalles del commit actual
+COMMIT_HASH=$(git log -1 --pretty=format:"%h" 2>/dev/null)
+COMMIT_SUBJECT=$(git log -1 --pretty=format:"%s" 2>/dev/null)
+COMMIT_DATE=$(git log -1 --pretty=format:"%ad" --date=short 2>/dev/null)
+
+# Obtener lista de archivos y su estado (A: Adicionado, M: Modificado, D: Eliminado)
+ARCHIVOS_MODIFICADOS=$(git show --name-status --pretty="" HEAD 2>/dev/null)
+
+# Registrar en el archivo acumulador local
+{
+    echo "### Commit: $COMMIT_HASH | Fecha: $COMMIT_DATE"
+    echo "**Mensaje:** $COMMIT_SUBJECT"
+    echo "**Cambios:**"
+    echo "\`\`\`"
+    echo "$ARCHIVOS_MODIFICADOS"
+    echo "\`\`\`"
+    echo ""
+    echo "---"
+    echo ""
+} >> "$ARCHIVO_CONTEXTO"

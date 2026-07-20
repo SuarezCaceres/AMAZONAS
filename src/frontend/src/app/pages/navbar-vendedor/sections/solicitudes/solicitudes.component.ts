@@ -9,6 +9,7 @@ import { Subscription, lastValueFrom } from 'rxjs';
 import { FileService } from '../../../../services/file.service';
 import { BudgetService } from '../../../../services/budget.service';
 import { MaterialService } from '../../../../services/material.service';
+import { PaymentModalComponent, PaymentConfirmPayload } from '../../../shared/components/payment-modal/payment-modal.component';
 
 interface Solicitud {
   id: string;
@@ -18,7 +19,7 @@ interface Solicitud {
   clienteTelefono: string;
   detalle: string;
   fecha: Date;
-  estado: 'pendiente' | 'procesando' | 'completado';
+  estado: 'pendiente' | 'procesando' | 'completado' | 'rechazado';
   isCustom: boolean;
   expanded: boolean;
   tienePresupuesto: boolean;
@@ -34,6 +35,7 @@ interface Solicitud {
   escala?: string;
   dimensiones?: string;
   mesaExpositora?: string;
+  motivoCancelacion?: string;
 }
 
 type Vista = 'lista' | 'chat';
@@ -41,7 +43,7 @@ type Vista = 'lista' | 'chat';
 @Component({
   selector: 'app-solicitudes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaymentModalComponent],
   templateUrl: './solicitudes.component.html',
   styleUrl: './solicitudes.component.css'
 })
@@ -64,11 +66,16 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
   // ── Vista ──────────────────────────────────────────────────────────────────
   vista: Vista = 'lista';
   solicitudActiva: Solicitud | null = null;
+  mobileChatTab: 'chat' | 'cliente' | 'historial' = 'chat';
 
   // ── Lista ─────────────────────────────────────────────────────────────────
   searchTerm = '';
-  activeFilter: 'todos' | 'pendientes' | 'procesando' | 'completados' = 'todos';
+  activeFilter: 'todos' | 'pendientes' | 'procesando' | 'completados' | 'rechazados' = 'todos';
   activeDateFilter: 'todos' | 'hoy' | 'ayer' | 'semana' | 'mes' = 'todos';
+  mostrarModalCancelacion = false;
+  motivoCancelacionText = '';
+  filtroTipo: 'todos' | 'catalogo' | 'personalizada' = 'todos';
+  ordenActivo: 'notificaciones' | 'reciente' = 'notificaciones';
   showCompletedHistory = false;
   isLoading = false;
   solicitudes: Solicitud[] = [];
@@ -77,6 +84,17 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
   room: ChatRoomResponse | null = null;
   messages: ChatMessageResponse[] = [];
   newMessage = '';
+
+  // ── Modal de Pago Reutilizable ──
+  mostrarModalPago = false;
+  montoCobro = 0;
+  clienteCobro = '';
+  proyectoCobro = '';
+  materialesCobro = '';
+  tipoCobro: 'adelanto' | 'saldo' | 'completo' = 'completo';
+  prefilledVoucherUrl = '';
+  selectedBudgetMetadata: any = null;
+  activeBudget: any = null;
   loadingChat = false;
   wsConnected = false;
   currentUserEmail = sessionStorage.getItem('auth_email') || '';
@@ -190,15 +208,26 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     setTimeout(() => this.chatActivoEvent.emit(false));
   }
 
-  // ── Carga de solicitudes ──────────────────────────────────────────────────
+  currentPage = 0;
+  pageSize = 15;
+  hasMoreData = true;
+  isLoadingMore = false;
 
-  loadSolicitudes(): void {
-    this.isLoading = true;
+  loadSolicitudes(reset = true): void {
+    if (reset) {
+      this.currentPage = 0;
+      this.solicitudes = [];
+      this.hasMoreData = true;
+      this.isLoading = true;
+    } else {
+      this.isLoadingMore = true;
+    }
+
     this.chatService.getMyRooms().subscribe({
       next: (rooms) => {
-        this.requestService.listarTodas().subscribe({
-          next: (responses) => {
-            this.solicitudes = responses.map((res): Solicitud => {
+        this.requestService.listarTodas(undefined, true, this.currentPage, this.pageSize).subscribe({
+          next: (response) => {
+            const nuevasSolicitudes = response.content.map((res: any): Solicitud => {
               let hash = 0;
               const idStr = res.id || '';
               for (let i = 0; i < idStr.length; i++) {
@@ -207,7 +236,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
               const num = Math.abs(hash % 9000) + 1000;
               const numeroSolicitud = `#${num}`;
 
-              const room = rooms ? rooms.find(r => r.requestId === res.id) : null;
+              const room = rooms ? rooms.find((r: any) => r.requestId === res.id) : null;
               const unreadCount = room ? room.unreadCount || 0 : 0;
               const lastMessageAt = room && room.lastMessageAt ? new Date(room.lastMessageAt) : null;
 
@@ -234,15 +263,21 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
                 dimensiones: (res as any).dimensiones || undefined,
                 mesaExpositora: (res as any).mesaExpositora || undefined,
                 unreadCount,
-                lastMessageAt: lastMessageAt || undefined
+                lastMessageAt: lastMessageAt || undefined,
+                motivoCancelacion: res.motivoCancelacion
               };
             });
-            if (this.solicitudes.length > 0) {
+
+            this.solicitudes.push(...nuevasSolicitudes);
+            this.hasMoreData = !response.last;
+            
+            if (this.solicitudes.length > 0 && reset) {
               this.solicitudes[0].expanded = true;
             }
             this.isLoading = false;
+            this.isLoadingMore = false;
 
-            if (this.inicialSolicitudId) {
+            if (this.inicialSolicitudId && reset) {
               const found = this.solicitudes.find(s => s.id === this.inicialSolicitudId);
               if (found) {
                 this.abrirChat(found);
@@ -253,14 +288,15 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
           error: (err) => {
             console.error('Error loading solicitudes:', err);
             this.isLoading = false;
+            this.isLoadingMore = false;
           }
         });
       },
       error: (err) => {
         console.error('Error loading chat rooms, loading requests directly:', err);
-        this.requestService.listarTodas().subscribe({
-          next: (responses) => {
-            this.solicitudes = responses.map((res): Solicitud => {
+        this.requestService.listarTodas(undefined, true, this.currentPage, this.pageSize).subscribe({
+          next: (response) => {
+            const nuevasSolicitudes = response.content.map((res: any): Solicitud => {
               let hash = 0;
               const idStr = res.id || '';
               for (let i = 0; i < idStr.length; i++) {
@@ -291,15 +327,21 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
                 escala: (res as any).escala || undefined,
                 dimensiones: (res as any).dimensiones || undefined,
                 mesaExpositora: (res as any).mesaExpositora || undefined,
-                unreadCount: 0
+                unreadCount: 0,
+                motivoCancelacion: res.motivoCancelacion
               };
             });
-            if (this.solicitudes.length > 0) {
+
+            this.solicitudes.push(...nuevasSolicitudes);
+            this.hasMoreData = !response.last;
+
+            if (this.solicitudes.length > 0 && reset) {
               this.solicitudes[0].expanded = true;
             }
             this.isLoading = false;
+            this.isLoadingMore = false;
 
-            if (this.inicialSolicitudId) {
+            if (this.inicialSolicitudId && reset) {
               const found = this.solicitudes.find(s => s.id === this.inicialSolicitudId);
               if (found) {
                 this.abrirChat(found);
@@ -310,17 +352,26 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
           error: (err) => {
             console.error('Error loading solicitudes:', err);
             this.isLoading = false;
+            this.isLoadingMore = false;
           }
         });
       }
     });
   }
 
-  private mapEstado(estado: EstadoSolicitud): 'pendiente' | 'procesando' | 'completado' {
-    const map: Record<EstadoSolicitud, 'pendiente' | 'procesando' | 'completado'> = {
+  cargarMas(): void {
+    if (this.hasMoreData && !this.isLoadingMore) {
+      this.currentPage++;
+      this.loadSolicitudes(false);
+    }
+  }
+
+  private mapEstado(estado: EstadoSolicitud): 'pendiente' | 'procesando' | 'completado' | 'rechazado' {
+    const map: Record<EstadoSolicitud, 'pendiente' | 'procesando' | 'completado' | 'rechazado'> = {
       'PENDIENTE': 'pendiente',
       'PROCESANDO': 'procesando',
-      'COMPLETADO': 'completado'
+      'COMPLETADO': 'completado',
+      'RECHAZADO': 'rechazado'
     };
     return map[estado] || 'pendiente';
   }
@@ -344,6 +395,17 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
       next: (room) => {
         this.room = room;
         this.vista = 'chat';
+
+        // Cargar presupuesto activo
+        this.budgetService.obtenerPorSolicitud(solicitud.id).subscribe({
+          next: (budget) => {
+            this.activeBudget = budget;
+          },
+          error: (err) => {
+            console.warn('Error loading budget for room:', err);
+            this.activeBudget = null;
+          }
+        });
 
         // Marcar como leído
         this.chatService.markAsRead(room.id).subscribe({
@@ -386,6 +448,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     this.room = null;
     this.messages = [];
     this.newMessage = '';
+    this.activeBudget = null;
 
     document.body.style.overflow = '';
     setTimeout(() => this.chatActivoEvent.emit(false));
@@ -481,6 +544,15 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     );
   }
 
+  enviarDatosDePagoAlCliente(): void {
+    if (!this.room) return;
+    const msg = `💳 *MÉTODOS DE PAGO DISPONIBLES*\n\n` +
+      `📱 *Yape*: 918 632 522 (Titular: ${this.currentUserName || 'Alberto Suárez Cáceres'})\n` +
+      `🏦 *BCP Soles*: 193-98765432-0-12 (CCI: 00219300987654320128)\n\n` +
+      `Por favor, adjunta la captura o comprobante en esta sala para validar tu pedido.`;
+    this.chatService.sendMessage(this.room.id, msg, 'TEXT');
+  }
+
   irAPresupuesto(): void {
     if (this.solicitudActiva) {
       this.crearPresupuestoEvent.emit(this.solicitudActiva.id);
@@ -546,17 +618,22 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
   get pendientes(): number { return this.solicitudes.filter(s => s.estado === 'pendiente').length; }
   get procesando(): number { return this.solicitudes.filter(s => s.estado === 'procesando').length; }
   get completados(): number { return this.solicitudes.filter(s => s.estado === 'completado').length; }
+  get rechazados(): number { return this.solicitudes.filter(s => s.estado === 'rechazado').length; }
 
   setDateFilter(filter: 'todos' | 'hoy' | 'ayer' | 'semana' | 'mes'): void {
     this.activeDateFilter = filter;
   }
 
   get activeSolicitudes(): Solicitud[] {
-    return this.filteredSolicitudes.filter(s => s.estado !== 'completado');
+    return this.filteredSolicitudes.filter(s => s.estado !== 'completado' && s.estado !== 'rechazado');
   }
 
   get completedSolicitudes(): Solicitud[] {
     return this.filteredSolicitudes.filter(s => s.estado === 'completado');
+  }
+
+  get rejectedSolicitudes(): Solicitud[] {
+    return this.filteredSolicitudes.filter(s => s.estado === 'rechazado');
   }
 
   get filteredSolicitudes(): Solicitud[] {
@@ -565,7 +642,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     // 1. Filtrado por estado
     if (this.activeFilter !== 'todos') {
       const estadoMap: Record<string, string> = {
-        'pendientes': 'pendiente', 'procesando': 'procesando', 'completados': 'completado'
+        'pendientes': 'pendiente', 'procesando': 'procesando', 'completados': 'completado', 'rechazados': 'rechazado'
       };
       filtered = filtered.filter(s => s.estado === estadoMap[this.activeFilter]);
     }
@@ -610,16 +687,37 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
         s.clienteEmail.toLowerCase().includes(term)
       );
     }
-    
+
+    // 4. Filtrado por tipo de maqueta
+    if (this.filtroTipo !== 'todos') {
+      filtered = filtered.filter(s =>
+        this.filtroTipo === 'personalizada' ? s.isCustom : !s.isCustom
+      );
+    }
+
+    // 5. Ordenamiento
     return filtered.sort((a, b) => {
+      if (this.ordenActivo === 'notificaciones') {
+        const unreadA = a.unreadCount || 0;
+        const unreadB = b.unreadCount || 0;
+        if (unreadA !== unreadB) return unreadB - unreadA;
+      }
       const timeA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : new Date(a.fecha).getTime();
       const timeB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : new Date(b.fecha).getTime();
-      return timeB - timeA; // Más reciente primero
+      return timeB - timeA;
     });
   }
 
-  setFilter(filter: 'todos' | 'pendientes' | 'procesando' | 'completados'): void {
+  setFilter(filter: 'todos' | 'pendientes' | 'procesando' | 'completados' | 'rechazados'): void {
     this.activeFilter = filter;
+  }
+
+  setFiltroTipo(valor: 'todos' | 'catalogo' | 'personalizada'): void {
+    this.filtroTipo = valor;
+  }
+
+  setOrden(valor: 'notificaciones' | 'reciente'): void {
+    this.ordenActivo = valor;
   }
 
   toggleExpand(solicitud: Solicitud): void { solicitud.expanded = !solicitud.expanded; }
@@ -628,7 +726,7 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
 
   getEstadoLabel(estado: string): string {
     const labels: Record<string, string> = {
-      'pendiente': 'Pendiente', 'procesando': 'Procesando', 'completado': 'Completado'
+      'pendiente': 'Pendiente', 'procesando': 'Procesando', 'completado': 'Completado', 'rechazado': 'Rechazado'
     };
     return labels[estado] || estado;
   }
@@ -777,6 +875,13 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
         error: (err) => console.error('Error reloading room details for seller', err)
       });
 
+      this.budgetService.obtenerPorSolicitud(this.room.requestId).subscribe({
+        next: (budget) => {
+          this.activeBudget = budget;
+        },
+        error: (err) => console.warn('Error reloading budget details', err)
+      });
+
       if (this.solicitudActiva) {
         this.requestService.obtenerPorId(this.room.requestId).subscribe({
           next: (res) => {
@@ -797,6 +902,8 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
   activeVoucherUrl: string | null = null;
   activeVoucherName: string = '';
   currentVoucherMessage: ChatMessageResponse | null = null;
+  mostrarModalRechazo: boolean = false;
+  motivoRechazo: string = '';
 
   openVoucherZoom(url: string, name: string, msg: ChatMessageResponse): void {
     this.activeVoucherUrl = url;
@@ -810,38 +917,63 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
     this.currentVoucherMessage = null;
   }
 
+  abrirModalRechazo(msg?: ChatMessageResponse): void {
+    if (msg) {
+      this.currentVoucherMessage = msg;
+    }
+    this.motivoRechazo = '';
+    this.mostrarModalRechazo = true;
+  }
+
+  cerrarModalRechazo(): void {
+    this.mostrarModalRechazo = false;
+    this.motivoRechazo = '';
+  }
+
+  confirmarRechazoComprobante(): void {
+    if (!this.room) return;
+    const motivo = this.motivoRechazo.trim() || 'El comprobante presentado no es legible o no corresponde al monto del adelanto.';
+    
+    const budgetId = this.selectedBudgetMetadata?.budgetId || this.activeBudget?.codigoReferencia || this.room.requestId;
+    if (budgetId) {
+      localStorage.setItem('adelanto_rechazado_' + budgetId, 'true');
+      localStorage.setItem('adelanto_motivo_rechazo_' + budgetId, motivo);
+    }
+
+    // Persistir estado por mensaje
+    if (this.currentVoucherMessage?.id) {
+      localStorage.setItem('pago_msg_estado_' + this.currentVoucherMessage.id, 'rechazado');
+    }
+
+    const sysMessage = `⚠️ COMPROBANTE DE ADELANTO RECHAZADO\nMotivo: ${motivo}\n\nPor favor, verifica tus datos de pago (Yape/BCP) y sube un nuevo comprobante válido.`;
+    this.chatService.sendMessage(this.room.id, sysMessage, 'SYSTEM');
+
+    this.mostrarModalRechazo = false;
+    this.closeVoucherZoom();
+    alert('Se ha enviado la notificación de rechazo del comprobante al cliente.');
+  }
+
   confirmarAdelantoDesdeChat(msg: ChatMessageResponse): void {
     if (!this.room) return;
 
-    let parsedMeta: any = {};
+    this.tipoCobro = 'adelanto';
+    this.currentVoucherMessage = msg;
+    
+    let fileUrl = '';
     try {
-      parsedMeta = JSON.parse(msg.metadata);
+      if (msg.metadata) {
+        const fileData = JSON.parse(msg.metadata);
+        fileUrl = fileData.fileUrl || '';
+      }
     } catch (e) {
-      console.error('Error parsing voucher message metadata', e);
+      console.warn('Error parsing message metadata for voucher prefill:', e);
     }
+    this.prefilledVoucherUrl = fileUrl;
 
-    // 1. Mostrar el prompt interactivo al vendedor
-    let codigoInput = prompt("Ingrese el Número de Operación de Yape para el Adelanto (8 dígitos):");
+    this.clienteCobro = this.room.clientName;
+    this.proyectoCobro = this.solicitudActiva?.productoNombre || 'Proyecto Maqueta';
+    this.materialesCobro = this.solicitudActiva?.materialesDeseados || '';
 
-    // 2. Si el usuario presiona "Cancelar", interrumpimos el flujo por completo
-    if (codigoInput === null) {
-      alert("Operación cancelada. No se registró ningún pago.");
-      return; 
-    }
-
-    // 3. Limpiar espacios en blanco
-    codigoInput = codigoInput.trim();
-    const regexYape = /^\d{8}$/;
-
-    // 4. Validar la entrada
-    if (codigoInput === "" || !regexYape.test(codigoInput)) {
-      alert("❌ Error: El código de operación ingresado no es válido.\nDebe contener exactamente 8 números enteros (Ej: 13274907).");
-      return;
-    }
-
-    const codigoOperacionValidado = codigoInput;
-
-    // Buscar presupuesto para obtener el monto de adelanto real
     const requestId = this.solicitudActiva?.id;
     if (requestId) {
       this.budgetService.obtenerPorSolicitud(requestId).subscribe({
@@ -849,193 +981,221 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
           let monto = (this.room!.agreedPrice || 375.70) / 2;
           if (budget) {
             monto = Number(budget.adelantoMonto);
+            this.selectedBudgetMetadata = {
+              budgetId: budget.codigoReferencia,
+              porcentajeAdelanto: budget.adelantoPorcentaje || 50
+            };
           }
-          this.registrarAdelantoConMonto(monto, codigoOperacionValidado);
+          this.montoCobro = monto;
+          this.mostrarModalPago = true;
         },
         error: (err) => {
           console.error("Error al buscar presupuesto, usando fallback:", err);
           const total = this.room!.agreedPrice || 375.70;
-          this.registrarAdelantoConMonto(total / 2, codigoOperacionValidado);
+          this.montoCobro = total / 2;
+          this.mostrarModalPago = true;
         }
       });
     } else {
       const total = this.room.agreedPrice || 375.70;
-      this.registrarAdelantoConMonto(total / 2, codigoOperacionValidado);
+      this.montoCobro = total / 2;
+      this.mostrarModalPago = true;
     }
-  }
-
-  private registrarAdelantoConMonto(monto: number, codigoOperacionValidado: string): void {
-    const payload = {
-      clientName: this.room!.clientName,
-      clientEmail: this.room!.clientEmail,
-      clientPhone: this.solicitudActiva?.clienteTelefono || '987654321',
-      roomId: this.room!.id,
-      monto: monto,
-      metodoPago: 'ONLINE', // Yape
-      tipoAbono: 'ADELANTO',
-      tipoMaqueta: this.solicitudActiva?.isCustom ? 'PERSONALIZADA' : 'PREDETERMINADA',
-      materials: this.solicitudActiva?.materialesDeseados || 'Madera Balsa, PLA, Acrilico',
-      fechaTransaccion: new Date().toISOString(),
-      codigoOperacion: codigoOperacionValidado
-    };
-
-    this.chatService.registerPayment(payload).subscribe({
-      next: (res) => {
-        const sysMessage = `El vendedor ha verificado y confirmado el pago de adelanto de S/ ${monto.toFixed(2)}.`;
-        this.chatService.sendMessage(this.room!.id, sysMessage, 'SYSTEM');
-
-        if (this.solicitudActiva?.id) {
-          const nuevoEstado = 'PROCESANDO';
-          this.requestService.actualizarEstado(this.solicitudActiva.id, { estado: nuevoEstado }).subscribe({
-            next: () => {
-              if (this.solicitudActiva) {
-                this.solicitudActiva.estado = this.mapEstado(nuevoEstado as EstadoSolicitud);
-              }
-              this.chatService.sendMessage(this.room!.id, "La maqueta se encuentra en proceso de elaboración.", 'SYSTEM');
-              this.reloadRoomInfo();
-              this.closeVoucherZoom();
-              alert(`¡Pago de adelanto verificado y registrado exitosamente!\nMonto de adelanto: S/ ${monto.toFixed(2)}`);
-            },
-            error: (err) => {
-              console.error(`Error al actualizar estado a ${nuevoEstado}:`, err);
-              this.reloadRoomInfo();
-              this.closeVoucherZoom();
-            }
-          });
-        } else {
-          this.reloadRoomInfo();
-          this.closeVoucherZoom();
-          alert(`¡Pago de adelanto verificado y registrado exitosamente!\nMonto de adelanto: S/ ${monto.toFixed(2)}`);
-        }
-      },
-      error: (err) => {
-        console.error("Error al guardar en el servidor", err);
-        alert('Hubo un error al registrar el adelanto. Por favor, asegúrate de que el cliente esté registrado en la base de datos.');
-      }
-    });
   }
 
   confirmarPagoDesdeChat(msg: ChatMessageResponse): void {
     if (!this.room) return;
 
-    let parsedMeta: any = {};
+    this.currentVoucherMessage = msg;
+    
+    let fileUrl = '';
     try {
-      parsedMeta = JSON.parse(msg.metadata);
+      if (msg.metadata) {
+        const fileData = JSON.parse(msg.metadata);
+        fileUrl = fileData.fileUrl || '';
+      }
     } catch (e) {
-      console.error('Error parsing voucher message metadata', e);
+      console.warn('Error parsing message metadata for voucher prefill:', e);
     }
+    this.prefilledVoucherUrl = fileUrl;
 
-    // 1. Mostrar el prompt interactivo al vendedor
-    let codigoInput = prompt("Ingrese el Número de Operación de Yape para la Liquidación Final (8 dígitos):");
+    this.clienteCobro = this.room.clientName;
+    this.proyectoCobro = this.solicitudActiva?.productoNombre || 'Proyecto Maqueta';
+    this.materialesCobro = this.solicitudActiva?.materialesDeseados || '';
 
-    // 2. Si el usuario presiona "Cancelar", interrumpimos el flujo por completo
-    if (codigoInput === null) {
-      alert("Operación cancelada. No se registró ningún pago.");
-      return; 
-    }
+    const budgetId = this.selectedBudgetMetadata?.budgetId || this.activeBudget?.codigoReferencia || this.room.requestId;
+    const hasAdelanto = (budgetId && localStorage.getItem('adelanto_pagado_' + budgetId) === 'true') ||
+                        this.solicitudActiva?.estado === 'procesando' ||
+                        this.room?.requestStatus === 'PROCESANDO' ||
+                        this.messages.some(m => 
+                          m.senderRole === 'SYSTEM' && 
+                          (m.content.includes('pago de adelanto') || m.content.includes('en proceso de elaboración'))
+                        );
 
-    // 3. Limpiar espacios en blanco
-    codigoInput = codigoInput.trim();
-    const regexYape = /^\d{8}$/;
+    const voucherKind = this.getVoucherType(msg);
+    this.tipoCobro = (voucherKind === 'saldo' || hasAdelanto) ? 'saldo' : (voucherKind === 'completo' ? 'completo' : 'adelanto');
 
-    // 4. Validar la entrada
-    if (codigoInput === "" || !regexYape.test(codigoInput)) {
-      alert("❌ Error: El código de operación ingresado no es válido.\nDebe contener exactamente 8 números enteros (Ej: 13274907).");
-      return;
-    }
-
-    const codigoOperacionValidado = codigoInput;
-
-    // Determinar si ya se pagó el adelanto en el chat para registrar el saldo restante o el 100% total
-    const hasAdelanto = this.messages.some(m => 
-      m.senderRole === 'SYSTEM' && 
-      m.content.includes('pago de adelanto')
-    );
-
-    const tipoAbono = hasAdelanto ? 'SALDO' : 'TOTAL';
-
-    // Buscar presupuesto para obtener montos reales de liquidación
     const requestId = this.solicitudActiva?.id;
     if (requestId) {
       this.budgetService.obtenerPorSolicitud(requestId).subscribe({
         next: (budget) => {
           let total = this.room!.agreedPrice || 375.70;
-          let monto = hasAdelanto ? (total / 2) : total;
+          let monto = (this.tipoCobro === 'saldo' || this.tipoCobro === 'adelanto') ? (total / 2) : total;
 
           if (budget) {
             total = Number(budget.total);
-            monto = hasAdelanto ? (Number(budget.total) - Number(budget.adelantoMonto)) : total;
+            if (this.tipoCobro === 'saldo') {
+              monto = Number(budget.total) - Number(budget.adelantoMonto);
+            } else if (this.tipoCobro === 'adelanto') {
+              monto = Number(budget.adelantoMonto);
+            } else {
+              monto = total;
+            }
+            this.selectedBudgetMetadata = {
+              budgetId: budget.codigoReferencia,
+              porcentajeAdelanto: budget.adelantoPorcentaje || 50
+            };
           }
-
-          this.registrarPagoFinalConMonto(monto, tipoAbono, codigoOperacionValidado);
+          this.montoCobro = monto;
+          this.mostrarModalPago = true;
         },
         error: (err) => {
           console.error("Error al buscar presupuesto para pago final, usando fallback:", err);
           const total = this.room!.agreedPrice || 375.70;
-          const monto = hasAdelanto ? (total / 2) : total;
-          this.registrarPagoFinalConMonto(monto, tipoAbono, codigoOperacionValidado);
+          const monto = (this.tipoCobro === 'saldo' || this.tipoCobro === 'adelanto') ? (total / 2) : total;
+          this.montoCobro = monto;
+          this.mostrarModalPago = true;
         }
       });
     } else {
       const total = this.room.agreedPrice || 375.70;
-      const monto = hasAdelanto ? (total / 2) : total;
-      this.registrarPagoFinalConMonto(monto, tipoAbono, codigoOperacionValidado);
+      const monto = (this.tipoCobro === 'saldo' || this.tipoCobro === 'adelanto') ? (total / 2) : total;
+      this.montoCobro = monto;
+      this.mostrarModalPago = true;
     }
   }
 
-  private registrarPagoFinalConMonto(monto: number, tipoAbono: string, codigoOperacionValidado: string): void {
-    const payload = {
-      clientName: this.room!.clientName,
-      clientEmail: this.room!.clientEmail,
-      clientPhone: this.solicitudActiva?.clienteTelefono || '987654321',
-      roomId: this.room!.id,
-      monto: monto,
-      metodoPago: 'ONLINE', // Yape
-      tipoAbono: tipoAbono,
-      tipoMaqueta: this.solicitudActiva?.isCustom ? 'PERSONALIZADA' : 'PREDETERMINADA',
-      materials: this.solicitudActiva?.materialesDeseados || 'Madera Balsa, PLA, Acrilico',
-      fechaTransaccion: new Date().toISOString(),
-      codigoOperacion: codigoOperacionValidado
+  onConfirmarPagoDesdeChat(payload: PaymentConfirmPayload): void {
+    this.mostrarModalPago = false;
+
+    const registrarPagoConUrl = (voucherUrl: string | null) => {
+      const abonoTipo = this.tipoCobro === 'adelanto' 
+        ? 'ADELANTO' 
+        : this.tipoCobro === 'saldo' 
+          ? 'SALDO' 
+          : 'TOTAL';
+
+      const materialsStr = this.solicitudActiva?.materialesDeseados || 'Madera Balsa, PLA, Acrilico';
+
+      const paymentPayload = {
+        clientName: this.room!.clientName,
+        clientEmail: this.room!.clientEmail,
+        clientPhone: this.solicitudActiva?.clienteTelefono || '987654321',
+        roomId: this.room!.id,
+        monto: payload.monto,
+        metodoPago: payload.metodoPago,
+        tipoAbono: abonoTipo,
+        tipoMaqueta: this.solicitudActiva?.isCustom ? 'PERSONALIZADA' : 'PREDETERMINADA',
+        materiales: materialsStr,
+        fechaTransaccion: new Date().toISOString(),
+        codigoOperacion: payload.codigoOperacion,
+        montoRecibido: payload.montoRecibido,
+        vuelto: payload.vuelto,
+        codigoSeguridad: payload.codigoSeguridad,
+        voucherUrl: voucherUrl
+      };
+
+      this.chatService.registerPayment(paymentPayload).subscribe({
+        next: (res) => {
+          const sysMessage = this.tipoCobro === 'adelanto'
+            ? `El vendedor ha verificado y confirmado el pago de adelanto de S/ ${payload.monto.toFixed(2)} vía ${payload.metodoTexto}.`
+            : `El vendedor ha verificado y confirmado el pago de liquidación final (${abonoTipo.toLowerCase()}) de S/ ${payload.monto.toFixed(2)} vía ${payload.metodoTexto}.`;
+
+          this.chatService.sendMessage(this.room!.id, sysMessage, 'SYSTEM');
+
+          const budgetId = this.selectedBudgetMetadata?.budgetId;
+          if (budgetId) {
+            if (this.tipoCobro === 'adelanto') {
+              localStorage.setItem('adelanto_pagado_' + budgetId, 'true');
+            } else {
+              localStorage.setItem('pago_confirmado_' + budgetId, 'true');
+            }
+          }
+
+          // Persistir estado por mensaje
+          if (this.currentVoucherMessage?.id) {
+            const msgEstado = this.tipoCobro === 'adelanto' ? 'adelanto_confirmado' : 'saldo_confirmado';
+            localStorage.setItem('pago_msg_estado_' + this.currentVoucherMessage.id, msgEstado);
+          }
+
+          if (this.tipoCobro === 'adelanto') {
+            if (this.solicitudActiva?.id) {
+              const nuevoEstado = 'PROCESANDO';
+              this.requestService.actualizarEstado(this.solicitudActiva.id, { estado: nuevoEstado }).subscribe({
+                next: () => {
+                  if (this.solicitudActiva) {
+                    this.solicitudActiva.estado = this.mapEstado(nuevoEstado as EstadoSolicitud);
+                  }
+                  this.chatService.sendMessage(this.room!.id, "La maqueta se encuentra en proceso de elaboración.", 'SYSTEM');
+                  this.reloadRoomInfo();
+                  this.closeVoucherZoom();
+                  alert(`¡Pago de adelanto verificado y registrado exitosamente!\nMonto: S/ ${payload.monto.toFixed(2)}`);
+                },
+                error: (err) => {
+                  console.error('Error al actualizar estado a PROCESANDO:', err);
+                  this.reloadRoomInfo();
+                  this.closeVoucherZoom();
+                }
+              });
+            } else {
+              this.reloadRoomInfo();
+              this.closeVoucherZoom();
+              alert(`¡Pago de adelanto verificado y registrado exitosamente!\nMonto: S/ ${payload.monto.toFixed(2)}`);
+            }
+          } else {
+            if (this.solicitudActiva?.id) {
+              const nuevoEstado = 'COMPLETADO';
+              this.requestService.actualizarEstado(this.solicitudActiva.id, { estado: nuevoEstado }).subscribe({
+                next: () => {
+                  this.descontarMaterialesDeInventario(this.solicitudActiva!.id);
+                  if (this.solicitudActiva) {
+                    this.solicitudActiva.estado = this.mapEstado(nuevoEstado as EstadoSolicitud);
+                  }
+                  this.reloadRoomInfo();
+                  this.closeVoucherZoom();
+                  alert(`¡Pago final verificado y registrado exitosamente!\nMonto: S/ ${payload.monto.toFixed(2)}`);
+                },
+                error: (err) => {
+                  console.error('Error al actualizar estado a COMPLETADO:', err);
+                  this.reloadRoomInfo();
+                  this.closeVoucherZoom();
+                }
+              });
+            } else {
+              this.reloadRoomInfo();
+              this.closeVoucherZoom();
+              alert(`¡Pago final verificado y registrado exitosamente!\nMonto: S/ ${payload.monto.toFixed(2)}`);
+            }
+          }
+        },
+        error: (err) => {
+          console.error("Error al guardar pago en el servidor:", err);
+          alert('Hubo un error al registrar el pago. Por favor, asegúrate de que el cliente esté registrado en la base de datos.');
+        }
+      });
     };
 
-    this.chatService.registerPayment(payload).subscribe({
-      next: (res) => {
-        // Enviar mensaje de confirmación del sistema vía WebSocket
-        const sysMessage = `El vendedor ha verificado y confirmado el pago de liquidación final (${tipoAbono.toLowerCase()}) de S/ ${monto.toFixed(2)}.`;
-        this.chatService.sendMessage(this.room!.id, sysMessage, 'SYSTEM');
-
-        // Cambiar estado de la solicitud en backend a COMPLETADO y descontar stock
-        if (this.solicitudActiva?.id) {
-          const nuevoEstado = 'COMPLETADO';
-          this.requestService.actualizarEstado(this.solicitudActiva.id, { estado: nuevoEstado }).subscribe({
-            next: () => {
-              this.descontarMaterialesDeInventario(this.solicitudActiva!.id);
-              if (this.solicitudActiva) {
-                this.solicitudActiva.estado = this.mapEstado(nuevoEstado as EstadoSolicitud);
-              }
-              
-              // Recargar sala de chat e información
-              this.reloadRoomInfo();
-              this.closeVoucherZoom();
-              alert(`¡Pago final verificado y registrado exitosamente!\nMonto de liquidación: S/ ${monto.toFixed(2)}`);
-            },
-            error: (err) => {
-              console.error(`Error al actualizar estado a ${nuevoEstado}:`, err);
-              this.reloadRoomInfo();
-              this.closeVoucherZoom();
-            }
-          });
-        } else {
-          this.reloadRoomInfo();
-          this.closeVoucherZoom();
-          alert(`¡Pago final verificado y registrado exitosamente!\nMonto de liquidación: S/ ${monto.toFixed(2)}`);
+    if (payload.voucherFile) {
+      this.fileService.uploadImage(payload.voucherFile).subscribe({
+        next: (res) => registrarPagoConUrl(res?.url || null),
+        error: (err) => {
+          console.warn('Error al subir comprobante a Cloudinary:', err);
+          registrarPagoConUrl(null);
         }
-      },
-      error: (err) => {
-        console.error("Error al guardar en el servidor", err);
-        alert('Hubo un error al registrar el pago final. Por favor, asegúrate de que el cliente esté registrado en la base de datos.');
-      }
-    });
+      });
+    } else {
+      registrarPagoConUrl(payload.prefilledVoucherUrl || null);
+    }
   }
 
   marcarComoCompletado(): void {
@@ -1062,6 +1222,69 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
         alert("Hubo un error al actualizar el estado de la solicitud.");
       }
     });
+  }
+
+  isAdelantoPagado(budgetId: string): boolean {
+    if (!budgetId) return false;
+    return localStorage.getItem('adelanto_pagado_' + budgetId) === 'true';
+  }
+
+  isPagoConfirmado(budgetId: string): boolean {
+    if (!budgetId) return false;
+    return localStorage.getItem('pago_confirmado_' + budgetId) === 'true';
+  }
+
+  // ── Estado por Mensaje Individual ──────────────────────────────────────────
+
+  getMsgEstado(msgId: string): string {
+    if (!msgId) return '';
+    return localStorage.getItem('pago_msg_estado_' + msgId) || '';
+  }
+
+  /**
+   * Determina el tipo de un VOUCHER basado en el contexto global.
+   * 'adelanto' → primer comprobante antes de que se confirme el adelanto.
+   * 'saldo'    → comprobante enviado después de que el adelanto ya fue confirmado.
+   * 'completo' → presupuesto sin adelanto requerido (100% pago de inicio).
+   */
+  getVoucherType(msg: ChatMessageResponse): 'adelanto' | 'saldo' | 'completo' {
+    // 1. Si este mensaje ya tiene un estado individual guardado
+    const estado = this.getMsgEstado(msg.id);
+    if (estado === 'adelanto_confirmado' || estado === 'rechazado') return 'adelanto';
+    if (estado === 'saldo_confirmado') return 'saldo';
+
+    // 2. Si el presupuesto explícitamente NO requiere adelanto (pago 100% de inicio)
+    if (this.activeBudget && this.activeBudget.adelantoRequerido === false) return 'completo';
+
+    // 3. Verificar si el adelanto ya fue verificado previamente
+    const budgetId = this.selectedBudgetMetadata?.budgetId || this.activeBudget?.codigoReferencia || this.room?.requestId;
+    const adelantoYaPagado = (budgetId && localStorage.getItem('adelanto_pagado_' + budgetId) === 'true') ||
+                             this.solicitudActiva?.estado === 'procesando' ||
+                             this.room?.requestStatus === 'PROCESANDO' ||
+                             this.messages.some(m => m.senderRole === 'SYSTEM' && (m.content.includes('pago de adelanto') || m.content.includes('en proceso de elaboración')));
+
+    if (adelantoYaPagado) {
+      return 'saldo';
+    }
+
+    return 'adelanto';
+  }
+
+  isMensajeDescartado(msgId: string): boolean {
+    if (!msgId) return false;
+    return localStorage.getItem('descartado_msg_' + msgId) === 'true';
+  }
+
+  descartarComprobante(msgId: string): void {
+    if (!msgId || !this.room) return;
+    const confirmacion = confirm("¿Estás seguro de que deseas descartar/rechazar este archivo o comprobante?\nEsto ocultará el archivo de tu chat y enviará una notificación del sistema.");
+    if (!confirmacion) return;
+
+    localStorage.setItem('descartado_msg_' + msgId, 'true');
+    this.chatService.sendMessage(this.room.id, "El vendedor ha descartado/rechazado un archivo o comprobante enviado por el cliente.", 'SYSTEM');
+    
+    this.closeVoucherZoom();
+    this.reloadRoomInfo();
   }
 
   irAPagosConVoucher(msg: ChatMessageResponse): void {
@@ -1158,6 +1381,46 @@ export class SolicitudesComponent implements OnInit, OnDestroy {
       return 'text-blue-500';
     }
     return 'text-slate-400';
+  }
+
+  confirmarCancelar(): void {
+    this.abrirModalCancelacion();
+  }
+
+  abrirModalCancelacion(): void {
+    if (!this.solicitudActiva) return;
+    this.motivoCancelacionText = '';
+    this.mostrarModalCancelacion = true;
+  }
+
+  cerrarModalCancelacion(): void {
+    this.mostrarModalCancelacion = false;
+  }
+
+  confirmarRechazo(): void {
+    if (!this.solicitudActiva) return;
+
+    this.requestService.rechazar(this.solicitudActiva.id, this.motivoCancelacionText).subscribe({
+      next: () => {
+        // Enviar mensaje del sistema al chat
+        const sysMessage = this.motivoCancelacionText.trim()
+          ? `La solicitud ha sido rechazada por el vendedor. Motivo: ${this.motivoCancelacionText}`
+          : "La solicitud ha sido rechazada por el vendedor.";
+        
+        if (this.room) {
+          this.chatService.sendMessage(this.room.id, sysMessage, 'SYSTEM');
+        }
+
+        alert("La solicitud ha sido rechazada/cancelada exitosamente.");
+        this.cerrarModalCancelacion();
+        this.volverALista();
+        this.loadSolicitudes();
+      },
+      error: (err) => {
+        console.error('Error al rechazar la solicitud:', err);
+        alert('Hubo un error al rechazar la solicitud. Por favor, intente de nuevo.');
+      }
+    });
   }
 
   private descontarMaterialesDeInventario(requestId: string): void {

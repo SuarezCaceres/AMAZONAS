@@ -29,6 +29,24 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentTransactionRepository paymentRepository;
     private final UserRepository userRepository;
+    private final javax.sql.DataSource dataSource;
+
+    @jakarta.annotation.PostConstruct
+    public void initDbColumns() {
+        log.info("--- EJECUTANDO MIGRACIÓN AUTOMÁTICA DE EMERGENCIA DESDE POSTCONSTRUCT ---");
+        try (java.sql.Connection conn = dataSource.getConnection();
+             java.sql.Statement stmt = conn.createStatement()) {
+            
+            stmt.execute("ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS monto_recibido NUMERIC(10,2)");
+            stmt.execute("ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS vuelto NUMERIC(10,2)");
+            stmt.execute("ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS codigo_seguridad VARCHAR(100)");
+            stmt.execute("ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS voucher_url TEXT");
+            
+            log.info("--- COLUMNAS VERIFICADAS/CREADAS EXITOSAMENTE EN BASE DE DATOS ---");
+        } catch (Exception e) {
+            log.error("Error al ejecutar migración en PostConstruct", e);
+        }
+    }
 
     @Override
     public PaymentTransaction registerPayment(RegisterPaymentRequest request) {
@@ -58,6 +76,10 @@ public class PaymentServiceImpl implements PaymentService {
                 .materiales(request.materiales())
                 .fechaTransaccion(request.fechaTransaccion())
                 .codigoOperacion(request.codigoOperacion())
+                .montoRecibido(request.montoRecibido())
+                .vuelto(request.vuelto())
+                .codigoSeguridad(request.codigoSeguridad())
+                .voucherUrl(request.voucherUrl())
                 .build();
 
         return paymentRepository.save(transaction);

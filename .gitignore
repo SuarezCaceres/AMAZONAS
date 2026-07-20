@@ -1,0 +1,11 @@
+.agents/context/
+node_modules/
+.angular/
+.vscode/
+.idea/
+src/frontend/dist/
+src/frontend/node_modules/
+src/backend/target/
+*.log
+.DS_Store
+Thumbs.db

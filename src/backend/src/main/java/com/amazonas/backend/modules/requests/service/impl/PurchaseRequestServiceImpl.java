@@ -12,6 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 
 import com.amazonas.backend.modules.materials.model.Material;
 import com.amazonas.backend.modules.materials.repository.MaterialRepository;
@@ -27,9 +30,12 @@ import com.amazonas.backend.modules.users.repository.UserRepository;
 import com.amazonas.backend.modules.vendors.repository.VendorRepository;
 import com.amazonas.backend.modules.chat.repository.ChatRoomRepository;
 import com.amazonas.backend.modules.chat.enums.ChatRoomStatus;
+import com.amazonas.backend.modules.budgets.repository.BudgetRepository;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class PurchaseRequestServiceImpl implements PurchaseRequestService {
 
     private final PurchaseRequestRepository purchaseRequestRepository;
@@ -38,6 +44,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     private final UserRepository userRepository;
     private final VendorRepository vendorRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final BudgetRepository budgetRepository;
 
     public PurchaseRequestServiceImpl(
             PurchaseRequestRepository purchaseRequestRepository,
@@ -45,33 +52,42 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             MaterialRepository materialRepository,
             UserRepository userRepository,
             VendorRepository vendorRepository,
-            ChatRoomRepository chatRoomRepository) {
+            ChatRoomRepository chatRoomRepository,
+            BudgetRepository budgetRepository) {
         this.purchaseRequestRepository = purchaseRequestRepository;
         this.productRepository = productRepository;
         this.materialRepository = materialRepository;
         this.userRepository = userRepository;
         this.vendorRepository = vendorRepository;
         this.chatRoomRepository = chatRoomRepository;
+        this.budgetRepository = budgetRepository;
     }
 
     // ─────────────────────────────────────────────────────────
     // CREAR SOLICITUD
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Crea una solicitud e invalida la caché del usuario y la caché de admin.
+     */
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", key = "#usuarioEmail"),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse crear(PurchaseRequestRequest req, String usuarioEmail) {
         // Validar duplicidad de materiales seleccionados (si es personalización)
-        if (Boolean.TRUE.equals(req.getIsCustom())) {
+        if (Boolean.TRUE.equals(req.isCustom())) {
             java.util.Set<String> materialNames = new java.util.HashSet<>();
             java.util.Set<UUID> materialIds = new java.util.HashSet<>();
 
-            if (req.getMaterialesCustomizados() != null) {
-                for (KitCustomizedMaterialRequest matReq : req.getMaterialesCustomizados()) {
-                    if (matReq.getMaterialId() != null) {
-                        if (!materialIds.add(matReq.getMaterialId())) {
+            if (req.materialesCustomizados() != null) {
+                for (KitCustomizedMaterialRequest matReq : req.materialesCustomizados()) {
+                    if (matReq.materialId() != null) {
+                        if (!materialIds.add(matReq.materialId())) {
                             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se permiten materiales duplicados.");
                         }
-                        Material dbM = materialRepository.findById(matReq.getMaterialId()).orElse(null);
+                        Material dbM = materialRepository.findById(matReq.materialId()).orElse(null);
                         if (dbM != null) {
                             if (!materialNames.add(dbM.getNombre().trim().toLowerCase())) {
                                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se permiten materiales duplicados.");
@@ -81,10 +97,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                 }
             }
 
-            if (req.getMaterialesPersonales() != null) {
-                for (KitPersonalMaterialRequest perReq : req.getMaterialesPersonales()) {
-                    if (perReq.getMaterialName() != null && !perReq.getMaterialName().trim().isEmpty()) {
-                        String normName = perReq.getMaterialName().trim().toLowerCase();
+            if (req.materialesPersonales() != null) {
+                for (KitPersonalMaterialRequest perReq : req.materialesPersonales()) {
+                    if (perReq.materialName() != null && !perReq.materialName().trim().isEmpty()) {
+                        String normName = perReq.materialName().trim().toLowerCase();
                         if (!materialNames.add(normName)) {
                             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No se permiten materiales duplicados.");
                         }
@@ -99,16 +115,16 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             }
         }
 
-        User usuario = userRepository.findByEmail(usuarioEmail)
+        User usuario = userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioEmail));
 
         PurchaseRequest solicitud = new PurchaseRequest();
         solicitud.setUsuario(usuario);
-        solicitud.setClienteNombre(req.getClienteNombre());
-        solicitud.setClienteEmail(req.getClienteEmail());
+        solicitud.setClienteNombre(req.clienteNombre());
+        solicitud.setClienteEmail(req.clienteEmail());
 
         // Validar número telefónico (caracteres numéricos, longitud 9 para Perú)
-        String telefonoOriginal = req.getClienteTelefono();
+        String telefonoOriginal = req.clienteTelefono();
         String telefonoLimpio = telefonoOriginal != null ? telefonoOriginal.replaceAll("\\D", "") : "";
         if (telefonoLimpio.length() == 11 && telefonoLimpio.startsWith("51")) {
             telefonoLimpio = telefonoLimpio.substring(2);
@@ -118,20 +134,20 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
         solicitud.setClienteTelefono(telefonoLimpio);
 
-        solicitud.setMensaje(req.getMensaje());
-        solicitud.setIsKit(Boolean.TRUE.equals(req.getIsKit()));
-        solicitud.setIsCustom(Boolean.TRUE.equals(req.getIsCustom()));
-        solicitud.setDescripcionPersonalizacion(req.getDescripcionPersonalizacion());
-        solicitud.setMaterialesDeseados(req.getMaterialesDeseados());
-        solicitud.setSolicitarExplicacion(Boolean.TRUE.equals(req.getSolicitarExplicacion()));
-        solicitud.setTipoEvento(req.getTipoEvento());
-        solicitud.setCantidadPersonas(req.getCantidadPersonas());
+        solicitud.setMensaje(req.mensaje());
+        solicitud.setIsKit(Boolean.TRUE.equals(req.isKit()));
+        solicitud.setIsCustom(Boolean.TRUE.equals(req.isCustom()));
+        solicitud.setDescripcionPersonalizacion(req.descripcionPersonalizacion());
+        solicitud.setMaterialesDeseados(req.materialesDeseados());
+        solicitud.setSolicitarExplicacion(Boolean.TRUE.equals(req.solicitarExplicacion()));
+        solicitud.setTipoEvento(req.tipoEvento());
+        solicitud.setCantidadPersonas(req.cantidadPersonas());
 
         // ─── Flujo 1: Maqueta Ya Hecha / Producto específico ───
         String productoNombre = "Solicitud personalizada";
-        if (req.getProductoId() != null) {
-            Product producto = productRepository.findById(req.getProductoId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + req.getProductoId()));
+        if (req.productoId() != null) {
+            Product producto = productRepository.findById(req.productoId())
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + req.productoId()));
             solicitud.setProducto(producto);
             productoNombre = producto.getTitulo();
         }
@@ -144,33 +160,33 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
 
         // ─── Flujo 2: Kit de Maquetas ───
-        if (Boolean.TRUE.equals(req.getIsKit()) && req.getKits() != null) {
-            for (KitMaquetaRequest kitReq : req.getKits()) {
-                Product kitProducto = productRepository.findById(kitReq.getProductId())
-                        .orElseThrow(() -> new RuntimeException("Producto de kit no encontrado: " + kitReq.getProductId()));
+        if (Boolean.TRUE.equals(req.isKit()) && req.kits() != null) {
+            for (KitMaquetaRequest kitReq : req.kits()) {
+                Product kitProducto = productRepository.findById(kitReq.productId())
+                        .orElseThrow(() -> new RuntimeException("Producto de kit no encontrado: " + kitReq.productId()));
                 KitMaqueta kit = new KitMaqueta(
                         solicitud,
                         kitProducto,
                         kitProducto.getTitulo(),
                         null,
-                        kitReq.getCantidad() != null ? kitReq.getCantidad() : 1,
-                        kitReq.getPrecioUnitarioReferencia()
+                        kitReq.cantidad() != null ? kitReq.cantidad() : 1,
+                        kitReq.precioUnitarioReferencia()
                 );
                 solicitud.getKits().add(kit);
             }
         }
 
         // ─── Flujo 3: Materiales Customizados (del inventario) ───
-        if (req.getMaterialesCustomizados() != null) {
-            for (KitCustomizedMaterialRequest matReq : req.getMaterialesCustomizados()) {
-                Material material = materialRepository.findById(matReq.getMaterialId())
-                        .orElseThrow(() -> new RuntimeException("Material no encontrado: " + matReq.getMaterialId()));
+        if (req.materialesCustomizados() != null) {
+            for (KitCustomizedMaterialRequest matReq : req.materialesCustomizados()) {
+                Material material = materialRepository.findById(matReq.materialId())
+                        .orElseThrow(() -> new RuntimeException("Material no encontrado: " + matReq.materialId()));
                 KitCustomizedMaterial kitMat = new KitCustomizedMaterial(
                         solicitud,
                         material,
                         material.getNombre(),
                         material.getUnidad(),
-                        matReq.getCantidad(),
+                        matReq.cantidad(),
                         material.getCostoVenta() // Snapshot del costo de venta actual
                 );
                 solicitud.getMaterialesCustomizados().add(kitMat);
@@ -178,10 +194,10 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         }
 
         // ─── Flujo 3: Materiales Personales (texto libre) ───
-        if (req.getMaterialesPersonales() != null) {
-            for (KitPersonalMaterialRequest perReq : req.getMaterialesPersonales()) {
-                if (perReq.getMaterialName() != null) {
-                    Optional<Material> dbMatOpt = materialRepository.findByNombreIgnoreCase(perReq.getMaterialName().trim());
+        if (req.materialesPersonales() != null) {
+            for (KitPersonalMaterialRequest perReq : req.materialesPersonales()) {
+                if (perReq.materialName() != null) {
+                    Optional<Material> dbMatOpt = materialRepository.findByNombreIgnoreCase(perReq.materialName().trim());
                     if (dbMatOpt.isPresent()) {
                         Material material = dbMatOpt.get();
                         KitCustomizedMaterial kitMat = new KitCustomizedMaterial(
@@ -189,7 +205,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                                 material,
                                 material.getNombre(),
                                 material.getUnidad(),
-                                perReq.getCantidad(),
+                                perReq.cantidad(),
                                 material.getCostoVenta()
                         );
                         solicitud.getMaterialesCustomizados().add(kitMat);
@@ -198,28 +214,28 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                 }
                 KitPersonalMaterial kitPer = new KitPersonalMaterial(
                         solicitud,
-                        perReq.getMaterialName(),
-                        perReq.getCantidad(),
-                        perReq.getDescripcion()
+                        perReq.materialName(),
+                        perReq.cantidad(),
+                        perReq.descripcion()
                 );
                 solicitud.getMaterialesPersonales().add(kitPer);
             }
         }
 
         // ─── Materiales Preferidos (sugerencias) ───
-        if (req.getMaterialesPreferidos() != null) {
-            for (RequestPreferredMaterialRequest prefReq : req.getMaterialesPreferidos()) {
+        if (req.materialesPreferidos() != null) {
+            for (RequestPreferredMaterialRequest prefReq : req.materialesPreferidos()) {
                 Material material = null;
-                String materialName = prefReq.getMaterialName();
-                if (prefReq.getMaterialId() != null) {
-                    material = materialRepository.findById(prefReq.getMaterialId()).orElse(null);
+                String materialName = prefReq.materialName();
+                if (prefReq.materialId() != null) {
+                    material = materialRepository.findById(prefReq.materialId()).orElse(null);
                     if (material != null) materialName = material.getNombre();
                 }
                 RequestPreferredMaterial pref = new RequestPreferredMaterial(
                         solicitud,
                         material,
                         materialName,
-                        prefReq.getRazonPreferencia()
+                        prefReq.razonPreferencia()
                 );
                 solicitud.getMaterialesPreferidos().add(pref);
             }
@@ -233,14 +249,26 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     // CONSULTAS
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Lista las solicitudes del usuario autenticado.
+     * Cacheada por email en Redis: cada usuario tiene su propia entrada.
+     * Se invalida automáticamente al crear o actualizar una solicitud.
+     */
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "solicitudes", key = "#usuarioEmail")
     public List<PurchaseRequestResponse> listarMisSolicitudes(String usuarioEmail) {
+        // Carga previa en memoria de los IDs de solicitudes con presupuesto
+        // para evitar el N+1 del OneToOne opcional
+        java.util.Set<UUID> conPresupuesto = new java.util.HashSet<>(
+                budgetRepository.findSolicitudIdsWithPresupuesto()
+        );
+
         // Si el email corresponde a un vendedor/admin (no existe en tabla users), retornar lista vacía
         // en lugar de lanzar una excepción que produce HTTP 500.
-        return userRepository.findByEmail(usuarioEmail)
+        return userRepository.findByEmailIgnoreCase(usuarioEmail)
                 .map(usuario -> purchaseRequestRepository.findByUsuarioOrderByCreatedAtDesc(usuario)
-                        .stream().map(this::toResponse).collect(Collectors.toList()))
+                        .stream().map(s -> this.toResponse(s, conPresupuesto)).collect(Collectors.toList()))
                 .orElse(List.of());
     }
 
@@ -249,43 +277,48 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     public PurchaseRequestResponse obtenerPorId(UUID id, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada: " + id));
-        return toResponse(solicitud);
+        return toResponse(solicitud, loadPresupuestoIds());
     }
 
+    /**
+     * Lista todas las solicitudes filtradas por estado.
+     * Caché de Redis configurada para administradores (vendedores).
+     */
     @Override
     @Transactional(readOnly = true)
-    public List<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado) {
-        List<PurchaseRequest> lista = (estado != null)
-                ? purchaseRequestRepository.findByEstadoOrderByCreatedAtDesc(estado)
-                : purchaseRequestRepository.findAllByOrderByCreatedAtDesc();
-        List<PurchaseRequestResponse> result = new ArrayList<>();
-        for (PurchaseRequest s : lista) {
-            try {
-                result.add(toResponse(s));
-            } catch (Exception ex) {
-                try {
-                    java.io.FileWriter fw = new java.io.FileWriter("c:/Users/USER/Documents/Herramientas de desarrollo/AMAZONAS/error.log", true);
-                    java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-                    pw.println("--- EXCEPTION MAPPING REQUEST " + s.getId() + " --- " + new java.util.Date());
-                    ex.printStackTrace(pw);
-                    pw.close();
-                    fw.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
-        return result;
+    // NOTE: Removed @Cacheable here or update key to include pagination. 
+    // Usually admin lists with pagination shouldn't be strictly cached, or at least cache first page.
+    // For simplicity, we won't cache the paginated query to avoid stale results across pages.
+    public org.springframework.data.domain.Page<PurchaseRequestResponse> listarTodas(EstadoSolicitud estado, org.springframework.data.domain.Pageable pageable) {
+        // Carga previa en memoria de los IDs de solicitudes con presupuesto
+        // para evitar el N+1 del OneToOne opcional en Hibernate al listar
+        java.util.Set<UUID> conPresupuesto = new java.util.HashSet<>(
+                budgetRepository.findSolicitudIdsWithPresupuesto()
+        );
+
+        org.springframework.data.domain.Page<PurchaseRequest> pagina = (estado != null)
+                ? purchaseRequestRepository.findByEstado(estado, pageable)
+                : purchaseRequestRepository.findAllPaged(pageable);
+                
+        return pagina.map(s -> toResponse(s, conPresupuesto));
     }
 
+    /**
+     * Actualiza el estado de una solicitud e invalida toda la caché de solicitudes
+     * (tanto individuales de usuario como la global de admin).
+     */
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse actualizarEstado(UUID id, UpdateEstadoRequest req) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada: " + id));
-        solicitud.setEstado(req.getEstado());
-        PurchaseRequestResponse response = toResponse(purchaseRequestRepository.save(solicitud));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
+        solicitud.setEstado(req.estado());
+        PurchaseRequestResponse response = toResponse(purchaseRequestRepository.save(solicitud), loadPresupuestoIds());
         
-        if (req.getEstado() == EstadoSolicitud.COMPLETADO) {
+        if (req.estado() == EstadoSolicitud.COMPLETADO) {
             chatRoomRepository.findByRequestId(id).ifPresent(room -> {
                 room.setStatus(ChatRoomStatus.CLOSED);
                 chatRoomRepository.save(room);
@@ -299,7 +332,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
     @Transactional(readOnly = true)
     public SolicitudParaPresupuestoResponse obtenerParaPresupuesto(UUID id) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
 
         // Force initialization of lazy collections
         solicitud.getMaterialesPreferidos().size();
@@ -308,17 +341,6 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
         if (solicitud.getProducto() != null) {
             solicitud.getProducto().getMateriales().size();
         }
-
-        SolicitudParaPresupuestoResponse resp = new SolicitudParaPresupuestoResponse();
-        resp.setId(solicitud.getId());
-        resp.setProductoNombre(solicitud.getProductoNombre());
-        resp.setDescripcionPersonalizacion(solicitud.getDescripcionPersonalizacion());
-        resp.setIsCustom(solicitud.getIsCustom());
-        resp.setClienteNombre(solicitud.getClienteNombre());
-        resp.setClienteEmail(solicitud.getClienteEmail());
-        resp.setClienteTelefono(solicitud.getClienteTelefono());
-        resp.setCreatedAt(solicitud.getCreatedAt());
-        resp.setEstado(solicitud.getEstado() != null ? solicitud.getEstado().name() : null);
 
         // Get materials: if request has custom or personal materials chosen by client, use them. Otherwise default to product's original materials.
         List<SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO> materiales = new ArrayList<>();
@@ -356,9 +378,7 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
             );
         }
 
-        if (!materiales.isEmpty()) {
-            resp.setMaterialesProducto(materiales);
-        } else if (solicitud.getProducto() != null) {
+        if (materiales.isEmpty() && solicitud.getProducto() != null) {
             List<SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO> originalMateriales = 
                 solicitud.getProducto().getMateriales().stream()
                     .map(pm -> new SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO(
@@ -370,9 +390,41 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                         pm.getEsOpcional()
                     ))
                     .collect(Collectors.toList());
-            resp.setMaterialesProducto(originalMateriales);
-        } else {
-            resp.setMaterialesProducto(List.of());
+            materiales.addAll(originalMateriales);
+        }
+
+        // Si es un kit y no tiene materiales customizados/personales, cargamos los materiales por defecto del kit
+        if (materiales.isEmpty() && Boolean.TRUE.equals(solicitud.getIsKit()) && solicitud.getKits() != null) {
+            java.util.Map<UUID, SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO> aggregated = new java.util.LinkedHashMap<>();
+            for (KitMaqueta kit : solicitud.getKits()) {
+                if (kit.getProduct() != null && kit.getProduct().getMateriales() != null) {
+                    BigDecimal kitQty = kit.getCantidad() != null ? BigDecimal.valueOf(kit.getCantidad()) : BigDecimal.ONE;
+                    for (com.amazonas.backend.modules.products.model.ProductMaterial pm : kit.getProduct().getMateriales()) {
+                        Material mat = pm.getMaterial();
+                        if (mat != null) {
+                            BigDecimal qty = pm.getCantidadSugerida() != null ? pm.getCantidadSugerida().multiply(kitQty) : kitQty;
+                            aggregated.merge(mat.getId(), 
+                                new SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO(
+                                    mat.getId(),
+                                    mat.getNombre(),
+                                    mat.getUnidad(),
+                                    mat.getCostoVenta(),
+                                    qty,
+                                    pm.getEsOpcional()
+                                ), (existing, newDto) -> new SolicitudParaPresupuestoResponse.MaterialPresupuestoDTO(
+                                    existing.id(),
+                                    existing.nombre(),
+                                    existing.unidad(),
+                                    existing.costoVenta(),
+                                    existing.cantidadSugerida().add(newDto.cantidadSugerida()),
+                                    existing.esOpcional() && newDto.esOpcional()
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+            materiales.addAll(aggregated.values());
         }
 
         // Get client's preferred materials (selected from list)
@@ -389,128 +441,222 @@ public class PurchaseRequestServiceImpl implements PurchaseRequestService {
                     );
                 })
                 .collect(Collectors.toList());
-        resp.setMaterialesPreferidos(materialesPreferidos);
 
-        // Get client's desired materials (free text)
-        resp.setMaterialesDeseados(solicitud.getMaterialesDeseados());
-
-        // Servicio de explicación
-        resp.setSolicitarExplicacion(solicitud.getSolicitarExplicacion());
-        resp.setTipoEvento(solicitud.getTipoEvento());
-        resp.setCantidadPersonas(solicitud.getCantidadPersonas());
-
-        return resp;
+        return new SolicitudParaPresupuestoResponse(
+            solicitud.getId(),
+            solicitud.getProductoNombre(),
+            solicitud.getDescripcionPersonalizacion(),
+            solicitud.getIsCustom(),
+            solicitud.getClienteNombre(),
+            solicitud.getClienteEmail(),
+            solicitud.getClienteTelefono(),
+            solicitud.getCreatedAt(),
+            solicitud.getEstado() != null ? solicitud.getEstado().name() : null,
+            materiales,
+            materialesPreferidos,
+            solicitud.getMaterialesDeseados(),
+            solicitud.getSolicitarExplicacion(),
+            solicitud.getTipoEvento(),
+            solicitud.getCantidadPersonas()
+        );
     }
 
     // ─────────────────────────────────────────────────────────
-    // MAPPER
+    // MAPPER Y HELPERS
     // ─────────────────────────────────────────────────────────
 
+    /**
+     * Carga los IDs de solicitudes que tienen presupuesto asignado en una sola
+     * consulta SQL (SELECT b.solicitud.id FROM Budget b).
+     * Usar este Set evita el N+1 de @OneToOne mappedBy al llamar s.getPresupuesto().
+     */
+    private java.util.Set<UUID> loadPresupuestoIds() {
+        return new java.util.HashSet<>(budgetRepository.findSolicitudIdsWithPresupuesto());
+    }
+
     private PurchaseRequestResponse toResponse(PurchaseRequest s) {
-        PurchaseRequestResponse resp = new PurchaseRequestResponse();
-        resp.setId(s.getId());
-        resp.setClienteNombre(s.getClienteNombre());
-        resp.setClienteEmail(s.getClienteEmail());
-        resp.setClienteTelefono(s.getClienteTelefono());
-        resp.setProductoNombre(s.getProductoNombre());
-        if (s.getProducto() != null) resp.setProductoId(s.getProducto().getId());
-        resp.setIsKit(s.getIsKit());
-        resp.setIsCustom(s.getIsCustom());
-        resp.setEstado(s.getEstado());
-        resp.setMensaje(s.getMensaje());
-        resp.setDescripcionPersonalizacion(s.getDescripcionPersonalizacion());
-        resp.setMaterialesDeseados(s.getMaterialesDeseados());
-        resp.setSolicitarExplicacion(s.getSolicitarExplicacion());
-        resp.setTipoEvento(s.getTipoEvento());
-        resp.setCantidadPersonas(s.getCantidadPersonas());
-        resp.setTienePresupuesto(s.getPresupuesto() != null);
-        resp.setCreatedAt(s.getCreatedAt());
-        resp.setUpdatedAt(s.getUpdatedAt());
+        return toResponse(s, loadPresupuestoIds());
+    }
 
-        // Kits
-        resp.setKits(s.getKits().stream().map(k -> {
-            KitMaquetaResponse kr = new KitMaquetaResponse();
-            kr.setId(k.getId());
-            if (k.getProduct() != null) kr.setProductId(k.getProduct().getId());
-            kr.setProductName(k.getProductName());
-            kr.setProductSlug(k.getProductSlug());
-            kr.setCantidad(k.getCantidad());
-            kr.setPrecioUnitarioReferencia(k.getPrecioUnitarioReferencia());
+    private PurchaseRequestResponse toResponse(PurchaseRequest s, java.util.Set<UUID> conPresupuesto) {
+        UUID productoId = (s.getProducto() != null) ? s.getProducto().getId() : null;
+
+        List<KitMaquetaResponse> kits = s.getKits().stream().map(k -> {
+            UUID kitProdId = (k.getProduct() != null) ? k.getProduct().getId() : null;
+            BigDecimal subtotal = null;
             if (k.getPrecioUnitarioReferencia() != null && k.getCantidad() != null) {
-                kr.setSubtotal(k.getPrecioUnitarioReferencia().multiply(BigDecimal.valueOf(k.getCantidad())));
+                subtotal = k.getPrecioUnitarioReferencia().multiply(BigDecimal.valueOf(k.getCantidad()));
             }
-            return kr;
-        }).collect(Collectors.toList()));
+            return new KitMaquetaResponse(
+                k.getId(),
+                kitProdId,
+                k.getProductName(),
+                k.getProductSlug(),
+                k.getCantidad(),
+                k.getPrecioUnitarioReferencia(),
+                subtotal
+            );
+        }).collect(Collectors.toList());
 
-        // Materiales customizados
-        resp.setMaterialesCustomizados(s.getMaterialesCustomizados().stream().map(m -> {
-            KitCustomizedMaterialResponse mr = new KitCustomizedMaterialResponse();
-            mr.setId(m.getId());
-            if (m.getMaterial() != null) mr.setMaterialId(m.getMaterial().getId());
-            mr.setMaterialName(m.getMaterialName());
-            mr.setMaterialUnit(m.getMaterialUnit());
-            mr.setCantidad(m.getCantidad());
-            mr.setCostoUnitarioReferencia(m.getCostoUnitarioReferencia());
+        List<KitCustomizedMaterialResponse> customized = s.getMaterialesCustomizados().stream().map(m -> {
+            UUID matId = (m.getMaterial() != null) ? m.getMaterial().getId() : null;
+            BigDecimal subtotal = null;
             if (m.getCantidad() != null && m.getCostoUnitarioReferencia() != null) {
-                mr.setSubtotal(m.getCantidad().multiply(m.getCostoUnitarioReferencia()));
+                subtotal = m.getCantidad().multiply(m.getCostoUnitarioReferencia());
             }
-            return mr;
-        }).collect(Collectors.toList()));
+            return new KitCustomizedMaterialResponse(
+                m.getId(),
+                matId,
+                m.getMaterialName(),
+                m.getMaterialUnit(),
+                m.getCantidad(),
+                m.getCostoUnitarioReferencia(),
+                subtotal
+            );
+        }).collect(Collectors.toList());
 
-        // Materiales personales
-        resp.setMaterialesPersonales(s.getMaterialesPersonales().stream().map(p -> {
-            KitPersonalMaterialResponse pr = new KitPersonalMaterialResponse();
-            pr.setId(p.getId());
-            pr.setMaterialName(p.getMaterialName());
-            pr.setCantidad(p.getCantidad());
-            pr.setDescripcion(p.getDescripcion());
-            return pr;
-        }).collect(Collectors.toList()));
+        List<KitPersonalMaterialResponse> personales = s.getMaterialesPersonales().stream().map(p -> {
+            return new KitPersonalMaterialResponse(
+                p.getId(),
+                p.getMaterialName(),
+                p.getCantidad(),
+                p.getDescripcion()
+            );
+        }).collect(Collectors.toList());
 
-        // Materiales preferidos
-        resp.setMaterialesPreferidos(s.getMaterialesPreferidos().stream().map(pf -> {
-            RequestPreferredMaterialResponse pfr = new RequestPreferredMaterialResponse();
-            pfr.setId(pf.getId());
-            if (pf.getMaterial() != null) pfr.setMaterialId(pf.getMaterial().getId());
-            pfr.setMaterialName(pf.getMaterialName());
-            pfr.setRazonPreferencia(pf.getRazonPreferencia());
-            return pfr;
-        }).collect(Collectors.toList()));
+        List<RequestPreferredMaterialResponse> preferidos = s.getMaterialesPreferidos().stream().map(pf -> {
+            UUID matId = (pf.getMaterial() != null) ? pf.getMaterial().getId() : null;
+            return new RequestPreferredMaterialResponse(
+                pf.getId(),
+                matId,
+                pf.getMaterialName(),
+                pf.getRazonPreferencia()
+            );
+        }).collect(Collectors.toList());
 
-        // Mapear grabaciones y archivos
-        if (s.getGrabacionesUrls() != null && !s.getGrabacionesUrls().isBlank()) {
-            resp.setGrabacionesUrls(List.of(s.getGrabacionesUrls().split(",")));
-        } else {
-            resp.setGrabacionesUrls(List.of());
-        }
-        if (s.getArchivosUrls() != null && !s.getArchivosUrls().isBlank()) {
-            resp.setArchivosUrls(List.of(s.getArchivosUrls().split(",")));
-        } else {
-            resp.setArchivosUrls(List.of());
-        }
+        List<String> grabacionesUrls = (s.getGrabacionesUrls() != null && !s.getGrabacionesUrls().isBlank()) 
+            ? List.of(s.getGrabacionesUrls().split(",")) 
+            : List.of();
 
-        return resp;
+        List<String> archivosUrls = (s.getArchivosUrls() != null && !s.getArchivosUrls().isBlank()) 
+            ? List.of(s.getArchivosUrls().split(",")) 
+            : List.of();
+
+        return new PurchaseRequestResponse(
+            s.getId(),
+            s.getClienteNombre(),
+            s.getClienteEmail(),
+            s.getClienteTelefono(),
+            productoId,
+            s.getProductoNombre(),
+            s.getIsKit(),
+            s.getIsCustom(),
+            s.getEstado(),
+            s.getMensaje(),
+            s.getDescripcionPersonalizacion(),
+            s.getMaterialesDeseados(),
+            s.getSolicitarExplicacion(),
+            s.getTipoEvento(),
+            s.getCantidadPersonas(),
+            kits,
+            customized,
+            personales,
+            preferidos,
+            conPresupuesto != null && conPresupuesto.contains(s.getId()),
+            grabacionesUrls,
+            archivosUrls,
+            s.getMotivoCancelacion(),
+            s.getCreatedAt(),
+            s.getUpdatedAt()
+        );
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", key = "#usuarioEmail"),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
     public PurchaseRequestResponse actualizarArchivos(UUID id, RequestFilesUpdateRequest req, String usuarioEmail) {
         PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
 
         // Validar acceso: creador de la solicitud o admin
-        boolean isAdmin = userRepository.findByEmail(usuarioEmail).isEmpty() && vendorRepository.findByEmail(usuarioEmail).isPresent();
-        if (!isAdmin && !solicitud.getUsuario().getEmail().equals(usuarioEmail)) {
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail).isEmpty() && vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
+        if (!isAdmin && !solicitud.getUsuario().getEmail().equalsIgnoreCase(usuarioEmail)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para actualizar esta solicitud.");
         }
 
-        if (req.getGrabacionesUrls() != null) {
-            solicitud.setGrabacionesUrls(String.join(",", req.getGrabacionesUrls()));
+        if (req.grabacionesUrls() != null) {
+            solicitud.setGrabacionesUrls(String.join(",", req.grabacionesUrls()));
         }
-        if (req.getArchivosUrls() != null) {
-            solicitud.setArchivosUrls(String.join(",", req.getArchivosUrls()));
+        if (req.archivosUrls() != null) {
+            solicitud.setArchivosUrls(String.join(",", req.archivosUrls()));
         }
 
         PurchaseRequest saved = purchaseRequestRepository.save(solicitud);
-        return toResponse(saved);
+        return toResponse(saved, loadPresupuestoIds());
+    }
+
+    @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
+    public void eliminar(UUID id, String usuarioEmail) {
+        PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
+
+        // Validar que la solicitud sea del usuario actual O que el usuario que ejecuta sea ADMIN o VENDEDOR
+        boolean isOwner = solicitud.getUsuario().getEmail().equalsIgnoreCase(usuarioEmail);
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail)
+                .map(u -> u.getRole().name().equals("ADMIN"))
+                .orElse(false);
+        boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
+
+        if (!isOwner && !isAdmin && !isVendor) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para cancelar esta solicitud.");
+        }
+
+        // Buscar si existe un presupuesto asociado y eliminarlo
+        budgetRepository.findBySolicitudId(id).ifPresent(budget -> {
+            budgetRepository.delete(budget);
+            budgetRepository.flush();
+        });
+
+        // Forzar eliminación física de la solicitud
+        purchaseRequestRepository.forceDelete(id);
+    }
+
+    @Override
+    @Caching(evict = {
+        @CacheEvict(value = "solicitudes", allEntries = true),
+        @CacheEvict(value = "solicitudes-todas", allEntries = true)
+    })
+    public PurchaseRequestResponse rechazar(UUID id, RejectRequest req, String usuarioEmail) {
+        PurchaseRequest solicitud = purchaseRequestRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + id));
+
+        // Validar que el usuario que ejecuta sea ADMIN o VENDEDOR
+        boolean isAdmin = userRepository.findByEmailIgnoreCase(usuarioEmail)
+                .map(u -> u.getRole().name().equals("ADMIN"))
+                .orElse(false);
+        boolean isVendor = vendorRepository.findByEmailIgnoreCase(usuarioEmail).isPresent();
+
+        if (!isAdmin && !isVendor) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para rechazar esta solicitud.");
+        }
+
+        solicitud.setEstado(EstadoSolicitud.RECHAZADO);
+        solicitud.setMotivoCancelacion(req.motivo());
+
+        PurchaseRequest saved = purchaseRequestRepository.save(solicitud);
+
+        // Cerrar la sala de chat
+        chatRoomRepository.findByRequestId(id).ifPresent(room -> {
+            room.setStatus(ChatRoomStatus.CLOSED);
+            chatRoomRepository.save(room);
+        });
+
+        return toResponse(saved, loadPresupuestoIds());
     }
 }

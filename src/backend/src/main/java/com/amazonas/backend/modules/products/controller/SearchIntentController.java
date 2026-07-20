@@ -25,7 +25,7 @@ public class SearchIntentController {
     public ResponseEntity<SearchIntentResponse> classifyIntent(
             @RequestBody @Validated SearchIntentRequest request
     ) {
-        SearchIntentResponse response = searchIntentService.classifyIntent(request.getQuery());
+        SearchIntentResponse response = searchIntentService.classifyIntent(request.query());
         return ResponseEntity.ok(response);
     }
 }

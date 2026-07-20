@@ -16,15 +16,23 @@ public class FileController {
 
     private final CloudinaryService cloudinaryService;
 
+    /**
+     * Sube un archivo a Cloudinary de manera síncrona.
+     *
+     * NOTA: El endpoint es síncrono (no CompletableFuture) para garantizar
+     * que el SecurityContext de Spring Security esté disponible durante toda
+     * la ejecución de la petición. El uso de CompletableFuture causaba 401
+     * porque el async dispatch creaba un nuevo contexto vacío sin autenticación.
+     */
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             String fileUrl = cloudinaryService.uploadFile(file);
-            return ResponseEntity.ok(Map.of("url", fileUrl));
+            return ResponseEntity.ok((Object) Map.of("url", fileUrl));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(400).body((Object) Map.of("error", e.getMessage()));
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body(Map.of("error", "Error al subir el archivo: " + e.getMessage()));
+            return ResponseEntity.status(500).body((Object) Map.of("error", "Error al subir el archivo: " + e.getMessage()));
         }
     }
 }

@@ -183,6 +183,12 @@
     padding-top: 34px;
   }
 
+  .footer-links button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
   .footer-bottom {
     grid-template-columns: 1fr;
     gap: 18px;

@@ -98,6 +98,12 @@
           </h2>
         </div>
         <div class="section-card-body">
+          @if (formError) {
+            <div style="background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-weight: 600; font-size: 13.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+              <span class="material-icons" style="font-size: 18px; color: #ef4444;">error</span>
+              <span>{{ formError }}</span>
+            </div>
+          }
           <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Nombre *</label>
@@ -199,12 +205,19 @@
         <div class="categories-list-wrapper">
           @for (group of getGroupedMaterials(); track group.key) {
             <div class="category-materials-block">
-              <div class="category-block-header">
-                <h3 class="category-block-title">{{ group.key }}</h3>
+              <div class="category-block-header" (click)="toggleCategory(group.key)" style="cursor: pointer; user-select: none;">
+                <div class="flex-between" style="gap: 8px; justify-content: flex-start; flex: 1;">
+                  <span class="material-icons text-slate-400" style="font-size: 20px; transition: transform 0.2s;" [style.transform]="isCategoryCollapsed(group.key) ? 'rotate(0deg)' : 'rotate(90deg)'">
+                    chevron_right
+                  </span>
+                  <h3 class="category-block-title">{{ group.key }}</h3>
+                </div>
                 <span class="category-block-badge">{{ group.value.length }} materiales</span>
               </div>
-              <div class="table-responsive">
-                <table class="data-table">
+              
+              @if (!isCategoryCollapsed(group.key)) {
+                <div class="table-responsive">
+                  <table class="data-table">
                   <thead>
                     <tr>
                       <th>Material</th>
@@ -259,6 +272,7 @@
                   </tbody>
                 </table>
               </div>
+            }
             </div>
           }
         </div>

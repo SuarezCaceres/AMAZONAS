@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, OnInit, inject } from '@angular/core';
 import { VendedorTab } from '../../navbar-vendedor.component';
 import { MaquetaService } from '../../../../services/maqueta.service';
@@ -168,30 +168,31 @@ export class DashboardComponent implements OnInit {
       materials: this.materialService.getAllMaterials().pipe(
         catchError(() => of([]))
       ),
-      requests: this.purchaseRequestService.listarTodas().pipe(
-        catchError(() => of([]))
+      requestsPage: this.purchaseRequestService.listarTodas(undefined, true, 0, 1000).pipe(
+        catchError(() => of({ content: [] }))
       )
     }).subscribe({
-      next: ({ productsPage, materials, requests }) => {
+      next: ({ productsPage, materials, requestsPage }) => {
         const products = productsPage.content || [];
+        const requests = requestsPage.content || [];
         
         // 1. Solicitudes Pendientes
-        const pendientes = requests.filter(r => r.estado === 'PENDIENTE').length;
+        const pendientes = requests.filter((r: any) => r.estado === 'PENDIENTE').length;
         
         // 2. Total Productos
         const totalProducts = productsPage.totalElements || products.length;
         
         // 3. Stock Bajo (< 5 unidades)
-        const stockBajo = products.filter(p => p.stock < 5).length;
+        const stockBajo = products.filter((p: any) => p.stock < 5).length;
         
         // 4. Materiales Registrados
         const totalMaterials = materials.length;
         
         // 5. Presupuestos Guardados (Solicitudes que tienen presupuesto asociado)
-        const presupuestos = requests.filter(r => r.tienePresupuesto).length;
+        const presupuestos = requests.filter((r: any) => r.tienePresupuesto).length;
         
         // 6. Ventas Realizadas (Solicitudes completadas)
-        const completados = requests.filter(r => r.estado === 'COMPLETADO').length;
+        const completados = requests.filter((r: any) => r.estado === 'COMPLETADO').length;
 
         // Actualizar los valores en statCards
         this.statCards = this.statCards.map(card => {

@@ -25,6 +25,7 @@
   display: block;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   box-sizing: border-box;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
@@ -34,6 +35,11 @@
   box-sizing: border-box;
   background: var(--clr-bg);
   min-height: 100%;
+}
+
+.presupuestos-page,
+.presupuestos-page * {
+  box-sizing: border-box;
 }
 
 .page-header {
@@ -346,6 +352,12 @@
   font-weight: 600;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 .form-group {
   margin-bottom: 16px;
 }
@@ -366,6 +378,7 @@
 .form-group textarea,
 .form-group select {
   width: 100%;
+  box-sizing: border-box;
   padding: 12px 14px;
   border: 1.5px solid var(--clr-border);
   border-radius: var(--radius-md);
@@ -804,19 +817,1082 @@
   background: #047857;
 }
 
-.btn-guardar span {
-  font-size: 18px;
+.kit-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-@media (max-width: 1024px) {
+/* ══ KIT POR MAQUETA — CLASES DE LAYOUT ══ */
+
+/* Cabecera */
+.kit-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kit-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kit-header-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kit-header-subtitle {
+  font-size: 11px;
+  color: #64748b;
+  display: block;
+  margin-top: 2px;
+}
+
+.kit-btn-agregar {
+  padding: 6px 12px;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 8px;
+  background: #f5f3ff;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Formulario de kit */
+.kit-form-wrapper {
+  background: #f5f3ff;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.kit-form-title {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.kit-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kit-desc-field {
+  grid-column: span 2;
+}
+
+.kit-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.kit-field-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12.5px;
+  background: #ffffff;
+  outline: none;
+  font-family: inherit;
+}
+
+.kit-field-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12.5px;
+  outline: none;
+  font-family: inherit;
+}
+
+.kit-total-display {
+  padding: 8px 12px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #065f46;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+/* Subformulario de materiales */
+.kit-materiales-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.kit-materiales-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kit-materiales-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4c1d95;
+}
+
+.kit-btn-add-material {
+  padding: 4px 10px;
+  border: 1px solid #c084fc;
+  border-radius: 6px;
+  background: #fdf4ff;
+  color: #a21caf;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.kit-materiales-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Fila de cada material: el elemento más crítico en mobile */
+.kit-material-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.kit-material-select {
+  flex: 2 1 0;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  background: #ffffff;
+  outline: none;
+  font-family: inherit;
+  max-width: 100%;
+}
+
+.kit-material-cantidad {
+  flex: 0 0 70px;
+  width: 70px;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.kit-material-btn-delete {
+  flex-shrink: 0;
+  padding: 6px;
+  border: none;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #ef4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kit-materiales-empty {
+  text-align: center;
+  padding: 12px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 6px;
+}
+
+/* Footer del formulario */
+.kit-form-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.kit-btn-cancelar {
+  padding: 6px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.kit-btn-guardar {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #7c3aed;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Selector de kit predefinido */
+.kit-selector-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.kit-selector-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.kit-btn-edit {
+  padding: 10px;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 8px;
+  background: #f5f3ff;
+  color: #7c3aed;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.kit-btn-eliminar {
+  padding: 10px;
+  border: 1.5px solid #fee2e2;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #ef4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  outline: none;
+  flex-shrink: 0;
+}
+
+/* Banner de kit cargado */
+.kit-loaded-banner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f5f3ff;
+  border-radius: 8px;
+  border: 1px solid #ddd6fe;
+  font-size: 12px;
+  color: #6d28d9;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+  word-break: break-word;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   RESPONSIVE DESIGN — PRESUPUESTOS COMPONENT
+   Estrategia: Mobile-first, sin overflow-x:hidden como hack
+   Breakpoints: 980px | 768px | 640px | 480px | 380px
+   ============================================================ */
+
+/* ── 980px: grid de 2 columnas → 1 columna, botón flotante activo ── */
+@media (max-width: 980px) {
   .content-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .summary-column {
     position: static;
+    display: none;
+  }
+
+  .summary-column.mobile-open {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  .summary-column.mobile-open .ticket-receipt-card {
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .floating-summary-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999;
+    background: #00a982;
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0, 169, 130, 0.35);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .floating-summary-btn:hover {
+    background: #009371;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 169, 130, 0.45);
+  }
+
+  .floating-summary-btn:active {
+    transform: translateY(0);
+  }
+
+  .close-mobile-summary-btn {
+    display: block !important;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    line-height: 32px;
+    text-align: center;
+    color: #64748b;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+  }
+
+  .close-mobile-summary-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
   }
 }
+
+/* ── 768px: ajustes generales tablet y móvil ── */
+@media (max-width: 768px) {
+  .presupuestos-page {
+    padding: 16px 12px 100px;
+    box-sizing: border-box;
+  }
+
+  /* Header: apila info y acciones */
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .header-info h1 {
+    font-size: clamp(18px, 5vw, 26px);
+  }
+
+  .header-title-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .header-actions button,
+  .btn-nuevo,
+  .btn-cancelar {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  /* Botón flotante: ancho completo pegado al fondo */
+  .floating-summary-btn {
+    width: calc(100% - 24px);
+    left: 12px;
+    right: 12px;
+    bottom: 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    padding: 14px 16px;
+  }
+
+  /* Historial: grid auto-fill con mínimo responsivo */
+  .history-list-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+    gap: 14px;
+  }
+
+  /* Tarjeta de historial */
+  .premium-history-item-card {
+    overflow: visible;
+  }
+
+  .card-top-row {
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .badge-group {
+    flex-wrap: wrap;
+  }
+
+  .card-footer-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .btn-load-budget {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Contenido del historial: filtro y header */
+  .history-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Canal de venta: una columna */
+  .btn-canal-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .btn-canal-option {
+    width: 100%;
+    padding: 14px 16px;
+  }
+
+  /* Formulario: filas de 2 col → 1 col */
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  /* Materiales: tabla oculta, items en modo tarjeta */
+  .materiales-table-header {
+    display: none !important;
+  }
+
+  .material-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 14px !important;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    margin-bottom: 8px;
+  }
+
+  .material-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  /* Cada columna de la tabla muestra su etiqueta como bloque */
+  .mat-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-align: left;
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .mat-col::before {
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    min-width: 80px;
+  }
+
+  .mat-col:nth-child(2)::before { content: 'Cant:'; }
+  .mat-col:nth-child(3)::before { content: 'P. Unit:'; }
+  .mat-col:nth-child(4)::before { content: 'Total:'; }
+
+  /* Material actions (botón eliminar) */
+  .material-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-top: 4px;
+    border-top: 1px dashed #f1f5f9;
+  }
+
+  /* Material nombre: ocupa todo el ancho */
+  .material-nombre {
+    font-size: 14px;
+    font-weight: 700;
+    width: 100%;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  /* Catálogo de maquetas: grid auto-fill */
+  .catalog-maquetas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(120px, 45%), 1fr)) !important;
+  }
+
+  /* Segment control: mantiene fila pero reduce padding */
+  .segment-btn {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  /* Tabs */
+  .materials-tabs-nav {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  /* Datos del cliente en modo lectura */
+  .cliente-datos {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Servicio explicacion info */
+  .explicacion-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Adelanto header */
+  .adelanto-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Selector de material */
+  .material-selector {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .material-selector select {
+    flex: 1 1 100%;
+  }
+
+  /* h2 y h3 más pequeños */
+  .presupuestos-page h2 {
+    font-size: clamp(14px, 4vw, 20px);
+  }
+
+  .presupuestos-page h3 {
+    font-size: clamp(13px, 3.5vw, 15px);
+  }
+
+  /* ── Kit por Maqueta: 768px ── */
+  .kit-header-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .kit-btn-agregar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Selector de kit: select ocupa toda la fila y botones se alinean debajo */
+  .kit-selector-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .kit-selector-select {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .kit-btn-edit,
+  .kit-btn-eliminar {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* ── Maqueta Personalizada: 768px ── */
+  .personalizada-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .personalizada-nombre-input,
+  .autocomplete-input-wrapper input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Segment control: reduce font en tablet */
+  .segment-btn {
+    font-size: 11px;
+    padding: 9px 6px;
+  }
+}
+
+/* ── 640px: ajustes adicionales para pantallas pequeñas ── */
+@media (max-width: 640px) {
+  .presupuestos-page {
+    padding: 14px 10px 100px;
+  }
+
+  /* Historial: siempre 1 columna */
+  .history-list-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* history-header: apila título y botón */
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* El expand icon no flota a la derecha */
+  .expand-icon {
+    align-self: flex-start;
+  }
+
+  /* Filtro fecha: apila label e input */
+  .history-filter-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .history-filter-row input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* form-card padding reducido */
+  .form-card {
+    padding: 16px;
+  }
+
+  /* Kit form: 2 columnas → 1 columna */
+  .kit-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Kit desc field: span 2 no tiene sentido en 1 columna */
+  .kit-desc-field {
+    grid-column: span 1 !important;
+  }
+
+  /* Botones de kit: apila en columna */
+  .kit-builder-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── Maqueta Personalizada: 640px ── */
+  /* Autocomplete title: permite salto de línea en mobile */
+  .autocomplete-item-title {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .autocomplete-dropdown {
+    max-height: 180px;
+  }
+
+  .autocomplete-item {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  /* segment-control: 3 botones → se permite wrap en 640px */
+  .segment-control {
+    flex-wrap: wrap;
+  }
+
+  .segment-btn {
+    flex: 1 1 45%;
+    min-width: 0;
+  }
+
+  /* ── Kit por Maqueta: 640px ── */
+  .kit-form-wrapper {
+    padding: 14px 12px;
+  }
+
+  .kit-materiales-container {
+    padding: 10px;
+  }
+
+  /* Las filas de material pasan a layout apilado */
+  .kit-materiales-list {
+    max-height: none; /* deja crecer en vertical */
+  }
+
+  .kit-material-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Select de material ocupa todo el ancho */
+  .kit-material-select {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Input de cantidad: crece para llenar el espacio junto al botón delete */
+  .kit-material-cantidad {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+  }
+
+  .kit-material-btn-delete {
+    align-self: flex-end;
+  }
+
+  /* Botones del formulario kit: columna */
+  .kit-form-footer {
+    flex-direction: column;
+  }
+
+  .kit-btn-cancelar,
+  .kit-btn-guardar {
+    width: 100%;
+    text-align: center;
+    padding: 10px 14px;
+  }
+}
+
+/* ── 480px: Mobile M — ajustes específicos ── */
+@media (max-width: 480px) {
+  /* segment-control: 3 botones → columna */
+  .segment-control {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .segment-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 12px;
+    justify-content: center;
+  }
+
+  /* material-selector: columna */
+  .material-selector {
+    flex-direction: column;
+  }
+
+  .cantidad-input {
+    width: 100% !important;
+    box-sizing: border-box;
+    text-align: left;
+  }
+
+  .btn-add {
+    width: 100% !important;
+    border-radius: 8px;
+  }
+
+  /* Maqueta catalog: 2 columnas pequeñas o 1 */
+  .catalog-maquetas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(110px, 48%), 1fr)) !important;
+  }
+
+  /* btn-canal: 1 columna */
+  .btn-canal-container {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* adelanto-monto: apila en columna */
+  .adelanto-monto {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* ticket receipt total: font más pequeño */
+  .ticket-receipt-total .value {
+    font-size: 22px;
+  }
+
+  /* modal container */
+  .modal-container {
+    max-width: 100%;
+  }
+
+  .qr-image {
+    width: 180px;
+    height: 180px;
+  }
+}
+
+/* ── 480px: Kit por Maqueta — ajustes adicionales ── */
+@media (max-width: 480px) {
+  /* Botón agregar material: ancho completo */
+  .kit-btn-add-material {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .kit-materiales-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* ── Maqueta Personalizada: 480px ── */
+  /* segment-control: 3 botones → columna completa */
+  .segment-control {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .segment-btn {
+    width: 100%;
+    flex: none;
+    padding: 10px;
+    font-size: 12px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Autocomplete: alinear top en mobile para que el ícono no desplace el texto */
+  .autocomplete-item {
+    align-items: flex-start;
+  }
+
+  .autocomplete-thumb,
+  .autocomplete-item .fallback-img {
+    margin-top: 2px;
+  }
+}
+
+/* ── 380px: Mobile S — ajustes finos ── */
+@media (max-width: 380px) {
+  .presupuestos-page {
+    padding: 12px 8px 100px;
+  }
+
+  .form-card {
+    padding: 14px 12px;
+  }
+
+  .header-info h1 {
+    font-size: 16px;
+  }
+
+  /* catalog maquetas: 1 columna en 320px */
+  .catalog-maquetas-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Kit por Maqueta: ajuste fino Mobile S */
+  .kit-form-wrapper {
+    padding: 12px 10px;
+  }
+
+  .kit-form-grid {
+    gap: 8px;
+  }
+
+  .kit-field-select,
+  .kit-field-input {
+    font-size: 12px;
+  }
+
+  .kit-header-label {
+    font-size: 12px;
+  }
+
+  /* ── Maqueta Personalizada: 380px (Mobile S) ── */
+  .personalizada-label {
+    font-size: 11px;
+  }
+
+  .form-group-input {
+    font-size: 12px;
+  }
+
+  /* Autocomplete: padding mínimo para no desperdiciar espacio */
+  .autocomplete-item {
+    padding: 7px 8px;
+    gap: 6px;
+  }
+
+  .autocomplete-item-title {
+    font-size: 11px;
+  }
+
+  .autocomplete-item-meta {
+    font-size: 9px;
+  }
+
+  /* Segment control: padding mínimo en Mobile S */
+  .segment-control {
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .segment-btn {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+
+  .premium-history-item-card {
+    padding: 14px 12px;
+  }
+
+  /* badge group: apila verticalmente */
+  .badge-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* card footer: apila precio y botón */
+  .card-footer-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-load-budget {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ticket receipt content: menos padding */
+  .ticket-receipt-content {
+    padding: 16px 14px;
+  }
+
+  .ticket-receipt-total .value {
+    font-size: 20px;
+  }
+
+  /* Botones del modal */
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-modal-cerrar,
+  .btn-modal-imprimir {
+    width: 100%;
+  }
+
+  /* floating btn: menos padding en S */
+  .floating-summary-btn {
+    font-size: 12px;
+    padding: 12px 10px;
+  }
+}
+
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 
 @media (max-width: 768px) {
   .presupuestos-page {
@@ -909,6 +1985,8 @@
 .solicitud-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -925,8 +2003,19 @@
 .card-icon.green { color: #059669; }
 .card-icon.blue  { color: #2563eb; }
 
-.solicitud-nombre { margin: 0 0 6px; font-size: 18px; font-weight: 700; color: #1f2937; }
-.solicitud-desc   { margin: 0; font-size: 13px; color: #059669; }
+.solicitud-nombre { 
+  margin: 0 0 6px; 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #1f2937; 
+  word-break: break-word;
+}
+.solicitud-desc   { 
+  margin: 0; 
+  font-size: 13px; 
+  color: #059669; 
+  word-break: break-word;
+}
 
 .cliente-info-card {
   border-left: 4px solid #2563eb;
@@ -940,6 +2029,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 14px;
 }
 
@@ -951,11 +2041,17 @@
   letter-spacing: 0.04em;
 }
 
-.cliente-datos { display: flex; gap: 24px; flex-wrap: wrap; }
+.cliente-datos { display: flex; gap: 12px 24px; flex-wrap: wrap; }
 
 .dato-item { display: flex; flex-direction: column; gap: 2px; }
 .dato-label { font-size: 11px; color: #6b7280; font-weight: 500; text-transform: uppercase; }
-.dato-val   { font-size: 13px; color: #1f2937; font-weight: 600; }
+.dato-val   { 
+  font-size: 13px; 
+  color: #1f2937; 
+  font-weight: 600; 
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
 .dato-val.link { color: #2563eb; }
 
 .card-header-row {
@@ -1852,9 +2948,69 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
+/* ══ MAQUETA PERSONALIZADA — CLASES DE LAYOUT ══ */
+
+.personalizada-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.personalizada-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  margin-bottom: 6px;
+  display: block;
+  word-break: break-word;
+}
+
+.personalizada-nombre-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+/* Banner de maqueta seleccionada (catálogo) */
+.maqueta-selected-banner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #ecfdf5;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+  font-size: 12px;
+  color: #166534;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+  word-break: break-word;
+  box-sizing: border-box;
+}
+
+.maqueta-selected-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Selector de kit: párrafo de ayuda */
+.kit-selector-help {
+  font-size: 11.5px;
+  color: var(--clr-text-muted);
+  margin: 6px 0 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
 /* UI de Autocompletes */
 .autocomplete-input-wrapper {
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .autocomplete-dropdown {
@@ -1905,6 +3061,36 @@
   justify-content: center;
   flex-shrink: 0;
   font-size: 16px;
+}
+
+/* Clases de sub-elementos del autocomplete (reemplazan inline styles) */
+.autocomplete-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.autocomplete-item-info {
+  flex: 1;
+  min-width: 0; /* permite que el texto se trunque o envuelva */
+}
+
+.autocomplete-item-title {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--clr-text);
+  /* NO white-space: nowrap — en mobile el texto debe envolver */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* en desktop trunca con ellipsis */
+}
+
+.autocomplete-item-meta {
+  font-size: 10px;
+  color: var(--clr-text-muted);
+  margin-top: 2px;
 }
 
 /* Tarjeta y UI de Kit Builder */
@@ -2169,6 +3355,849 @@
     font-size: 9px;
     font-weight: 600;
     margin-top: 2px;
+}/* =========================================================================
+   ESTILOS DE BOTÓN FLOTANTE Y MODAL DE RESUMEN EN MÓVIL
+   ========================================================================= */
+.floating-summary-btn {
+  display: none;
 }
 
+.close-mobile-summary-btn {
+  display: none;
+}
 
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ========================================== */
+/* RESPONSIVE DESIGN MEDIA QUERIES (SKILL)    */
+/* ========================================== */
+
+@media (max-width: 980px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .floating-summary-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999;
+    background: #00a982;
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0, 169, 130, 0.35);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .floating-summary-btn:hover {
+    background: #009371;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0, 169, 130, 0.45);
+  }
+
+  .floating-summary-btn:active {
+    transform: translateY(0);
+  }
+
+  .summary-column {
+    display: none;
+  }
+
+  .summary-column.mobile-open {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  .summary-column.mobile-open .ticket-receipt-card {
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .close-mobile-summary-btn {
+    display: block !important;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    line-height: 32px;
+    text-align: center;
+    color: #64748b;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+  }
+
+  .close-mobile-summary-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+}
+
+@media (max-width: 640px) {
+  .presupuestos-page {
+    padding: 20px 14px 40px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-nuevo {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .material-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .cantidad-input {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  .btn-add {
+    width: 100% !important;
+  }
+  .btn-canal-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-canal-option {
+    width: 100% !important;
+  }
+  .explicacion-info {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .segment-control {
+    flex-direction: column;
+  }
+  .segment-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .adelanto-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .materiales-table-header {
+    display: none !important;
+  }
+  
+  .material-item {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    padding: 12px !important;
+  }
+  
+  .material-nombre {
+    width: 100% !important;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
+    font-weight: 700 !important;
+    display: block !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Box sizing correction to prevent any horizontal overflow from inputs, selects, and cards with padding */
+  .presupuestos-page * {
+    box-sizing: border-box !important;
+  }
+
+  /* High priority rule to stack all form-rows in presupuestos component */
+  .presupuestos-page .form-row {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .presupuestos-page {
+    padding: 16px 12px 100px !important; /* Bottom padding prevents layout overlap with floating summary button */
+  }
+
+  .presupuestos-page h2 {
+    font-size: 20px !important;
+  }
+
+  .presupuestos-page h3 {
+    font-size: 15px !important;
+  }
+
+  /* Maqueta catalog: Auto fit cards on tablet instead of forcing 1 column too early */
+  .catalog-maquetas-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  /* Nuevo Presupuesto - Kit form grid stacking for Tablet/Mobile */
+  .kit-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Nuevo Presupuesto - Kit material row wrapping */
+  .kit-material-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .kit-material-select {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .floating-summary-btn {
+    width: calc(100% - 24px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    font-size: 13px !important;
+    padding: 12px !important;
+  }
+
+  .sales-channels {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Responsive fixes for history grid and header buttons */
+  .history-list-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+  }
+
+  .header-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .header-actions button {
+    width: 100% !important;
+  }
+}
+
+/* ===============================================================
+   CALCULADORA DE PRESUPUESTOS Y EDICION - RESPONSIVE
+   Secciones: Header, Canal Venta, Info Cliente, Materiales, 
+              Costos, Adelanto, Servicio Explicacion y Modales
+=============================================================== */
+
+/* 640px: Mobile L */
+@media (max-width: 640px) {
+  /* La pagina principal */
+  .presupuestos-page {
+    padding: 14px 10px 100px !important;
+  }
+
+  /* Encabezado de presupuesto */
+  .header-title-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .header-info h1 {
+    font-size: 20px !important;
+  }
+
+  .header-info p {
+    font-size: 12px !important;
+    word-break: break-word;
+  }
+
+  /* Acciones del header: columna completa */
+  .header-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .header-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+  }
+
+  /* Card: reducir padding */
+  .form-card,
+  .solicitud-card,
+  .cliente-info-card {
+    padding: 14px 12px !important;
+  }
+
+  /* Canal de Venta: Apilar opciones verticalmente */
+  .btn-canal-container {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .btn-canal-option {
+    width: 100% !important;
+    min-height: 60px !important;
+  }
+
+  /* Cabecera de la solicitud / Maqueta Solicitada */
+  .solicitud-header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .solicitud-header span[style*="margin-left: auto"],
+  .solicitud-header .badge {
+    margin-left: 0 !important;
+    margin-top: 4px !important;
+  }
+
+  .solicitud-nombre {
+    font-size: 16px !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+  }
+
+  .solicitud-desc {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    word-break: break-word !important;
+  }
+
+  /* Informacion del Cliente */
+  .cliente-info-header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .cliente-datos {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .dato-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+  }
+
+  .dato-label {
+    margin-bottom: 2px !important;
+  }
+
+  .dato-val {
+    font-size: 12.5px !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+  }
+
+  /* Saved banner: texto se adapta */
+  .saved-banner {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 10px 12px;
+  }
+
+  /* Botones de accion del presupuesto guardado: asegurar ancho */
+  .btn-editar,
+  .btn-enviar,
+  .btn-guardar,
+  .btn-adelanto-action {
+    width: 100% !important;
+    font-size: 13px !important;
+  }
+
+  /* summary-hint */
+  .summary-hint {
+    font-size: 10.5px !important;
+  }
+
+  /* Formularios: Asegurar 1 columna en todos los form-row */
+  .presupuestos-page .form-row {
+    grid-template-columns: 1fr !important;
+    display: grid !important;
+    gap: 14px !important;
+  }
+
+  /* Materiales Requeridos: Material Selector */
+  .material-selector {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .material-selector .autocomplete-input-wrapper {
+    width: 100% !important;
+  }
+
+  .material-selector .cantidad-input {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .material-selector .btn-add {
+    width: 100% !important;
+  }
+
+  /* Materiales: tabla pasa a cards */
+  .materiales-table-header {
+    display: none !important;
+  }
+
+  .material-item {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .material-nombre {
+    width: 100% !important;
+    font-weight: 700 !important;
+    display: block !important;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
+    margin-bottom: 2px;
+  }
+
+  .mat-col {
+    flex: 1 1 auto;
+    font-size: 13px !important;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Materiales Solicitados por el Cliente */
+  .solicited-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .solicited-info {
+    width: 100% !important;
+  }
+
+  .solicited-item > div:last-child {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+
+  .btn-registrar-material,
+  .btn-agregar-solicitado {
+    flex: 1 !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .desired-text {
+    padding: 10px 12px !important;
+    font-size: 12px !important;
+  }
+
+  /* Costos Adicionales y Adelanto: Apilar */
+  .adelanto-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .adelanto-monto {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  /* Servicio de Explicacion */
+  .explicacion-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .explicacion-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .explicacion-value {
+    word-break: break-word !important;
+  }
+
+  /* Modal: pantalla completa en mobile */
+  .modal-backdrop {
+    padding: 10px !important;
+  }
+
+  .modal-container {
+    max-width: 100% !important;
+    max-height: 94vh !important;
+    border-radius: 10px !important;
+  }
+
+  .modal-body {
+    padding: 14px !important;
+  }
+
+  .modal-footer {
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 14px !important;
+  }
+
+  .btn-modal-cerrar,
+  .btn-modal-imprimir {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Ticket receipt card cuando esta en modal */
+  .ticket-receipt-card {
+    border-radius: 10px !important;
+  }
+}
+
+/* 480px: Mobile M */
+@media (max-width: 480px) {
+  .presupuestos-page {
+    padding: 12px 8px 100px !important;
+  }
+
+  .header-info h1 {
+    font-size: 18px !important;
+  }
+
+  /* form-card: minimo padding */
+  .form-card,
+  .cliente-info-card,
+  .solicitud-card {
+    padding: 12px 10px !important;
+  }
+
+  /* Textos de cabeceras de tarjeta */
+  .card-title {
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+  }
+
+  .solicitud-nombre {
+    font-size: 15px !important;
+  }
+
+  .solicitud-desc {
+    font-size: 11.5px !important;
+  }
+
+  /* Mode badge en edicion */
+  .mode-badge.editing {
+    font-size: 9px !important;
+  }
+
+  /* Saved label: reduce texto */
+  .saved-label {
+    font-size: 12px !important;
+  }
+
+  .saved-total {
+    font-size: 11px !important;
+  }
+
+  /* Canal de Venta */
+  .btn-canal-option {
+    padding: 12px 10px !important;
+  }
+
+  /* Botones de cobro con inline styles */
+  .presupuestos-page button[style*="background:#d97706"],
+  .presupuestos-page button[style*="background:#2563eb"],
+  .presupuestos-page button[style*="background:#059669"] {
+    font-size: 12px !important;
+    padding: 12px !important;
+  }
+
+  /* Ajustar textos de inputs para legibilidad sin zoom en iOS */
+  .form-group input,
+  .form-group select {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+  }
+
+  .dato-val {
+    font-size: 12px !important;
+  }
+
+  /* Boleta total */
+  .ticket-receipt-total .value {
+    font-size: 20px !important;
+  }
+
+  .ticket-receipt-total .label {
+    font-size: 11px !important;
+  }
+
+  /* Items del recibo */
+  .receipt-item-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .receipt-item-name {
+    font-size: 11.5px !important;
+  }
+
+  /* Materiales Solicitados */
+  .solicited-item {
+    padding: 10px 10px !important;
+  }
+  
+  .solicited-nombre {
+    font-size: 13px !important;
+  }
+
+  .btn-registrar-material,
+  .btn-agregar-solicitado {
+    font-size: 12px !important;
+    padding: 8px 10px !important;
+  }
+
+  /* Servicio Explicacion */
+  .explicacion-label {
+    font-size: 12px !important;
+  }
+}
+
+/* 380px: Mobile S */
+@media (max-width: 380px) {
+  .presupuestos-page {
+    padding: 10px 8px 100px !important;
+  }
+
+  .header-info h1 {
+    font-size: 16px !important;
+    line-height: 1.2 !important;
+  }
+
+  .header-info p {
+    font-size: 11px !important;
+  }
+
+  /* Tarjetas al minimo padding */
+  .form-card,
+  .cliente-info-card,
+  .solicitud-card {
+    padding: 10px 8px !important;
+  }
+
+  /* Reducir aun mas tipografia para que no desborde */
+  .card-title {
+    font-size: 13px !important;
+  }
+
+  .solicitud-nombre {
+    font-size: 14px !important;
+  }
+
+  .solicitud-desc {
+    font-size: 11px !important;
+  }
+
+  /* Canal badges */
+  .badge {
+    font-size: 9px !important;
+    padding: 2px 6px !important;
+  }
+
+  .btn-canal-option div div:first-child {
+    font-size: 13px !important;
+  }
+
+  .opt-desc {
+    font-size: 10px !important;
+  }
+
+  /* Botones accion: padding minimo */
+  .btn-editar,
+  .btn-enviar,
+  .btn-guardar,
+  .btn-cancelar {
+    height: 38px !important;
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Floating summary button */
+  .floating-summary-btn {
+    font-size: 11px !important;
+    padding: 11px 8px !important;
+    width: calc(100% - 16px) !important;
+    left: 8px !important;
+    right: 8px !important;
+  }
+
+  /* Modal */
+  .modal-header h3 {
+    font-size: 14px !important;
+  }
+
+  .modal-body {
+    padding: 12px 10px !important;
+  }
+
+  /* Ticket receipt */
+  .ticket-receipt-content {
+    padding: 12px 10px !important;
+  }
+
+  .ticket-receipt-total .value {
+    font-size: 18px !important;
+  }
+
+  /* Botones del material solicitado se apilan si no caben */
+  .solicited-item > div:last-child {
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .btn-registrar-material,
+  .btn-agregar-solicitado {
+    width: 100% !important;
+  }
+
+  /* Toggle switches */
+  .toggle-label {
+    font-size: 12px !important;
+  }
+
+  /* Mensajes de advertencia (Adelanto) */
+  .adelanto-warning {
+    padding: 10px !important;
+    gap: 8px !important;
+  }
+
+  .warning-text strong {
+    font-size: 12px !important;
+  }
+
+  .warning-text p {
+    font-size: 11px !important;
+  }
+}
+
+/* ============================================================
+   TOGGLE SWITCH SLIDER ANIMATION (Requiere Adelanto / Incluir Servicio)
+   ============================================================ */
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  flex-shrink: 0;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+}
+
+/* Estado Activo (Checked): El círculo se desliza 20px a la derecha */
+.toggle-input:checked + .toggle-track {
+  background-color: #10b981;
+}
+
+.toggle-input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(20px);
+}
+
+.toggle-input:disabled + .toggle-track {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -58,7 +58,7 @@
     @if (mostrarHistorial) {
       <div class="history-content" style="margin-top: 16px;">
         <!-- Filtro por Fecha -->
-        <div class="history-filter-row" style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; width: max-content;">
+        <div class="history-filter-row" style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; width: 100%; max-width: 100%; box-sizing: border-box; flex-wrap: wrap;">
           <label for="filtroFecha" style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px;">
             <span class="material-icons" style="font-size: 16px; color: #7c3aed;">calendar_today</span>
             Filtrar por Fecha:
@@ -158,6 +158,12 @@
       </div>
     }
   </div>
+
+  <!-- Botón flotante para ver resumen en móviles -->
+  <button type="button" class="floating-summary-btn" (click)="toggleMobileSummary()">
+    <span class="material-icons" style="font-size: 20px;">receipt_long</span>
+    <span>Ver Resumen (S/ {{ total.toFixed(2) }})</span>
+  </button>
 
   <div class="content-grid">
 
@@ -278,8 +284,8 @@
               </div>
             }
             @if (selectedMaquetaId || solicitudId) {
-              <div style="margin-top: 10px; padding: 10px 14px; background: #ecfdf5; border-radius: 8px; border: 1px solid #bbf7d0; font-size: 12px; color: #166534; display: flex; align-items: center; gap: 8px;">
-                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; flex-shrink: 0;" fill="none" stroke="currentColor" stroke-width="2">
+              <div class="maqueta-selected-banner">
+                <svg viewBox="0 0 24 24" class="maqueta-selected-icon" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                   <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
@@ -290,18 +296,18 @@
 
           @if (currentMaquetaTipo === 'kit') {
             <!-- Cabecera de Kits por Maqueta -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; gap: 10px;">
-              <div>
-                <label style="font-size: 13px; font-weight: 700; color: #7c3aed; margin: 0; display: flex; align-items: center; gap: 6px;">
+            <div class="kit-header-row">
+              <div class="kit-header-info">
+                <label class="kit-header-label">
                   <span class="material-icons" style="font-size: 18px;">inventory</span>
                   Gestión de Kits por Maqueta
                 </label>
-                <span style="font-size: 11px; color: #64748b;">Define o selecciona kits de materiales recomendados</span>
+                <span class="kit-header-subtitle">Define o selecciona kits de materiales recomendados</span>
               </div>
               <button
                 type="button"
                 (click)="isAddingKit = true; editingKitId = null; kitFormData = { maquetaId: '', descripcion: '' }; kitMaterialesForm = []"
-                style="padding: 6px 12px; border: 1.5px solid #ddd6fe; border-radius: 8px; background: #f5f3ff; color: #7c3aed; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; font-family: inherit;"
+                class="kit-btn-agregar"
               >
                 <span class="material-icons" style="font-size: 15px;">add</span>
                 Agregar Kit
@@ -310,16 +316,16 @@
 
             <!-- Formulario de Agregar/Editar Kit (Solo visible si está agregando o editando) -->
             @if (isAddingKit || editingKitId) {
-              <div style="background: #f5f3ff; border: 1.5px solid #ddd6fe; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
-                <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 14px; font-weight: 700; color: #6d28d9;">
+              <div class="kit-form-wrapper">
+                <h3 class="kit-form-title">
                   {{ isAddingKit ? 'Crear Nuevo Kit de Materiales' : 'Editar Kit de Materiales' }}
                 </h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Seleccionar Maqueta *</label>
+                <div class="kit-form-grid">
+                  <div class="form-group kit-form-field">
+                    <label class="kit-field-label">Seleccionar Maqueta *</label>
                     <select
                       [(ngModel)]="kitFormData.maquetaId"
-                      style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; background: #ffffff; outline: none; font-family: inherit;"
+                      class="kit-field-select"
                     >
                       <option value="">-- Seleccionar maqueta --</option>
                       @for (prod of catalogMaquetas; track prod.id) {
@@ -327,32 +333,32 @@
                       }
                     </select>
                   </div>
-                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Total del Kit (Autocalculado)</label>
-                    <div style="padding: 8px 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 13px; font-weight: 700; color: #065f46; min-height: 38px; display: flex; align-items: center; gap: 4px;">
+                  <div class="form-group kit-form-field">
+                    <label class="kit-field-label">Total del Kit (Autocalculado)</label>
+                    <div class="kit-total-display">
                       <span class="material-icons" style="font-size:15px;">calculate</span>
                       S/ {{ calcularTotalKit(kitMaterialesForm) | number:'1.2-2' }}
                     </div>
                   </div>
-                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px; grid-column: span 2;">
-                    <label style="font-size: 11px; font-weight: 600; color: #475569;">Descripción del Kit (Opcional)</label>
+                  <div class="form-group kit-form-field kit-desc-field">
+                    <label class="kit-field-label">Descripción del Kit (Opcional)</label>
                     <input
                       type="text"
                       [(ngModel)]="kitFormData.descripcion"
                       placeholder="Ej: Incluye base de madera, planchas de acrílico y pegamento rápido"
-                      style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; outline: none; font-family: inherit;"
+                      class="kit-field-input"
                     />
                   </div>
                 </div>
 
                 <!-- Subformulario de Materiales del Kit -->
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #4c1d95;">Materiales del Kit</span>
+                <div class="kit-materiales-container">
+                  <div class="kit-materiales-header">
+                    <span class="kit-materiales-title">Materiales del Kit</span>
                     <button
                       type="button"
                       (click)="agregarMaterialKit()"
-                      style="padding: 4px 10px; border: 1px solid #c084fc; border-radius: 6px; background: #fdf4ff; color: #a21caf; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit;"
+                      class="kit-btn-add-material"
                     >
                       <span class="material-icons" style="font-size:12px;">add</span>
                       Agregar Material
@@ -360,12 +366,12 @@
                   </div>
 
                   @if (kitMaterialesForm.length > 0) {
-                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                    <div class="kit-materiales-list">
                       @for (matKit of kitMaterialesForm; track $index) {
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div class="kit-material-row">
                           <select
                             [(ngModel)]="matKit.materialNombre"
-                            style="flex: 2; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #ffffff; outline: none; font-family: inherit;"
+                            class="kit-material-select"
                           >
                             <option value="">-- Seleccionar material --</option>
                             @for (m of materialesDisponibles; track m.nombre) {
@@ -376,13 +382,13 @@
                             type="number"
                             min="1"
                             [(ngModel)]="matKit.cantidad"
-                            style="flex: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; font-family: inherit; text-align: center; max-width: 70px;"
+                            class="kit-material-cantidad"
                             placeholder="Cant."
                           />
                           <button
                             type="button"
                             (click)="eliminarMaterialKit($index)"
-                            style="padding: 6px; border: none; border-radius: 6px; background: #fee2e2; color: #ef4444; cursor: pointer; display: flex; align-items: center;"
+                            class="kit-material-btn-delete"
                             title="Eliminar material"
                           >
                             <span class="material-icons" style="font-size: 14px;">delete</span>
@@ -391,24 +397,24 @@
                       }
                     </div>
                   } @else {
-                    <div style="text-align: center; padding: 12px; font-size: 11.5px; color: #94a3b8; border: 1.5px dashed #cbd5e1; border-radius: 6px;">
+                    <div class="kit-materiales-empty">
                       No hay materiales en el kit. Haz clic en "Agregar Material".
                     </div>
                   }
                 </div>
 
-                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <div class="kit-form-footer">
                   <button
                     type="button"
                     (click)="handleCancelKit()"
-                    style="padding: 6px 14px; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;"
+                    class="kit-btn-cancelar"
                   >
                     Cancelar
                   </button>
                   <button
                     type="button"
                     (click)="handleSaveKit()"
-                    style="padding: 6px 14px; border: none; border-radius: 6px; background: #7c3aed; color: #ffffff; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;"
+                    class="kit-btn-guardar"
                   >
                     Guardar Kit
                   </button>
@@ -420,12 +426,11 @@
             @if (!isAddingKit && !editingKitId) {
               <div>
                 <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Seleccionar kit predefinido</label>
-                <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="kit-selector-row">
                   <select
                     [(ngModel)]="kitSeleccionadoId"
                     (change)="cargarKitParaPresupuesto(kitSeleccionadoId)"
-                    class="form-group-input"
-                    style="flex: 1; cursor: pointer;"
+                    class="form-group-input kit-selector-select"
                   >
                     <option value="">-- Seleccionar kit --</option>
                     @for (kit of kitsGuardados; track kit.id) {
@@ -439,7 +444,7 @@
                     <button
                       type="button"
                       (click)="onEditKitSelected()"
-                      style="padding: 10px; border: 1.5px solid #ddd6fe; border-radius: 8px; background: #f5f3ff; color: #7c3aed; cursor: pointer; display: flex; align-items: center; outline: none;"
+                      class="kit-btn-edit"
                       title="Editar este kit"
                     >
                       <span class="material-icons" style="font-size:16px;">edit</span>
@@ -447,20 +452,20 @@
                     <button
                       type="button"
                       (click)="onDeleteKitSelected()"
-                      style="padding: 10px; border: 1.5px solid #fee2e2; border-radius: 8px; background: #fef2f2; color: #ef4444; cursor: pointer; display: flex; align-items: center; outline: none;"
+                      class="kit-btn-eliminar"
                       title="Eliminar este kit"
                     >
                       <span class="material-icons" style="font-size:16px;">delete</span>
                     </button>
                   }
                 </div>
-                <p style="font-size: 11.5px; color: var(--clr-text-muted); margin: 6px 0 0; line-height: 1.4;">
+                <p class="kit-selector-help">
                   Cargar un kit predefinido precargará todos sus materiales directamente en la calculadora de presupuestos de manera presencial.
                 </p>
               </div>
 
               @if (kitSeleccionadoId && nombreProyecto) {
-                <div style="margin-top: 10px; padding: 10px 14px; background: #f5f3ff; border-radius: 8px; border: 1px solid #ddd6fe; font-size: 12px; color: #6d28d9; display: flex; align-items: center; gap: 8px;">
+                <div class="kit-loaded-banner">
                   <span class="material-icons" style="font-size:16px;">check_circle</span>
                   <span>Kit <strong>{{ nombreProyecto }}</strong> cargado con éxito. Sus materiales fueron precargados abajo.</span>
                 </div>
@@ -470,37 +475,35 @@
 
           @if (currentMaquetaTipo === 'personalizada') {
             <!-- Campo libre para maqueta personalizada -->
-            <div>
-              <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Nombre del proyecto personalizado *</label>
+            <div class="personalizada-wrapper">
+              <label class="personalizada-label">Nombre del proyecto personalizado *</label>
               <input type="text"
                      [(ngModel)]="nombreProyecto"
                      placeholder="Ej: Maqueta del Colegio San Martín..."
-                     class="form-group-input"
-                     style="width: 100%; box-sizing: border-box; margin-bottom: 12px;">
+                     class="form-group-input personalizada-nombre-input">
 
               <!-- Autocomplete para maqueta base opcional -->
               <div class="autocomplete-input-wrapper">
-                <label style="font-size: 12px; font-weight: 600; color: var(--clr-text-muted); margin-bottom: 6px; display: block;">Copiar materiales desde una maqueta existente (Opcional)</label>
+                <label class="personalizada-label">Copiar materiales desde una maqueta existente (Opcional)</label>
                 <input type="text"
                        [(ngModel)]="busquedaMaquetaBase"
                        (input)="filtrarMaquetasBase(); mostrarDropdownMaquetaBase = true"
                        (focus)="mostrarDropdownMaquetaBase = true"
                        (blur)="onBlurMaquetaBaseAutocomplete()"
                        placeholder="Buscar maqueta base para copiar sus materiales..."
-                       class="form-group-input"
-                       style="width: 100%; box-sizing: border-box;">
+                       class="form-group-input">
                 @if (mostrarDropdownMaquetaBase && maquetasFiltradasBase.length > 0) {
                   <div class="autocomplete-dropdown">
                     @for (maq of maquetasFiltradasBase; track maq.id) {
                       <div (mousedown)="seleccionarMaquetaBase(maq)" class="autocomplete-item">
                         @if (maq.imageUrl) {
-                          <img [src]="maq.imageUrl" alt="" style="width: 30px; height: 30px;">
+                          <img [src]="maq.imageUrl" alt="" class="autocomplete-thumb">
                         } @else {
-                          <div class="fallback-img" style="width: 30px; height: 30px; font-size: 14px;">🏠</div>
+                          <div class="fallback-img">&#127968;</div>
                         }
-                        <div style="flex: 1; min-width: 0;">
-                          <div style="font-weight: 700; font-size: 12px; color: var(--clr-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ maq.titulo }}</div>
-                          <div style="font-size: 10px; color: var(--clr-text-muted);">{{ maq.categoriaNombre }} · Stock: {{ maq.stock }}</div>
+                        <div class="autocomplete-item-info">
+                          <div class="autocomplete-item-title">{{ maq.titulo }}</div>
+                          <div class="autocomplete-item-meta">{{ maq.categoriaNombre }} · Stock: {{ maq.stock }}</div>
                         </div>
                       </div>
                     }
@@ -673,38 +676,76 @@
 
       <!-- Materiales solicitados por el cliente (Ocultar si el pago está confirmado / venta cerrada) -->
       <div class="form-card client-request-card" *ngIf="isMaquetaPersonalizada && !pagoConfirmado && (materialesSolicitados.length > 0 || materialesDeseados)">
-        <h2 class="card-title purple">📦 Materiales Solicitados por el Cliente</h2>
+        <h2 class="card-title purple" style="display: flex; align-items: center; gap: 8px;">
+          <span class="material-icons" style="font-size: 20px; color: #7c3aed;">inventory_2</span>
+          Materiales Solicitados por el Cliente
+        </h2>
         <div class="client-materials-notice">
           <span class="notice-icon">💡</span>
-          <span>Haz clic en "Agregar" para incluirlos en el presupuesto.</span>
+          <span>El sistema verifica automáticamente la disponibilidad y el stock en inventario de cada material.</span>
         </div>
-        <div class="solicited-materials" *ngIf="materialesSolicitados.length > 0">
-          <div class="solicited-item" *ngFor="let mat of materialesSolicitados" [class.added]="mat.agregado">
-            <div class="solicited-info">
-              <span class="solicited-nombre">{{ mat.nombre }}</span>
-              <span class="solicited-precio" *ngIf="mat.costoVenta">S/ {{ mat.costoVenta.toFixed(2) }} / {{ mat.unidad || 'unidad' }}</span>
-              <span class="solicited-precio no-price" *ngIf="!mat.costoVenta">Sin precio en inventario</span>
+        <div class="solicited-materials" *ngIf="materialesSolicitados.length > 0" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div class="solicited-item" *ngFor="let mat of materialesSolicitados" [class.added]="mat.agregado" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; transition: all 0.2s;">
+            <div class="solicited-info" style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="solicited-nombre" style="font-weight: 700; font-size: 14px; color: #1e293b;">{{ mat.nombre }}</span>
+                
+                <!-- Badge Estado 1: Con Stock -->
+                @if (mat.estadoInventario === 'con_stock') {
+                  <span style="background: #dcfce7; color: #166534; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-icons" style="font-size: 12px; color: #16a34a;">check_circle</span>
+                    En inventario (Stock: {{ mat.stockActual }} {{ mat.unidad || 'und' }})
+                  </span>
+                }
+
+                <!-- Badge Estado 2: Sin Stock -->
+                @if (mat.estadoInventario === 'sin_stock') {
+                  <span style="background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-icons" style="font-size: 12px; color: #d97706;">warning</span>
+                    En inventario, pero SIN STOCK (Stock: 0)
+                  </span>
+                }
+
+                <!-- Badge Estado 3: No Registrado -->
+                @if (mat.estadoInventario === 'no_registrado') {
+                  <span style="background: #fee2e2; color: #991b1b; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; border: 1px solid #fca5a5; display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-icons" style="font-size: 12px; color: #dc2626;">cancel</span>
+                    No se encuentra en el inventario
+                  </span>
+                }
+              </div>
+
+              <div style="font-size: 12px; color: #64748b;">
+                <span *ngIf="mat.costoVenta">Precio catálogo: <strong>S/ {{ mat.costoVenta.toFixed(2) }}</strong> / {{ mat.unidad || 'unidad' }}</span>
+                <span *ngIf="!mat.costoVenta" style="color: #94a3b8; font-style: italic;">Sin precio predefinido</span>
+              </div>
             </div>
+
             <div style="display: flex; gap: 6px; align-items: center;">
-              <button 
-                *ngIf="!mat.costoVenta"
-                type="button"
-                class="btn-registrar-material" 
-                (click)="irARegistrarMaterial(mat)"
-              >
-                ⚙️ Registrar
-              </button>
+              @if (mat.estadoInventario === 'no_registrado' || !mat.costoVenta) {
+                <button 
+                  type="button"
+                  class="btn-registrar-material" 
+                  (click)="irARegistrarMaterial(mat)"
+                  title="Ir a registrar este material en el catálogo de inventario"
+                  style="padding: 6px 12px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; color: #475569; display: flex; align-items: center; gap: 4px;"
+                >
+                  <span class="material-icons" style="font-size: 14px;">settings</span> Registrar
+                </button>
+              }
               <button class="btn-agregar-solicitado" (click)="agregarMaterialSolicitado(mat)" [disabled]="mat.agregado">
                 {{ mat.agregado ? '✓ Agregado' : '+ Agregar' }}
               </button>
             </div>
           </div>
         </div>
-        <div class="desired-materials" *ngIf="materialesDeseados">
-          <h3 class="subsection-title">Otros Materiales Específicos</h3>
-          <div class="desired-text">
-            <span class="desired-icon">📝</span>
-            <p>{{ materialesDeseados }}</p>
+        <div class="desired-materials" *ngIf="materialesDeseados" style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0;">
+          <h3 class="subsection-title" style="font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <span class="material-icons" style="font-size: 15px; color: #7c3aed;">description</span>
+            Especificaciones y Nota del Cliente
+          </h3>
+          <div class="desired-text" style="background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12.5px; color: #334155;">
+            <p style="margin: 0;">{{ materialesDeseados }}</p>
           </div>
         </div>
       </div>
@@ -719,7 +760,7 @@
           </div>
           <div class="form-group">
             <label for="margen">Margen de Ganancia (%)</label>
-            <input type="number" id="margen" min="0" max="100" [(ngModel)]="margenGanancia" [disabled]="pagoConfirmado">
+            <input type="number" id="margen" min="0" max="100" [(ngModel)]="margenGanancia" (input)="validarMargenGanancia($event)" (change)="validarMargenGanancia($event)" (blur)="validarMargenGanancia($event)" [disabled]="pagoConfirmado">
           </div>
         </div>
       </div>
@@ -746,7 +787,7 @@
           </div>
           <div class="form-group">
             <label for="porcentaje">Porcentaje del Adelanto (%)</label>
-            <input type="number" id="porcentaje" min="0" max="100" [(ngModel)]="porcentajeAdelanto" [disabled]="pagoConfirmado">
+            <input type="number" id="porcentaje" min="0" max="100" [(ngModel)]="porcentajeAdelanto" (input)="validarPorcentajeAdelanto($event)" (change)="validarPorcentajeAdelanto($event)" (blur)="validarPorcentajeAdelanto($event)" [disabled]="pagoConfirmado">
             <small>Porcentaje del total que se solicita como adelanto (típicamente 50%)</small>
           </div>
           <div class="adelanto-monto">
@@ -801,8 +842,9 @@
     </div>
 
     <!-- ══════════════════ COLUMNA RESUMEN ══════════════════ -->
-    <div class="summary-column">
-      <div class="ticket-receipt-card">
+    <div class="summary-column" [class.mobile-open]="showMobileSummary" (click)="closeMobileSummary()">
+      <div class="ticket-receipt-card" (click)="$event.stopPropagation()">
+        <button type="button" class="close-mobile-summary-btn" (click)="closeMobileSummary()">×</button>
         <div class="ticket-receipt-content">
           <h2 class="summary-title">
             <svg viewBox="0 0 24 24" class="summary-title-icon" fill="none" stroke="currentColor" stroke-width="2">
@@ -900,79 +942,66 @@
                 </button>
 
                 @if (requiereAdelanto) {
-                  <!-- Botón: cobrar adelanto + imprimir boleta parcial -->
-                  <button (click)="imprimirBoletaPresencial('adelanto')" [disabled]="imprimiendoBoleta"
-                    style="background:#d97706;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(217,119,6,.25);transition:background .2s;">
-                    @if (imprimiendoBoleta) {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;" class="spin">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                      </svg>
-                      Preparando boleta...
-                    } @else {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;">
-                        <polyline points="6 9 6 2 18 2 18 9"/>
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                        <rect x="6" y="14" width="12" height="8"/>
-                      </svg>
+                  @if (!adelantoPagado) {
+                    <!-- Botón: cobrar adelanto (50%), descontar stock e imprimir boleta -->
+                    <button (click)="procesarPagoPresencial('adelanto')" [disabled]="guardando"
+                      style="background:#d97706;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(217,119,6,.25);transition:background .2s;font-family:inherit;">
+                      <span class="material-icons" style="font-size: 20px;">payments</span>
                       <div style="text-align:left;">
                         <div>Cobrar Adelanto ({{ porcentajeAdelanto }}%) e Imprimir Boleta</div>
-                        <small style="font-weight:400;opacity:.85;font-size:11px;">Monto: S/ {{ montoAdelanto.toFixed(2) }}</small>
+                        <small style="font-weight:400;opacity:.9;font-size:11px;">Descuenta stock, registra la venta y emite el comprobante (S/ {{ montoAdelanto.toFixed(2) }})</small>
                       </div>
-                    }
-                  </button>
-                  <small class="summary-hint" style="color:#b45309; margin-bottom:8px; display:block;">Saldo pendiente: S/ {{ (total - montoAdelanto).toFixed(2) }}</small>
-                } @else {
-                  <!-- Botón: cobrar total + imprimir boleta completa -->
-                  <button (click)="imprimirBoletaPresencial('completo')" [disabled]="imprimiendoBoleta"
-                    style="background:#059669;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(5,150,105,.25);transition:background .2s;">
-                    @if (imprimiendoBoleta) {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;" class="spin">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                      </svg>
-                      Preparando boleta...
-                    } @else {
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;">
-                        <polyline points="6 9 6 2 18 2 18 9"/>
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                        <rect x="6" y="14" width="12" height="8"/>
-                      </svg>
+                    </button>
+                    <small class="summary-hint" style="color:#b45309; margin-bottom:8px; display:block;">Saldo pendiente a liquidar después: S/ {{ (total - montoAdelanto).toFixed(2) }}</small>
+                  } @else {
+                    <!-- Banner de Adelanto Cobrado -->
+                    <div style="margin-top: 8px; padding: 10px 12px; background: #fef3c7; border-radius: 8px; border: 1px solid #fde68a; font-size: 11.5px; color: #b45309; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                      <span class="material-icons" style="font-size: 16px;">check_circle</span>
+                      <span>Adelanto ({{ porcentajeAdelanto }}%) Cobrado (S/ {{ montoAdelanto.toFixed(2) }})</span>
+                    </div>
+
+                    <!-- Botón: cobrar saldo restante (50%) -->
+                    <button (click)="procesarPagoPresencial('saldo')" [disabled]="guardando"
+                      style="background:#2563eb;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(37,99,235,.25);transition:background .2s;font-family:inherit;">
+                      <span class="material-icons" style="font-size: 20px;">price_check</span>
                       <div style="text-align:left;">
-                        <div>Cobrar Pago Completo e Imprimir Boleta</div>
-                        <small style="font-weight:400;opacity:.85;font-size:11px;">Total: S/ {{ total.toFixed(2) }}</small>
+                        <div>Cobrar Saldo Restante (50%) e Imprimir Boleta</div>
+                        <small style="font-weight:400;opacity:.9;font-size:11px;">Registra el cobro final del saldo: S/ {{ (total - montoAdelanto).toFixed(2) }}</small>
                       </div>
-                    }
+                    </button>
+
+                    <!-- Botón para reimprimir boleta de adelanto -->
+                    <button (click)="imprimirBoletaPresencial('adelanto')" type="button"
+                      style="background:transparent;color:#d97706;border:1px solid #d97706;padding:8px 12px;border-radius:8px;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;width:100%;justify-content:center;margin-top:6px;font-family:inherit;">
+                      <span class="material-icons" style="font-size: 16px;">print</span>
+                      Reimprimir Boleta de Adelanto
+                    </button>
+                  }
+                } @else {
+                  <!-- Botón: cobrar total (100%), descontar stock e imprimir boleta -->
+                  <button (click)="procesarPagoPresencial('completo')" [disabled]="guardando"
+                    style="background:#059669;color:white;border:none;padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;box-shadow:0 4px 12px rgba(5,150,105,.25);transition:background .2s;font-family:inherit;">
+                    <span class="material-icons" style="font-size: 20px;">point_of_sale</span>
+                    <div style="text-align:left;">
+                      <div>Cobrar Pago Completo (100%) e Imprimir Boleta</div>
+                      <small style="font-weight:400;opacity:.9;font-size:11px;">Descuenta stock, registra la venta y emite comprobante (S/ {{ total.toFixed(2) }})</small>
+                    </div>
                   </button>
                   <small class="summary-hint" style="color:#065f46; margin-bottom:8px; display:block;">Pago único completo (100%)</small>
                 }
               }
 
-              <!-- Botón: Pago Completado & Descontar Stock (Siempre visible) -->
-              <button (click)="completarPagoPresencial()" [disabled]="pagoConfirmado"
-                [style.background]="pagoConfirmado ? '#ecfdf5' : '#7c3aed'"
-                [style.color]="pagoConfirmado ? '#047857' : '#ffffff'"
-                [style.border]="pagoConfirmado ? '1.5px solid #a7f3d0' : 'none'"
-                [style.boxShadow]="pagoConfirmado ? 'none' : '0 4px 12px rgba(124,58,237,0.25)'"
-                style="padding:14px 18px;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:10px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;transition:all .2s; font-family: inherit;">
-                <span class="material-icons" style="font-size: 18px;">{{ pagoConfirmado ? 'check_circle' : 'paid' }}</span>
-                <div style="text-align:left;">
-                  <div style="font-weight:700;">{{ pagoConfirmado ? 'Pago Completado (Stock Descontado)' : 'Pago Completado' }}</div>
-                  <small style="font-weight:400;opacity:.85;font-size:10px;display:block;">
-                    {{ pagoConfirmado ? 'Inventario actualizado en el backend' : 'Confirmar pago y descontar materiales del inventario' }}
-                  </small>
-                </div>
-              </button>
-
-              <!-- SI EL PAGO YA HA SIDO CONFIRMADO: Mostrar banner de venta cerrada y botón neutral de Reimprimir -->
+              <!-- SI EL PAGO YA HA SIDO CONFIRMADO: Mostrar banner de venta cerrada y reimprimir boleta final -->
               @if (pagoConfirmado) {
                 <div style="margin-top: 10px; padding: 12px; background: #ecfdf5; border-radius: 8px; border: 1px solid #a7f3d0; font-size: 11.5px; color: #047857; font-weight: 600; text-align: center; display: flex; align-items: center; gap: 8px; justify-content: center;">
                   <span class="material-icons" style="font-size: 16px;">check_circle</span>
-                  <span>Venta Cerrada: Pago verificado y stock descontado.</span>
+                  <span>Venta Completada (100%): Pago registrado y stock descontado.</span>
                 </div>
 
-                <button (click)="imprimirBoletaPresencial(requiereAdelanto ? 'adelanto' : 'completo')"
-                  style="background: #f1f5f9; color: #334155; border: 1.5px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; justify-content: center; margin-top: 8px; transition: all .2s; font-family: inherit;">
-                  <span class="material-icons" style="font-size: 18px;">print</span>
-                  Reimprimir Boleta
+                <button (click)="imprimirBoletaPresencial('completo')" type="button"
+                  style="background:transparent;color:#059669;border:1px solid #059669;padding:8px 12px;border-radius:8px;font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;width:100%;justify-content:center;margin-top:8px;font-family:inherit;">
+                  <span class="material-icons" style="font-size: 16px;">print</span>
+                  Reimprimir Boleta Final (100%)
                 </button>
               }
             }
@@ -1007,7 +1036,7 @@
                     <line x1="22" y1="2" x2="11" y2="13"/>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                   </svg>
-                  Guardar y Enviar al Cliente
+                  Guardar Presupuesto y Enviar
                 }
               </button>
               <small class="summary-hint">El presupuesto se enviará por chat al cliente</small>
@@ -1031,7 +1060,7 @@
                     <line x1="22" y1="2" x2="11" y2="13"/>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                   </svg>
-                  Actualizar y Notificar Cliente
+                  Guardar Presupuesto y Enviar
                 }
               </button>
               <small class="summary-hint">Editando presupuesto existente</small>
@@ -1304,3 +1333,4 @@
   </div>
 }
 </div>
+

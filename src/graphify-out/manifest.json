@@ -1,0 +1,1047 @@
+{
+  "backend/mvnw": {
+    "mtime": 1782817719.986068,
+    "ast_hash": "ab50dd89da7da2346b28003352eeeeeb",
+    "semantic_hash": "ab50dd89da7da2346b28003352eeeeeb"
+  },
+  "backend/pom.xml": {
+    "mtime": 1782812694.117826,
+    "ast_hash": "3231e662a95560f730a3faf868e72347",
+    "semantic_hash": "3231e662a95560f730a3faf868e72347"
+  },
+  "backend/src/main/java/com/amazonas/backend/BackendApplication.java": {
+    "mtime": 1783417706.1326015,
+    "ast_hash": "e9ab38c036f47b0bafa9364d1ea329a7",
+    "semantic_hash": "e9ab38c036f47b0bafa9364d1ea329a7"
+  },
+  "backend/src/main/java/com/amazonas/backend/common/entity/BaseEntity.java": {
+    "mtime": 1780634818.2291398,
+    "ast_hash": "4564a1b6023fea39ec894602afd383bb",
+    "semantic_hash": "4564a1b6023fea39ec894602afd383bb"
+  },
+  "backend/src/main/java/com/amazonas/backend/common/exception/GlobalExceptionHandler.java": {
+    "mtime": 1782812694.1198306,
+    "ast_hash": "76fbd324f920546b19f535577faf0a92",
+    "semantic_hash": "76fbd324f920546b19f535577faf0a92"
+  },
+  "backend/src/main/java/com/amazonas/backend/config/JpaAuditingConfig.java": {
+    "mtime": 1780634818.2291398,
+    "ast_hash": "91add6d3ff71bc2be579ac1b40ec0a6a",
+    "semantic_hash": "91add6d3ff71bc2be579ac1b40ec0a6a"
+  },
+  "backend/src/main/java/com/amazonas/backend/config/RedisCacheConfig.java": {
+    "mtime": 1782812694.1198306,
+    "ast_hash": "8d6141fbbb5216539db7844afec757b6",
+    "semantic_hash": "8d6141fbbb5216539db7844afec757b6"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/controller/AuthController.java": {
+    "mtime": 1780634941.8250859,
+    "ast_hash": "25716ca239e0b9389590bdad30325ca2",
+    "semantic_hash": "25716ca239e0b9389590bdad30325ca2"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/dto/AuthResponse.java": {
+    "mtime": 1780634818.230706,
+    "ast_hash": "44d2cff05cc6d537fb398e9de8834399",
+    "semantic_hash": "44d2cff05cc6d537fb398e9de8834399"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/dto/CurrentUserResponse.java": {
+    "mtime": 1780634818.230706,
+    "ast_hash": "aebb78c7c9911ac29a29802914b598a2",
+    "semantic_hash": "aebb78c7c9911ac29a29802914b598a2"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/dto/ForgotPasswordRequest.java": {
+    "mtime": 1780634941.8255882,
+    "ast_hash": "988be9acde49302de6b08f7cd9d32a41",
+    "semantic_hash": "988be9acde49302de6b08f7cd9d32a41"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/dto/LoginRequest.java": {
+    "mtime": 1780634818.2312999,
+    "ast_hash": "31418dfc0dcc170cd6e30ef603de085c",
+    "semantic_hash": "31418dfc0dcc170cd6e30ef603de085c"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/dto/LoginVendorRequest.java": {
+    "mtime": 1780634818.2319188,
+    "ast_hash": "6df6cf801cca821d4512f5d07cd98161",
+    "semantic_hash": "6df6cf801cca821d4512f5d07cd98161"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/dto/RegisterRequest.java": {
+    "mtime": 1780634818.2319188,
+    "ast_hash": "bbb7a5f937c552d61c9e81bd18f2ac03",
+    "semantic_hash": "bbb7a5f937c552d61c9e81bd18f2ac03"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/dto/ResetPasswordRequest.java": {
+    "mtime": 1780634941.8255882,
+    "ast_hash": "93d640b5325f25e3a493a331cc19bbd5",
+    "semantic_hash": "93d640b5325f25e3a493a331cc19bbd5"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/enums/Role.java": {
+    "mtime": 1780634818.2329502,
+    "ast_hash": "c5194b121585e279a889929595840203",
+    "semantic_hash": "c5194b121585e279a889929595840203"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/model/PasswordResetToken.java": {
+    "mtime": 1780634941.8261037,
+    "ast_hash": "805156db20144fd9acff1d3891cc04a5",
+    "semantic_hash": "805156db20144fd9acff1d3891cc04a5"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/repository/PasswordResetTokenRepository.java": {
+    "mtime": 1780634941.826618,
+    "ast_hash": "6b3d76695a9ee341544741fc2e7665b0",
+    "semantic_hash": "6b3d76695a9ee341544741fc2e7665b0"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/service/AuthService.java": {
+    "mtime": 1780634941.8271332,
+    "ast_hash": "4492364251057b43e69fbf31ae4f3d06",
+    "semantic_hash": "4492364251057b43e69fbf31ae4f3d06"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/auth/service/impl/AuthServiceImpl.java": {
+    "mtime": 1780634941.8276484,
+    "ast_hash": "734924b5a91e262acdba3c7a5a4124ad",
+    "semantic_hash": "734924b5a91e262acdba3c7a5a4124ad"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/controller/BudgetController.java": {
+    "mtime": 1782812694.12083,
+    "ast_hash": "079bf902e8aa30db383c9d64edef55c1",
+    "semantic_hash": "079bf902e8aa30db383c9d64edef55c1"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetClientResponse.java": {
+    "mtime": 1782812694.12083,
+    "ast_hash": "a439b977bd6471c31e2353ae4a89de8a",
+    "semantic_hash": "a439b977bd6471c31e2353ae4a89de8a"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetExplanationServiceRequest.java": {
+    "mtime": 1780634818.235638,
+    "ast_hash": "c0fdc031c0cfd0c3037c959df9e72056",
+    "semantic_hash": "c0fdc031c0cfd0c3037c959df9e72056"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetExplanationServiceResponse.java": {
+    "mtime": 1780634818.236169,
+    "ast_hash": "eb09de7b8451283fcb75c5f315500667",
+    "semantic_hash": "eb09de7b8451283fcb75c5f315500667"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetItemRequest.java": {
+    "mtime": 1780634818.236691,
+    "ast_hash": "549e53ea51ff0bb8511a32d3728082c9",
+    "semantic_hash": "549e53ea51ff0bb8511a32d3728082c9"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetItemResponse.java": {
+    "mtime": 1780634818.236691,
+    "ast_hash": "15167f8fff8afa8d978a81a4cac3c905",
+    "semantic_hash": "15167f8fff8afa8d978a81a4cac3c905"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetRequest.java": {
+    "mtime": 1782812694.121829,
+    "ast_hash": "85844c2e703a79147288a7a49463e3c1",
+    "semantic_hash": "85844c2e703a79147288a7a49463e3c1"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetResponse.java": {
+    "mtime": 1782812694.121829,
+    "ast_hash": "b64850bbb5e9173279b271374f318602",
+    "semantic_hash": "b64850bbb5e9173279b271374f318602"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/dto/BudgetVendorResponse.java": {
+    "mtime": 1782812694.121829,
+    "ast_hash": "edb99f5351e32b4d40ac77831a65cd2b",
+    "semantic_hash": "edb99f5351e32b4d40ac77831a65cd2b"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/model/Budget.java": {
+    "mtime": 1782812694.1228304,
+    "ast_hash": "6fc1a26fc4084c66ad06e558549ca7d4",
+    "semantic_hash": "6fc1a26fc4084c66ad06e558549ca7d4"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/model/BudgetExplanationService.java": {
+    "mtime": 1780634818.237718,
+    "ast_hash": "a059c7cf9421153035365e084b49178d",
+    "semantic_hash": "a059c7cf9421153035365e084b49178d"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/model/BudgetItem.java": {
+    "mtime": 1780634818.238724,
+    "ast_hash": "d63b69d6f90b83a821d9a5ce3c255452",
+    "semantic_hash": "d63b69d6f90b83a821d9a5ce3c255452"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/repository/BudgetExplanationServiceRepository.java": {
+    "mtime": 1780634818.238724,
+    "ast_hash": "0f2001b14ff022b63fe1dc1db284fff8",
+    "semantic_hash": "0f2001b14ff022b63fe1dc1db284fff8"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/repository/BudgetItemRepository.java": {
+    "mtime": 1780634818.238724,
+    "ast_hash": "470743d9960a4b3ed06a50d08837ed7d",
+    "semantic_hash": "470743d9960a4b3ed06a50d08837ed7d"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/repository/BudgetRepository.java": {
+    "mtime": 1780634818.2397242,
+    "ast_hash": "fc7b19174d7acd967bb24052df592773",
+    "semantic_hash": "fc7b19174d7acd967bb24052df592773"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/service/BudgetService.java": {
+    "mtime": 1782812694.1228304,
+    "ast_hash": "02dde1759c680bf757e7ec1ad391fe14",
+    "semantic_hash": "02dde1759c680bf757e7ec1ad391fe14"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/budgets/service/impl/BudgetServiceImpl.java": {
+    "mtime": 1782812694.1238303,
+    "ast_hash": "f515d2da22ca99340ca61fb65a81a56d",
+    "semantic_hash": "f515d2da22ca99340ca61fb65a81a56d"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/categories/controller/CategoryController.java": {
+    "mtime": 1780634818.2416444,
+    "ast_hash": "f94880e3217e1774e8355ad82f933d31",
+    "semantic_hash": "f94880e3217e1774e8355ad82f933d31"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/categories/dto/CategoryResponse.java": {
+    "mtime": 1780634818.2421553,
+    "ast_hash": "5c2e15e00654a2ce3cdaaaa5514d32dd",
+    "semantic_hash": "5c2e15e00654a2ce3cdaaaa5514d32dd"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/categories/model/Category.java": {
+    "mtime": 1780634818.2426877,
+    "ast_hash": "c08eba5819322210276c187e918e409f",
+    "semantic_hash": "c08eba5819322210276c187e918e409f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/categories/repository/CategoryRepository.java": {
+    "mtime": 1780634818.2432008,
+    "ast_hash": "c473f7471cd4b40eebf1c44666725522",
+    "semantic_hash": "c473f7471cd4b40eebf1c44666725522"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/config/WebSocketConfig.java": {
+    "mtime": 1782812694.1238303,
+    "ast_hash": "bace71d3e38baa2fefc5def39b383c61",
+    "semantic_hash": "bace71d3e38baa2fefc5def39b383c61"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/controller/ChatController.java": {
+    "mtime": 1782812694.1248307,
+    "ast_hash": "aeef00f3aa06b0a981a34c7fa949f340",
+    "semantic_hash": "aeef00f3aa06b0a981a34c7fa949f340"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/dto/ChatMessageResponse.java": {
+    "mtime": 1782812694.1248307,
+    "ast_hash": "3bee7d7e5370246634ad865e5ffcc85f",
+    "semantic_hash": "3bee7d7e5370246634ad865e5ffcc85f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/dto/ChatOfferResponse.java": {
+    "mtime": 1782812694.12583,
+    "ast_hash": "829b33bcdb1489bda3c1f6bfa254d24f",
+    "semantic_hash": "829b33bcdb1489bda3c1f6bfa254d24f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/dto/ChatRoomResponse.java": {
+    "mtime": 1782812694.1263006,
+    "ast_hash": "66d1dc1a29a7e0df8c2ca63726ef1f2b",
+    "semantic_hash": "66d1dc1a29a7e0df8c2ca63726ef1f2b"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/dto/CreateExtraRequest.java": {
+    "mtime": 1782812694.1263006,
+    "ast_hash": "e51f966feacfc17f81619430e0030413",
+    "semantic_hash": "e51f966feacfc17f81619430e0030413"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/dto/CreateOfferRequest.java": {
+    "mtime": 1782812694.1268044,
+    "ast_hash": "13297aff95362efe99a9066931fdbe1b",
+    "semantic_hash": "13297aff95362efe99a9066931fdbe1b"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/dto/SendMessageRequest.java": {
+    "mtime": 1782812694.1268044,
+    "ast_hash": "35c6da71bce86a115908e6c153671fc0",
+    "semantic_hash": "35c6da71bce86a115908e6c153671fc0"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/enums/ChatMessageType.java": {
+    "mtime": 1782812694.1268044,
+    "ast_hash": "a7b621b1ce9683b11c845603c9ab311e",
+    "semantic_hash": "a7b621b1ce9683b11c845603c9ab311e"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/enums/ChatOfferStatus.java": {
+    "mtime": 1782812694.1268044,
+    "ast_hash": "ce016f64e31841ecda7cca6ecfde3671",
+    "semantic_hash": "ce016f64e31841ecda7cca6ecfde3671"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/enums/ChatRoomStatus.java": {
+    "mtime": 1782812694.127808,
+    "ast_hash": "53e53402878578fd0dde01224a2bdb62",
+    "semantic_hash": "53e53402878578fd0dde01224a2bdb62"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/enums/ChatSenderRole.java": {
+    "mtime": 1782812694.127808,
+    "ast_hash": "70a160cb02ef1f170385bb379dafac44",
+    "semantic_hash": "70a160cb02ef1f170385bb379dafac44"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/listener/WebSocketSessionListener.java": {
+    "mtime": 1782812694.127808,
+    "ast_hash": "999cd0bb99df697b6f9991802b7f243a",
+    "semantic_hash": "999cd0bb99df697b6f9991802b7f243a"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/model/ChatExtra.java": {
+    "mtime": 1782812694.1288078,
+    "ast_hash": "469577032e41be25eff5f9c4b537dead",
+    "semantic_hash": "469577032e41be25eff5f9c4b537dead"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/model/ChatMessage.java": {
+    "mtime": 1782812694.1288078,
+    "ast_hash": "19b0d3df16387f8d047ba9ed94c840f4",
+    "semantic_hash": "19b0d3df16387f8d047ba9ed94c840f4"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/model/ChatOffer.java": {
+    "mtime": 1782812694.1288078,
+    "ast_hash": "3e1fb763a5dc4e379aeb887484b43aeb",
+    "semantic_hash": "3e1fb763a5dc4e379aeb887484b43aeb"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/model/ChatRoom.java": {
+    "mtime": 1782812694.129807,
+    "ast_hash": "6b004360dd8390a766734276ce0abb0b",
+    "semantic_hash": "6b004360dd8390a766734276ce0abb0b"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/repository/ChatExtraRepository.java": {
+    "mtime": 1782812694.129807,
+    "ast_hash": "80053979bfd3f6da199c20f1f25b965b",
+    "semantic_hash": "80053979bfd3f6da199c20f1f25b965b"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/repository/ChatMessageRepository.java": {
+    "mtime": 1783402885.9755769,
+    "ast_hash": "16d51a27aa52761cec04d467af6c2539",
+    "semantic_hash": "16d51a27aa52761cec04d467af6c2539"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/repository/ChatOfferRepository.java": {
+    "mtime": 1782812694.130808,
+    "ast_hash": "56ee7e519aafb60756d4da831777f3b0",
+    "semantic_hash": "56ee7e519aafb60756d4da831777f3b0"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/repository/ChatRoomRepository.java": {
+    "mtime": 1782812694.130808,
+    "ast_hash": "5c38e366ae7509401a1b01d03b34e1cc",
+    "semantic_hash": "5c38e366ae7509401a1b01d03b34e1cc"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/service/ChatService.java": {
+    "mtime": 1782812694.130808,
+    "ast_hash": "c4201a3fde8065e1ce7f785cad04e90a",
+    "semantic_hash": "c4201a3fde8065e1ce7f785cad04e90a"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/service/HtmlSanitizerService.java": {
+    "mtime": 1782812694.1318078,
+    "ast_hash": "89ae3bd91c48a44470264b1e51699af9",
+    "semantic_hash": "89ae3bd91c48a44470264b1e51699af9"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/chat/service/impl/ChatServiceImpl.java": {
+    "mtime": 1783402903.4268894,
+    "ast_hash": "9be6777d8757f166a3dc265756fdf720",
+    "semantic_hash": "9be6777d8757f166a3dc265756fdf720"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/files/controller/FileController.java": {
+    "mtime": 1782812694.1328073,
+    "ast_hash": "c7f9cfc191732d4d8086be78593db013",
+    "semantic_hash": "c7f9cfc191732d4d8086be78593db013"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/files/service/CloudinaryService.java": {
+    "mtime": 1780634818.2442343,
+    "ast_hash": "4336d3974a6b6f295b9ca43fdddd8e8d",
+    "semantic_hash": "4336d3974a6b6f295b9ca43fdddd8e8d"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/files/service/impl/CloudinaryServiceImpl.java": {
+    "mtime": 1782812694.133379,
+    "ast_hash": "4a2344d764ad45baca877eb58c6562cf",
+    "semantic_hash": "4a2344d764ad45baca877eb58c6562cf"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/controller/MaterialController.java": {
+    "mtime": 1780634818.2452943,
+    "ast_hash": "6041d94e66665b6b44e4edec46f8a17f",
+    "semantic_hash": "6041d94e66665b6b44e4edec46f8a17f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/dto/MaterialRequest.java": {
+    "mtime": 1780634818.245808,
+    "ast_hash": "44749127b82a309b41cb5550301914d2",
+    "semantic_hash": "44749127b82a309b41cb5550301914d2"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/dto/MaterialResponse.java": {
+    "mtime": 1782812694.1338823,
+    "ast_hash": "6c27cc11e71d8a0957562eaeb5886155",
+    "semantic_hash": "6c27cc11e71d8a0957562eaeb5886155"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/model/Material.java": {
+    "mtime": 1780634818.2463198,
+    "ast_hash": "5a068c255f3e2cc2750f02ef2d0cdd08",
+    "semantic_hash": "5a068c255f3e2cc2750f02ef2d0cdd08"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/model/MaterialCategory.java": {
+    "mtime": 1780634818.2468367,
+    "ast_hash": "beefbee176282d9470c05c9b099f93c1",
+    "semantic_hash": "beefbee176282d9470c05c9b099f93c1"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/repository/MaterialCategoryRepository.java": {
+    "mtime": 1780634818.2474308,
+    "ast_hash": "50e42aadb0dff151513176cfd95e7abc",
+    "semantic_hash": "50e42aadb0dff151513176cfd95e7abc"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/repository/MaterialRepository.java": {
+    "mtime": 1780634818.2479491,
+    "ast_hash": "972b80fd8ccf1cec858c910d45c6acb7",
+    "semantic_hash": "972b80fd8ccf1cec858c910d45c6acb7"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/service/MaterialService.java": {
+    "mtime": 1780634818.2479491,
+    "ast_hash": "51f95fdd0e9730e2502183e11f80f777",
+    "semantic_hash": "51f95fdd0e9730e2502183e11f80f777"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/materials/service/impl/MaterialServiceImpl.java": {
+    "mtime": 1782812694.1338823,
+    "ast_hash": "2998b124ab0c0ca65ecf099f55e25fa5",
+    "semantic_hash": "2998b124ab0c0ca65ecf099f55e25fa5"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/controller/PaymentController.java": {
+    "mtime": 1783401050.391682,
+    "ast_hash": "9f4c8c402c67b6465f140ac7b7486304",
+    "semantic_hash": "9f4c8c402c67b6465f140ac7b7486304"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/dto/DailyStatsResponse.java": {
+    "mtime": 1782812694.1348846,
+    "ast_hash": "b21f7ae0c6f97a00a0f5f63d9c26e0eb",
+    "semantic_hash": "b21f7ae0c6f97a00a0f5f63d9c26e0eb"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/dto/PaymentTransactionResponse.java": {
+    "mtime": 1783329177.6956983,
+    "ast_hash": "4355760dc65133516ceff4a0f8a4e9d7",
+    "semantic_hash": "4355760dc65133516ceff4a0f8a4e9d7"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/dto/RegisterPaymentRequest.java": {
+    "mtime": 1783329154.423398,
+    "ast_hash": "cf4fa0f0b7c1e756a4e6b3edd2afd2a1",
+    "semantic_hash": "cf4fa0f0b7c1e756a4e6b3edd2afd2a1"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/enums/PaymentMethod.java": {
+    "mtime": 1782812694.135885,
+    "ast_hash": "19a23a20e5f8878e8a3613b6c9a0fb03",
+    "semantic_hash": "19a23a20e5f8878e8a3613b6c9a0fb03"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/enums/PaymentType.java": {
+    "mtime": 1782812694.135885,
+    "ast_hash": "bdf6564c2943292dbe3c20260a23a96e",
+    "semantic_hash": "bdf6564c2943292dbe3c20260a23a96e"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/model/PaymentTransaction.java": {
+    "mtime": 1783329131.118472,
+    "ast_hash": "2d4ffc3c2e42ea78e7fb6d8840be7bfe",
+    "semantic_hash": "2d4ffc3c2e42ea78e7fb6d8840be7bfe"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/repository/PaymentTransactionRepository.java": {
+    "mtime": 1783329200.4288228,
+    "ast_hash": "8fc561173f9d20542cb42992cdbd543d",
+    "semantic_hash": "8fc561173f9d20542cb42992cdbd543d"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/service/PaymentService.java": {
+    "mtime": 1782812694.136885,
+    "ast_hash": "565af9f8b47f3769eca72dfd47afd29f",
+    "semantic_hash": "565af9f8b47f3769eca72dfd47afd29f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/payments/service/impl/PaymentServiceImpl.java": {
+    "mtime": 1783401512.3483207,
+    "ast_hash": "1c37694d50a42421f643c9d30b33e59a",
+    "semantic_hash": "1c37694d50a42421f643c9d30b33e59a"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/controller/ProductController.java": {
+    "mtime": 1780634818.249495,
+    "ast_hash": "0832e2caf6ef3bf5db232222948ac923",
+    "semantic_hash": "0832e2caf6ef3bf5db232222948ac923"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/controller/SearchIntentController.java": {
+    "mtime": 1780634818.249495,
+    "ast_hash": "6fcbd349ab758e34f2933dcc25addb2f",
+    "semantic_hash": "6fcbd349ab758e34f2933dcc25addb2f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/dto/ProductRequest.java": {
+    "mtime": 1780634941.8281631,
+    "ast_hash": "3829bc63f0457330126f739d429d56e6",
+    "semantic_hash": "3829bc63f0457330126f739d429d56e6"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/dto/ProductResponse.java": {
+    "mtime": 1780634941.8286786,
+    "ast_hash": "99452917ec2e874d5e0617cf940e362a",
+    "semantic_hash": "99452917ec2e874d5e0617cf940e362a"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/dto/SearchIntentRequest.java": {
+    "mtime": 1780634818.2505243,
+    "ast_hash": "9eae1de2fb305f97c355d759ea081ee3",
+    "semantic_hash": "9eae1de2fb305f97c355d759ea081ee3"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/dto/SearchIntentResponse.java": {
+    "mtime": 1780634818.2510366,
+    "ast_hash": "a7537d5b5022ae6b6c7fa5cc8dc7ae4a",
+    "semantic_hash": "a7537d5b5022ae6b6c7fa5cc8dc7ae4a"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/model/Product.java": {
+    "mtime": 1780634941.829192,
+    "ast_hash": "6390db4ba50dd33160f43c4ce6b5dbae",
+    "semantic_hash": "6390db4ba50dd33160f43c4ce6b5dbae"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/model/ProductMaterial.java": {
+    "mtime": 1780634818.2520585,
+    "ast_hash": "ec82800c3b60662134743906bffada2f",
+    "semantic_hash": "ec82800c3b60662134743906bffada2f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/repository/ProductRepository.java": {
+    "mtime": 1780634818.2520585,
+    "ast_hash": "4acb395d1091208731294f60c5e6b7c2",
+    "semantic_hash": "4acb395d1091208731294f60c5e6b7c2"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/service/ProductService.java": {
+    "mtime": 1780634818.2528024,
+    "ast_hash": "d0b1b9added21f448dfeacf3f569232c",
+    "semantic_hash": "d0b1b9added21f448dfeacf3f569232c"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/service/SearchIntentService.java": {
+    "mtime": 1780634818.2528024,
+    "ast_hash": "22fb99f2023c5b1164f003367960a774",
+    "semantic_hash": "22fb99f2023c5b1164f003367960a774"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/service/impl/ProductServiceImpl.java": {
+    "mtime": 1782812694.1389327,
+    "ast_hash": "cc82cd83c3832778fe4923eda757741a",
+    "semantic_hash": "cc82cd83c3832778fe4923eda757741a"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/products/service/impl/SearchIntentServiceImpl.java": {
+    "mtime": 1780634818.2538211,
+    "ast_hash": "b90a8abddf027fc91cd684f7e5c90d1f",
+    "semantic_hash": "b90a8abddf027fc91cd684f7e5c90d1f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/controller/PurchaseRequestController.java": {
+    "mtime": 1783417568.0051184,
+    "ast_hash": "2bbd3573ca1024d9f34790ea55984760",
+    "semantic_hash": "2bbd3573ca1024d9f34790ea55984760"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/KitCustomizedMaterialRequest.java": {
+    "mtime": 1780634818.2548463,
+    "ast_hash": "93dfec3505b27ae1f356ab20b4d6bcac",
+    "semantic_hash": "93dfec3505b27ae1f356ab20b4d6bcac"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/KitCustomizedMaterialResponse.java": {
+    "mtime": 1780634818.2548463,
+    "ast_hash": "50f3af3c6344682f2dca2c08aa94c14f",
+    "semantic_hash": "50f3af3c6344682f2dca2c08aa94c14f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/KitMaquetaRequest.java": {
+    "mtime": 1780634818.2553575,
+    "ast_hash": "22aca32ac667dc92a87e71b1a9223f3f",
+    "semantic_hash": "22aca32ac667dc92a87e71b1a9223f3f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/KitMaquetaResponse.java": {
+    "mtime": 1780634818.2558718,
+    "ast_hash": "b6146ee0598d18457a1ef3d2a68b1a94",
+    "semantic_hash": "b6146ee0598d18457a1ef3d2a68b1a94"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/KitPersonalMaterialRequest.java": {
+    "mtime": 1780634818.2558718,
+    "ast_hash": "58d956fd6dc21b180ba7b8227712969b",
+    "semantic_hash": "58d956fd6dc21b180ba7b8227712969b"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/KitPersonalMaterialResponse.java": {
+    "mtime": 1780634818.256385,
+    "ast_hash": "d1ff007b476f4e7f1c72c383c2777eec",
+    "semantic_hash": "d1ff007b476f4e7f1c72c383c2777eec"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/PurchaseRequestRequest.java": {
+    "mtime": 1780634818.256385,
+    "ast_hash": "c7b766594009cc928ad4b45aa2472b60",
+    "semantic_hash": "c7b766594009cc928ad4b45aa2472b60"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/PurchaseRequestResponse.java": {
+    "mtime": 1783416874.9709487,
+    "ast_hash": "fc609281d23ca46e46394f7856cfa04e",
+    "semantic_hash": "fc609281d23ca46e46394f7856cfa04e"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/RejectRequest.java": {
+    "mtime": 1783416880.0569873,
+    "ast_hash": "ce0f636b0a63697886c8c11374040d77",
+    "semantic_hash": "ce0f636b0a63697886c8c11374040d77"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/RequestFilesUpdateRequest.java": {
+    "mtime": 1782812694.1399326,
+    "ast_hash": "de14500d737b3d4a88a1277ba4a05251",
+    "semantic_hash": "de14500d737b3d4a88a1277ba4a05251"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/RequestPreferredMaterialRequest.java": {
+    "mtime": 1780634818.2568984,
+    "ast_hash": "a70654bb0669cd7418f11b78a7a773eb",
+    "semantic_hash": "a70654bb0669cd7418f11b78a7a773eb"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/RequestPreferredMaterialResponse.java": {
+    "mtime": 1780634818.2574143,
+    "ast_hash": "ab8d241d4334a2cd7c4f212a204a217e",
+    "semantic_hash": "ab8d241d4334a2cd7c4f212a204a217e"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/SolicitudParaPresupuestoResponse.java": {
+    "mtime": 1782812694.1399326,
+    "ast_hash": "9530bb1154562c9038dba001d4d1585d",
+    "semantic_hash": "9530bb1154562c9038dba001d4d1585d"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/dto/UpdateEstadoRequest.java": {
+    "mtime": 1780634818.2574143,
+    "ast_hash": "1c7ca2ada217f56a10caa400b6a717b5",
+    "semantic_hash": "1c7ca2ada217f56a10caa400b6a717b5"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/enums/EstadoSolicitud.java": {
+    "mtime": 1783416860.3946295,
+    "ast_hash": "c5eddec93e6e35b4031a85e224de89be",
+    "semantic_hash": "c5eddec93e6e35b4031a85e224de89be"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/enums/ExplanationType.java": {
+    "mtime": 1780634818.2584424,
+    "ast_hash": "4b24431b4b689ba04770218b41d1bcae",
+    "semantic_hash": "4b24431b4b689ba04770218b41d1bcae"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/model/KitCustomizedMaterial.java": {
+    "mtime": 1780634818.2589526,
+    "ast_hash": "f1cc11b9460b85624fda57db196fcaba",
+    "semantic_hash": "f1cc11b9460b85624fda57db196fcaba"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/model/KitMaqueta.java": {
+    "mtime": 1780634818.2589526,
+    "ast_hash": "0bc4c9a992df832501a20ca5312cf302",
+    "semantic_hash": "0bc4c9a992df832501a20ca5312cf302"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/model/KitPersonalMaterial.java": {
+    "mtime": 1780634818.2594697,
+    "ast_hash": "f8f1fe96b82293313e57b0c94fbf6bf5",
+    "semantic_hash": "f8f1fe96b82293313e57b0c94fbf6bf5"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/model/PurchaseRequest.java": {
+    "mtime": 1783416869.0638044,
+    "ast_hash": "066bb207d45425226223b9c84c39f9d7",
+    "semantic_hash": "066bb207d45425226223b9c84c39f9d7"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/model/RequestPreferredMaterial.java": {
+    "mtime": 1780634818.2599761,
+    "ast_hash": "8d052905702277e5753285558215cb71",
+    "semantic_hash": "8d052905702277e5753285558215cb71"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/repository/KitCustomizedMaterialRepository.java": {
+    "mtime": 1780634818.2604935,
+    "ast_hash": "24ab1cf24e603bfd8d13cc9507d931e5",
+    "semantic_hash": "24ab1cf24e603bfd8d13cc9507d931e5"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/repository/KitMaquetaRepository.java": {
+    "mtime": 1780634818.261004,
+    "ast_hash": "196f39e91b84271540866e04bd20db57",
+    "semantic_hash": "196f39e91b84271540866e04bd20db57"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/repository/KitPersonalMaterialRepository.java": {
+    "mtime": 1780634818.261004,
+    "ast_hash": "f755d00a7df928e62a1f9ca525b6c532",
+    "semantic_hash": "f755d00a7df928e62a1f9ca525b6c532"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/repository/PurchaseRequestRepository.java": {
+    "mtime": 1783404625.3864303,
+    "ast_hash": "f154b73a5f7051984c2a90869e0030b4",
+    "semantic_hash": "f154b73a5f7051984c2a90869e0030b4"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/repository/RequestPreferredMaterialRepository.java": {
+    "mtime": 1780634818.2615182,
+    "ast_hash": "a6f4ecd2544340713e151da04f41b235",
+    "semantic_hash": "a6f4ecd2544340713e151da04f41b235"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/service/PurchaseRequestService.java": {
+    "mtime": 1783417562.1768405,
+    "ast_hash": "cf2f2e62b557ffb09d3e06d85ae2615e",
+    "semantic_hash": "cf2f2e62b557ffb09d3e06d85ae2615e"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/requests/service/impl/PurchaseRequestServiceImpl.java": {
+    "mtime": 1783416891.632658,
+    "ast_hash": "d181175f5ceefeb7ad72f62cb7770ea8",
+    "semantic_hash": "d181175f5ceefeb7ad72f62cb7770ea8"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/users/model/User.java": {
+    "mtime": 1780634941.831756,
+    "ast_hash": "baa3edf18d3411aa3934d296409df940",
+    "semantic_hash": "baa3edf18d3411aa3934d296409df940"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/users/repository/UserRepository.java": {
+    "mtime": 1782812694.1419327,
+    "ast_hash": "aed501401ebfe6746fa50d9d7b5a711f",
+    "semantic_hash": "aed501401ebfe6746fa50d9d7b5a711f"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendor/controller/VendorController.java": {
+    "mtime": 1780634818.2640429,
+    "ast_hash": "7efa53622bb7bc7bd74380e72f86155e",
+    "semantic_hash": "7efa53622bb7bc7bd74380e72f86155e"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendor/dto/DashboardStatsResponse.java": {
+    "mtime": 1780634818.2640429,
+    "ast_hash": "7401266adfe836e73015b80d9b848289",
+    "semantic_hash": "7401266adfe836e73015b80d9b848289"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendor/dto/MaquetaStatsResponse.java": {
+    "mtime": 1780634818.2650456,
+    "ast_hash": "81a864bedcbe60c66fd2f6ee21e78a75",
+    "semantic_hash": "81a864bedcbe60c66fd2f6ee21e78a75"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendor/dto/ProductAnalysisResponse.java": {
+    "mtime": 1780634818.2650456,
+    "ast_hash": "58dffe8699d423df0dd5d8269b43909d",
+    "semantic_hash": "58dffe8699d423df0dd5d8269b43909d"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendor/service/VendorService.java": {
+    "mtime": 1780634818.2650456,
+    "ast_hash": "e811854011d30058c162b0bed3c92834",
+    "semantic_hash": "e811854011d30058c162b0bed3c92834"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendor/service/impl/VendorServiceImpl.java": {
+    "mtime": 1780634818.2660458,
+    "ast_hash": "c2900ab2b10a12d45fef910c4ef35543",
+    "semantic_hash": "c2900ab2b10a12d45fef910c4ef35543"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendors/model/Vendor.java": {
+    "mtime": 1780634941.8322709,
+    "ast_hash": "0085a5133c64224e9231ad48f797087e",
+    "semantic_hash": "0085a5133c64224e9231ad48f797087e"
+  },
+  "backend/src/main/java/com/amazonas/backend/modules/vendors/repository/VendorRepository.java": {
+    "mtime": 1782812694.1429338,
+    "ast_hash": "cf81d7b8ce5206673185386f97956888",
+    "semantic_hash": "cf81d7b8ce5206673185386f97956888"
+  },
+  "backend/src/main/java/com/amazonas/backend/security/config/CloudinaryConfig.java": {
+    "mtime": 1780634818.267047,
+    "ast_hash": "9c598d0da9af6fcbd2e1d663c0a9b4b3",
+    "semantic_hash": "9c598d0da9af6fcbd2e1d663c0a9b4b3"
+  },
+  "backend/src/main/java/com/amazonas/backend/security/config/SecurityConfig.java": {
+    "mtime": 1783401021.913889,
+    "ast_hash": "0190ecc0a024e24e50fa1f9b7b45cc1d",
+    "semantic_hash": "0190ecc0a024e24e50fa1f9b7b45cc1d"
+  },
+  "backend/src/main/java/com/amazonas/backend/security/jwt/JwtFilter.java": {
+    "mtime": 1780634818.2684727,
+    "ast_hash": "b9f0933788247c6f485a48b6d2044bbf",
+    "semantic_hash": "b9f0933788247c6f485a48b6d2044bbf"
+  },
+  "backend/src/main/java/com/amazonas/backend/security/jwt/JwtService.java": {
+    "mtime": 1780634818.2689774,
+    "ast_hash": "93225bbc73c67a95ae6fefcfbe59fe62",
+    "semantic_hash": "93225bbc73c67a95ae6fefcfbe59fe62"
+  },
+  "backend/src/main/java/com/amazonas/backend/security/service/CustomUserDetailsService.java": {
+    "mtime": 1782812694.1439338,
+    "ast_hash": "b4ef6f9a58eb9722fb3561b89bf94b95",
+    "semantic_hash": "b4ef6f9a58eb9722fb3561b89bf94b95"
+  },
+  "backend/src/main/resources/db/migration/V1__chat_module.sql": {
+    "mtime": 1782812694.144933,
+    "ast_hash": "74e7964179c30fa7d313463de3d6fc3d",
+    "semantic_hash": "74e7964179c30fa7d313463de3d6fc3d"
+  },
+  "backend/src/main/resources/db/migration/V2__payment_transactions.sql": {
+    "mtime": 1782812694.144933,
+    "ast_hash": "0189f9eb7295bd4b38632bae9dab642a",
+    "semantic_hash": "0189f9eb7295bd4b38632bae9dab642a"
+  },
+  "backend/src/main/resources/db/migration/V5__add_presencial_budgets.sql": {
+    "mtime": 1782812694.145933,
+    "ast_hash": "967c64745e74a9245a7425157970f02a",
+    "semantic_hash": "967c64745e74a9245a7425157970f02a"
+  },
+  "backend/src/main/resources/db/migration/V6__add_payment_details_columns.sql": {
+    "mtime": 1783400994.2258656,
+    "ast_hash": "ec439384ecd30e8c6027257832358d87",
+    "semantic_hash": "ec439384ecd30e8c6027257832358d87"
+  },
+  "backend/src/main/resources/db/migration/V7__add_cancellation_reason.sql": {
+    "mtime": 1783416854.224238,
+    "ast_hash": "34c9820a27b107060249cf04a6677e45",
+    "semantic_hash": "34c9820a27b107060249cf04a6677e45"
+  },
+  "backend/src/test/java/com/amazonas/backend/BackendApplicationTests.java": {
+    "mtime": 1783401077.9978597,
+    "ast_hash": "85d684fce9d8dbd6d086c5f793dd7322",
+    "semantic_hash": "85d684fce9d8dbd6d086c5f793dd7322"
+  },
+  "frontend/.vscode/extensions.json": {
+    "mtime": 1780634818.2726035,
+    "ast_hash": "66fd9e60d4633b6099fe02e06a7075ea",
+    "semantic_hash": "66fd9e60d4633b6099fe02e06a7075ea"
+  },
+  "frontend/.vscode/launch.json": {
+    "mtime": 1780634818.273116,
+    "ast_hash": "430386a2f03e9d559664c196344c121b",
+    "semantic_hash": "430386a2f03e9d559664c196344c121b"
+  },
+  "frontend/.vscode/tasks.json": {
+    "mtime": 1780634818.273631,
+    "ast_hash": "d2fc2624d783980be281b4cf0acc2455",
+    "semantic_hash": "d2fc2624d783980be281b4cf0acc2455"
+  },
+  "frontend/angular.json": {
+    "mtime": 1782815543.1751554,
+    "ast_hash": "78c6ff0f9740b1a59745d4f003eb395b",
+    "semantic_hash": "78c6ff0f9740b1a59745d4f003eb395b"
+  },
+  "frontend/package.json": {
+    "mtime": 1782812694.1490004,
+    "ast_hash": "fc0d47466f8682f26fc6cce2c8b23745",
+    "semantic_hash": "fc0d47466f8682f26fc6cce2c8b23745"
+  },
+  "frontend/src/app/app.config.ts": {
+    "mtime": 1780634818.3262382,
+    "ast_hash": "95a9c4665d31da6c1669def604108cc0",
+    "semantic_hash": "95a9c4665d31da6c1669def604108cc0"
+  },
+  "frontend/src/app/app.routes.ts": {
+    "mtime": 1780634818.3272376,
+    "ast_hash": "41e4bac7a1d7cd48f4d03907407942d3",
+    "semantic_hash": "41e4bac7a1d7cd48f4d03907407942d3"
+  },
+  "frontend/src/app/app.spec.ts": {
+    "mtime": 1780634818.3282378,
+    "ast_hash": "58489e3159e97183b93c5ffb8db8584e",
+    "semantic_hash": "58489e3159e97183b93c5ffb8db8584e"
+  },
+  "frontend/src/app/app.ts": {
+    "mtime": 1780634941.8343258,
+    "ast_hash": "05452482296a75769a687e7c357cef59",
+    "semantic_hash": "05452482296a75769a687e7c357cef59"
+  },
+  "frontend/src/app/config/api.config.ts": {
+    "mtime": 1782812694.15,
+    "ast_hash": "242f0008bf3faf8d3ab11cb91b9e0477",
+    "semantic_hash": "242f0008bf3faf8d3ab11cb91b9e0477"
+  },
+  "frontend/src/app/models/auth.model.ts": {
+    "mtime": 1780634818.3295827,
+    "ast_hash": "c16da96212ce72d8f831b434a0c4665e",
+    "semantic_hash": "c16da96212ce72d8f831b434a0c4665e"
+  },
+  "frontend/src/app/models/budget.model.ts": {
+    "mtime": 1782812694.15,
+    "ast_hash": "866523be5ec2c270746f091ec544b7d1",
+    "semantic_hash": "866523be5ec2c270746f091ec544b7d1"
+  },
+  "frontend/src/app/models/category.model.ts": {
+    "mtime": 1780634818.3301005,
+    "ast_hash": "83437d311dd317e3cb6b037c2006a074",
+    "semantic_hash": "83437d311dd317e3cb6b037c2006a074"
+  },
+  "frontend/src/app/models/chat.model.ts": {
+    "mtime": 1783419038.4916794,
+    "ast_hash": "6f077dab127ca0a744fe810aa1c1fc03",
+    "semantic_hash": "6f077dab127ca0a744fe810aa1c1fc03"
+  },
+  "frontend/src/app/models/material.model.ts": {
+    "mtime": 1780634818.3301005,
+    "ast_hash": "4cec05af608c56af8839cf9625719d5f",
+    "semantic_hash": "4cec05af608c56af8839cf9625719d5f"
+  },
+  "frontend/src/app/models/product.model.ts": {
+    "mtime": 1780634941.8348382,
+    "ast_hash": "3ad80810c14df20d2e90eb6179611aca",
+    "semantic_hash": "3ad80810c14df20d2e90eb6179611aca"
+  },
+  "frontend/src/app/models/purchase-request.model.ts": {
+    "mtime": 1783416906.7734568,
+    "ast_hash": "fcc934217d5ef9f0c325eed874d090fc",
+    "semantic_hash": "fcc934217d5ef9f0c325eed874d090fc"
+  },
+  "frontend/src/app/pages/data/model.ts": {
+    "mtime": 1780634818.3352225,
+    "ast_hash": "8b26e04c75bd476d0e0502d46ae2bc40",
+    "semantic_hash": "8b26e04c75bd476d0e0502d46ae2bc40"
+  },
+  "frontend/src/app/pages/navbar-cliente/components/footer/footer.component.ts": {
+    "mtime": 1780634941.8363936,
+    "ast_hash": "d52ba584b180d53736883aa915788b09",
+    "semantic_hash": "d52ba584b180d53736883aa915788b09"
+  },
+  "frontend/src/app/pages/navbar-cliente/components/header/header.component.ts": {
+    "mtime": 1782812694.151999,
+    "ast_hash": "22968745e1536f6f46254b3f2b21c5de",
+    "semantic_hash": "22968745e1536f6f46254b3f2b21c5de"
+  },
+  "frontend/src/app/pages/navbar-cliente/navbar-cliente.component.ts": {
+    "mtime": 1782812694.1530006,
+    "ast_hash": "fc64fe0a1eb9d5409f74bb53fc3cc1d8",
+    "semantic_hash": "fc64fe0a1eb9d5409f74bb53fc3cc1d8"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/auth/auth.component.ts": {
+    "mtime": 1782812694.1540003,
+    "ast_hash": "e2a72a25e1876b986630a945fb3b2057",
+    "semantic_hash": "e2a72a25e1876b986630a945fb3b2057"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/catalog-detail/catalog-detail.component.ts": {
+    "mtime": 1782812694.1549993,
+    "ast_hash": "3e87309e65ed335fb17bc9d97eed0844",
+    "semantic_hash": "3e87309e65ed335fb17bc9d97eed0844"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/catalog/catalog.component.ts": {
+    "mtime": 1780634941.8436234,
+    "ast_hash": "b9f516e41b4b47868cb1a7a83e090eaf",
+    "semantic_hash": "b9f516e41b4b47868cb1a7a83e090eaf"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/categories/categories.component.ts": {
+    "mtime": 1782812694.1569993,
+    "ast_hash": "51608409500e7f6e2e09ed25b9da60ab",
+    "semantic_hash": "51608409500e7f6e2e09ed25b9da60ab"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/chat/chat.component.ts": {
+    "mtime": 1783405143.5396008,
+    "ast_hash": "dff0038083ff7b57dcc6c9a625d57235",
+    "semantic_hash": "dff0038083ff7b57dcc6c9a625d57235"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/inicio/inicio.component.ts": {
+    "mtime": 1782812694.160386,
+    "ast_hash": "ef53f753e60af84e73bb3aebe0722e6a",
+    "semantic_hash": "ef53f753e60af84e73bb3aebe0722e6a"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/my-requests/my-requests.component.ts": {
+    "mtime": 1783416929.8947227,
+    "ast_hash": "6435ee24976348ef6190b01f5963ef0b",
+    "semantic_hash": "6435ee24976348ef6190b01f5963ef0b"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/nosotros/nosotros.component.ts": {
+    "mtime": 1780634941.8493042,
+    "ast_hash": "3fd20473c684ee22a0824c3f0e51a00b",
+    "semantic_hash": "3fd20473c684ee22a0824c3f0e51a00b"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/request-form/request-form.component.ts": {
+    "mtime": 1783416917.363762,
+    "ast_hash": "1428aabede0639e901891e42742682c6",
+    "semantic_hash": "1428aabede0639e901891e42742682c6"
+  },
+  "frontend/src/app/pages/navbar-cliente/sections/reset-password/reset-password.component.ts": {
+    "mtime": 1780634941.8518727,
+    "ast_hash": "51100adea6cdb1cb2846066f2ecf92bf",
+    "semantic_hash": "51100adea6cdb1cb2846066f2ecf92bf"
+  },
+  "frontend/src/app/pages/navbar-vendedor/navbar-vendedor.component.ts": {
+    "mtime": 1782812694.1658883,
+    "ast_hash": "bceefc19714e7c8cc5d17618e82731c5",
+    "semantic_hash": "bceefc19714e7c8cc5d17618e82731c5"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/dashboard/dashboard.component.ts": {
+    "mtime": 1783316903.1786878,
+    "ast_hash": "a4c781fb985694cc7d9f2a90982e114a",
+    "semantic_hash": "a4c781fb985694cc7d9f2a90982e114a"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/flujo-pagos/flujodepagos.component.ts": {
+    "mtime": 1783330831.655604,
+    "ast_hash": "5e31f18ad27aba6c16be7096306ca339",
+    "semantic_hash": "5e31f18ad27aba6c16be7096306ca339"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/gestion-stock/gestion-stock.component.ts": {
+    "mtime": 1781605868.7883353,
+    "ast_hash": "d8ae4f4e410c9c7df4105232a6374edc",
+    "semantic_hash": "d8ae4f4e410c9c7df4105232a6374edc"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/maqueta/combobox-input/combobox-input.component.ts": {
+    "mtime": 1780634818.3466434,
+    "ast_hash": "0a02dfa8e60d3ca7822a3c738a3d4467",
+    "semantic_hash": "0a02dfa8e60d3ca7822a3c738a3d4467"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/maqueta/maqueta.component.ts": {
+    "mtime": 1780634941.8539283,
+    "ast_hash": "74ada54fd67f039e7f6be93d78f06227",
+    "semantic_hash": "74ada54fd67f039e7f6be93d78f06227"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/materiales/materiales.component.ts": {
+    "mtime": 1783065364.0100374,
+    "ast_hash": "b965da9f1ad22aee01a856f32bfd3499",
+    "semantic_hash": "b965da9f1ad22aee01a856f32bfd3499"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/presupuestos/presupuestos.component.ts": {
+    "mtime": 1783398114.2352057,
+    "ast_hash": "fdda22f9f30b13e4d783df3ea9c27456",
+    "semantic_hash": "fdda22f9f30b13e4d783df3ea9c27456"
+  },
+  "frontend/src/app/pages/navbar-vendedor/sections/solicitudes/solicitudes.component.ts": {
+    "mtime": 1783417265.2133296,
+    "ast_hash": "ded1e8f419e158993203e9ef4434e259",
+    "semantic_hash": "ded1e8f419e158993203e9ef4434e259"
+  },
+  "frontend/src/app/pages/shared/components/buscador-inteligente/buscador-inteligente.spec.ts": {
+    "mtime": 1780634818.3533287,
+    "ast_hash": "8b3e3558bfe30f69bc9a1a0ff954b2c0",
+    "semantic_hash": "8b3e3558bfe30f69bc9a1a0ff954b2c0"
+  },
+  "frontend/src/app/pages/shared/components/buscador-inteligente/buscador-inteligente.ts": {
+    "mtime": 1780634941.8544428,
+    "ast_hash": "92a36a2edcf6596a2a4b94f23d5cefb1",
+    "semantic_hash": "92a36a2edcf6596a2a4b94f23d5cefb1"
+  },
+  "frontend/src/app/pages/shared/components/payment-modal/payment-modal.component.ts": {
+    "mtime": 1783399754.4853406,
+    "ast_hash": "1b1afe25093b777a8af67797eae942d5",
+    "semantic_hash": "1b1afe25093b777a8af67797eae942d5"
+  },
+  "frontend/src/app/services/auth.interceptor.ts": {
+    "mtime": 1782812694.1759112,
+    "ast_hash": "272fc0784d9fd5e906d0f2dceb555752",
+    "semantic_hash": "272fc0784d9fd5e906d0f2dceb555752"
+  },
+  "frontend/src/app/services/auth.service.ts": {
+    "mtime": 1782812694.1769102,
+    "ast_hash": "d48bdc3f8f1057b0eb3c617d4e339f27",
+    "semantic_hash": "d48bdc3f8f1057b0eb3c617d4e339f27"
+  },
+  "frontend/src/app/services/budget.service.ts": {
+    "mtime": 1782812694.1769102,
+    "ast_hash": "0f8a2d97a4a2dfa86e5b1dcd0907b26c",
+    "semantic_hash": "0f8a2d97a4a2dfa86e5b1dcd0907b26c"
+  },
+  "frontend/src/app/services/category.service.ts": {
+    "mtime": 1780634818.3570826,
+    "ast_hash": "04601701f868ab716d54906bd5d2dfb6",
+    "semantic_hash": "04601701f868ab716d54906bd5d2dfb6"
+  },
+  "frontend/src/app/services/chat.service.ts": {
+    "mtime": 1782812694.17808,
+    "ast_hash": "10b587ccf4ea971609c0d66c1795382f",
+    "semantic_hash": "10b587ccf4ea971609c0d66c1795382f"
+  },
+  "frontend/src/app/services/file.service.ts": {
+    "mtime": 1782812694.17808,
+    "ast_hash": "4ceab9e2590c90654cd89b7397b63baa",
+    "semantic_hash": "4ceab9e2590c90654cd89b7397b63baa"
+  },
+  "frontend/src/app/services/maqueta.service.ts": {
+    "mtime": 1780634818.362142,
+    "ast_hash": "0de8610028716cd48520f44760efdd39",
+    "semantic_hash": "0de8610028716cd48520f44760efdd39"
+  },
+  "frontend/src/app/services/material.service.ts": {
+    "mtime": 1782812694.17808,
+    "ast_hash": "1623e5a2a24e360fa7db41938d5a0b8e",
+    "semantic_hash": "1623e5a2a24e360fa7db41938d5a0b8e"
+  },
+  "frontend/src/app/services/purchase-request.service.ts": {
+    "mtime": 1783416912.1586094,
+    "ast_hash": "2d04a847825413fa175967d7b014c299",
+    "semantic_hash": "2d04a847825413fa175967d7b014c299"
+  },
+  "frontend/src/env.d.ts": {
+    "mtime": 1782812694.179079,
+    "ast_hash": "8c81ef9c861543ed74608e6953613982",
+    "semantic_hash": "8c81ef9c861543ed74608e6953613982"
+  },
+  "frontend/src/environments/environment.prod.ts": {
+    "mtime": 1782812694.1800783,
+    "ast_hash": "a64ed642219f54dd09907be73ebcf8ec",
+    "semantic_hash": "a64ed642219f54dd09907be73ebcf8ec"
+  },
+  "frontend/src/main.ts": {
+    "mtime": 1780634818.3656363,
+    "ast_hash": "6bfc1254003c2fb173395d1d6d348c60",
+    "semantic_hash": "6bfc1254003c2fb173395d1d6d348c60"
+  },
+  "frontend/tsconfig.app.json": {
+    "mtime": 1780634818.3666663,
+    "ast_hash": "475495eaf9ee6db2e7dddc0e8346532b",
+    "semantic_hash": "475495eaf9ee6db2e7dddc0e8346532b"
+  },
+  "frontend/tsconfig.json": {
+    "mtime": 1780634818.3666663,
+    "ast_hash": "481934fa92ea3deadda691e7aa66ff31",
+    "semantic_hash": "481934fa92ea3deadda691e7aa66ff31"
+  },
+  "frontend/tsconfig.spec.json": {
+    "mtime": 1780634818.3671806,
+    "ast_hash": "0891794fdaf36889f38d7dead2a9aef0",
+    "semantic_hash": "0891794fdaf36889f38d7dead2a9aef0"
+  },
+  "frontend/vercel.json": {
+    "mtime": 1782815543.175664,
+    "ast_hash": "1a87e096b973b47f00a05b738424c0ce",
+    "semantic_hash": "1a87e096b973b47f00a05b738424c0ce"
+  }
+}

@@ -50,53 +50,55 @@ public class BudgetController {
         try {
             BudgetResponse response = budgetService.obtenerPorSolicitudId(solicitudId);
             
-            boolean isVendor = userDetails.getAuthorities().stream()
+            boolean isVendor = userDetails != null && userDetails.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ADMIN"));
                     
             if (isVendor) {
                 BudgetVendorResponse vendorResponse = new BudgetVendorResponse(
-                    response.getId(),
-                    response.getSolicitudId(),
-                    response.getNombre(),
-                    response.getDescripcion(),
-                    response.getCodigoReferencia(),
-                    response.getEstado(),
-                    response.getManoDeObra(),
-                    response.getMargenGanancia(),
-                    response.getCostoMateriales(),
-                    response.getSubtotal(),
-                    response.getGanancia(),
-                    response.getTotal(),
-                    response.getAdelantoRequerido(),
-                    response.getAdelantoPorcentaje(),
-                    response.getAdelantoMonto(),
-                    response.getItems(),
-                    response.getServicioExplicacion()
+                    response.id(),
+                    response.solicitudId(),
+                    response.nombre(),
+                    response.descripcion(),
+                    response.codigoReferencia(),
+                    response.estado(),
+                    response.manoDeObra(),
+                    response.margenGanancia(),
+                    response.costoMateriales(),
+                    response.subtotal(),
+                    response.ganancia(),
+                    response.total(),
+                    response.adelantoRequerido(),
+                    response.adelantoPorcentaje(),
+                    response.adelantoMonto(),
+                    response.items(),
+                    response.servicioExplicacion()
                 );
                 return ResponseEntity.ok(vendorResponse);
             } else {
-                List<String> materialesIncluidos = response.getItems().stream()
-                        .map(item -> item.getMaterialNombre() + " (" + item.getCantidad() + ")")
+                List<String> materialesIncluidos = response.items().stream()
+                        .filter(item -> item.materialNombre() != null)
+                        .map(item -> item.materialNombre() + " (" + item.cantidad() + ")")
                         .collect(Collectors.toList());
                         
                 BudgetClientResponse clientResponse = new BudgetClientResponse(
-                    response.getId(),
-                    response.getSolicitudId(),
-                    response.getNombre(),
-                    response.getDescripcion(),
-                    response.getCodigoReferencia(),
-                    response.getEstado(),
-                    response.getTotal(),
-                    response.getAdelantoRequerido(),
-                    response.getAdelantoPorcentaje(),
-                    response.getAdelantoMonto(),
+                    response.id(),
+                    response.solicitudId(),
+                    response.nombre(),
+                    response.descripcion(),
+                    response.codigoReferencia(),
+                    response.estado(),
+                    response.total(),
+                    response.adelantoRequerido(),
+                    response.adelantoPorcentaje(),
+                    response.adelantoMonto(),
                     materialesIncluidos,
-                    response.getServicioExplicacion()
+                    response.servicioExplicacion()
                 );
                 return ResponseEntity.ok(clientResponse);
             }
         } catch (org.springframework.web.server.ResponseStatusException ex) {
             if (ex.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND) {
+                // No hay presupuesto aún para esta solicitud — respuesta limpia para el cliente
                 return ResponseEntity.ok().build();
             }
             throw ex;

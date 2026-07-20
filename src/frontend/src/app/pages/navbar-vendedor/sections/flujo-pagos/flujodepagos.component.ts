@@ -6,6 +6,8 @@ import { PurchaseRequestService } from '../../../../services/purchase-request.se
 import { MaterialService } from '../../../../services/material.service';
 import { MaquetaService } from '../../../../services/maqueta.service';
 import { BudgetService } from '../../../../services/budget.service';
+import { FileService } from '../../../../services/file.service';
+import { PaymentModalComponent, PaymentConfirmPayload } from '../../../shared/components/payment-modal/payment-modal.component';
 
 
 type PaymentMethod = 'Online' | 'Fisico';
@@ -27,14 +29,21 @@ interface PaymentForm {
 }
 
 interface PendingBalance {
+    id: string;
     client: string;
     email: string;
     project: string;
     materials: string;
+    materialItems?: { name: string; qty: number }[];
     method: PaymentMethod;
     amount: number;
     dueDate: string;
     solicitudId?: string;
+    budgetId?: string;
+    realSolicitudId?: string;
+    tipoVenta: 'ONLINE' | 'PRESENCIAL';
+    fechaObj: Date;
+    fechaFormatted: string;
 }
 
 interface Transaction {
@@ -50,12 +59,18 @@ interface Transaction {
     status: 'online' | 'fisico';
     projectName?: string;
     solicitudId?: string;
+    realProfit?: number;
+    fechaObj?: Date;
+    montoRecibido?: number;
+    vuelto?: number;
+    codigoSeguridad?: string;
+    voucherUrl?: string;
 }
 
 @Component({
     selector: 'app-flujodepagos',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, PaymentModalComponent],
     templateUrl: './flujodepagos.component.html',
     styleUrl: './flujodepagos.component.css'
 })
@@ -65,6 +80,7 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     private readonly materialService = inject(MaterialService);
     private readonly maquetaService = inject(MaquetaService);
     private readonly budgetService = inject(BudgetService);
+    private readonly fileService = inject(FileService);
 
     @Input() prefilledData: any = null;
     @Output() pagoRegistrado = new EventEmitter<void>();
@@ -133,8 +149,102 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     // =========================================================================
     // NUEVO ESTADO DEL PROTOTIPO (ISSUE 3)
     // =========================================================================
-    activeSubTab: 'dashboard' | 'venta' | 'saldos' | 'auditoria' = 'dashboard';
+    activeSubTab: 'dashboard' | 'saldos' | 'auditoria' = 'dashboard';
     filtroPeriodoDashboard: 'hoy' | 'semana' | 'mes' = 'mes';
+    chartPeriodFilter: 'semanas' | 'meses' | 'dias' = 'meses';
+
+    // Filtros y ordenamiento para Saldos Pendientes
+    filtroCanalPendientes: 'todos' | 'presencial' | 'online' = 'todos';
+    ordenPendientes: 'reciente' | 'antiguo' | 'monto_desc' | 'monto_asc' = 'reciente';
+    fechaInicioPendientes: string = '';
+    fechaFinPendientes: string = '';
+
+    // Paginación para Saldos Pendientes
+    paginaActualPendientes: number = 1;
+    itemsPorPaginaPendientes: number = 5;
+
+    onFiltroPendientesChange(): void {
+        this.paginaActualPendientes = 1;
+    }
+
+    limpiarFiltrosPendientes(): void {
+        this.fechaInicioPendientes = '';
+        this.fechaFinPendientes = '';
+        this.filtroCanalPendientes = 'todos';
+        this.ordenPendientes = 'reciente';
+        this.paginaActualPendientes = 1;
+    }
+
+    get saldosPendientesFiltrados(): PendingBalance[] {
+        let list = [...this.pendingBalances];
+
+        // Filtro por Canal
+        if (this.filtroCanalPendientes === 'presencial') {
+            list = list.filter(b => b.tipoVenta === 'PRESENCIAL');
+        } else if (this.filtroCanalPendientes === 'online') {
+            list = list.filter(b => b.tipoVenta === 'ONLINE');
+        }
+
+        // Filtro por Rango de Fechas (Formato local YYYY-MM-DD sin desfasaje de zona horaria)
+        if (this.fechaInicioPendientes) {
+            const parts = this.fechaInicioPendientes.split('-');
+            if (parts.length === 3) {
+                const start = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 0, 0, 0);
+                list = list.filter(b => b.fechaObj >= start);
+            }
+        }
+        if (this.fechaFinPendientes) {
+            const parts = this.fechaFinPendientes.split('-');
+            if (parts.length === 3) {
+                const end = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 23, 59, 59, 999);
+                list = list.filter(b => b.fechaObj <= end);
+            }
+        }
+
+        // Ordenamiento
+        list.sort((a, b) => {
+            if (this.ordenPendientes === 'reciente') {
+                return b.fechaObj.getTime() - a.fechaObj.getTime();
+            } else if (this.ordenPendientes === 'antiguo') {
+                return a.fechaObj.getTime() - b.fechaObj.getTime();
+            } else if (this.ordenPendientes === 'monto_desc') {
+                return b.amount - a.amount;
+            } else if (this.ordenPendientes === 'monto_asc') {
+                return a.amount - b.amount;
+            }
+            return 0;
+        });
+
+        return list;
+    }
+
+    get totalPaginasPendientes(): number {
+        return Math.ceil(this.saldosPendientesFiltrados.length / this.itemsPorPaginaPendientes) || 1;
+    }
+
+    get paginasPendientesArray(): number[] {
+        return Array.from({ length: this.totalPaginasPendientes }, (_, i) => i + 1);
+    }
+
+    get saldosPendientesPaginados(): PendingBalance[] {
+        const inicio = (this.paginaActualPendientes - 1) * this.itemsPorPaginaPendientes;
+        return this.saldosPendientesFiltrados.slice(inicio, inicio + this.itemsPorPaginaPendientes);
+    }
+
+    get indiceInicioPendientes(): number {
+        if (this.saldosPendientesFiltrados.length === 0) return 0;
+        return (this.paginaActualPendientes - 1) * this.itemsPorPaginaPendientes + 1;
+    }
+
+    get indiceFinPendientes(): number {
+        return Math.min(this.paginaActualPendientes * this.itemsPorPaginaPendientes, this.saldosPendientesFiltrados.length);
+    }
+
+    cambiarPaginaPendientes(pagina: number): void {
+        if (pagina >= 1 && pagina <= this.totalPaginasPendientes) {
+            this.paginaActualPendientes = pagina;
+        }
+    }
 
     get transaccionesFiltradasDashboard(): Transaction[] {
         const hoy = new Date();
@@ -193,19 +303,150 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     }
 
     get gananciaHoy(): number {
-        return this.totalHoy * 0.3;
+        const hoy = new Date();
+        return this.transactions
+            .filter(tx => {
+                const f = (tx as any).fechaObj;
+                return f && f.getDate() === hoy.getDate() &&
+                       f.getMonth() === hoy.getMonth() &&
+                       f.getFullYear() === hoy.getFullYear();
+            })
+            .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
     }
 
     get gananciaSemana(): number {
-        return this.totalSemana * 0.3;
+        const hoy = new Date();
+        return this.transactions
+            .filter(tx => {
+                const f = (tx as any).fechaObj;
+                if (!f) return false;
+                const diffTime = Math.abs(hoy.getTime() - f.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays <= 7;
+            })
+            .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
     }
 
     get gananciaMes(): number {
-        return this.totalMes * 0.3;
+        const hoy = new Date();
+        return this.transactions
+            .filter(tx => {
+                const f = (tx as any).fechaObj;
+                return f && f.getMonth() === hoy.getMonth() &&
+                       f.getFullYear() === hoy.getFullYear();
+            })
+            .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
     }
 
     get totalGananciaAcumulada(): number {
-        return this.transactions.reduce((sum, tx) => sum + tx.amount, 0) * 0.3;
+        return this.transactions.reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
+    }
+
+    get chartData() {
+        const hoy = new Date();
+        const intervals: { label: string; value: number }[] = [];
+
+        if (this.chartPeriodFilter === 'dias') {
+            // Últimos 7 días
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(hoy);
+                d.setDate(hoy.getDate() - i);
+                const label = d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
+                
+                const daySumProfit = this.transactions
+                    .filter(tx => {
+                        const f = (tx as any).fechaObj;
+                        return f && f.getDate() === d.getDate() && f.getMonth() === d.getMonth() && f.getFullYear() === d.getFullYear();
+                    })
+                    .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
+
+                intervals.push({ label, value: daySumProfit });
+            }
+        } else if (this.chartPeriodFilter === 'semanas') {
+            // Últimas 6 semanas
+            for (let i = 5; i >= 0; i--) {
+                const start = new Date(hoy);
+                start.setDate(hoy.getDate() - (i * 7 + 6));
+                const end = new Date(hoy);
+                end.setDate(hoy.getDate() - (i * 7));
+                const label = `Sem -${i}`;
+                
+                const weekSumProfit = this.transactions
+                    .filter(tx => {
+                        const f = (tx as any).fechaObj;
+                        return f && f >= start && f <= end;
+                    })
+                    .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
+
+                intervals.push({ label, value: weekSumProfit });
+            }
+        } else {
+            // Últimos 6 meses
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                const label = d.toLocaleDateString('es-ES', { month: 'short' });
+                
+                const monthSumProfit = this.transactions
+                    .filter(tx => {
+                        const f = (tx as any).fechaObj;
+                        return f && f.getMonth() === d.getMonth() && f.getFullYear() === d.getFullYear();
+                    })
+                    .reduce((sum, tx) => sum + (tx.realProfit || 0), 0);
+
+                intervals.push({ label, value: monthSumProfit });
+            }
+        }
+
+        // Encontrar valor máximo para escalar el gráfico
+        const maxVal = Math.max(...intervals.map(item => item.value), 100);
+        const yMax = Math.ceil(maxVal / 100) * 100; // redondear al siguiente centenar para la escala
+
+        const width = 500;
+        const height = 200;
+        const paddingLeft = 20;
+        const paddingRight = 20;
+        const paddingTop = 20;
+        const paddingBottom = 20;
+
+        const points = intervals.map((item, index) => {
+            const x = paddingLeft + (index / (intervals.length - 1)) * (width - paddingLeft - paddingRight);
+            const y = height - paddingBottom - (item.value / yMax) * (height - paddingTop - paddingBottom);
+            return {
+                label: item.label,
+                value: item.value,
+                x,
+                y
+            };
+        });
+
+        // Construir trayectorias SVG (Bezier suavizado)
+        let linePath = '';
+        let areaPath = '';
+
+        if (points.length > 0) {
+            linePath = `M ${points[0].x},${points[0].y}`;
+            for (let i = 1; i < points.length; i++) {
+                const cpX1 = points[i - 1].x + (points[i].x - points[i - 1].x) / 2;
+                const cpY1 = points[i - 1].y;
+                const cpX2 = points[i - 1].x + (points[i].x - points[i - 1].x) / 2;
+                const cpY2 = points[i].y;
+                linePath += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${points[i].x},${points[i].y}`;
+            }
+
+            areaPath = `${linePath} L ${points[points.length - 1].x},${height - paddingBottom} L ${points[0].x},${height - paddingBottom} Z`;
+        }
+
+        const yLabels: string[] = [];
+        for (let i = 5; i >= 0; i--) {
+            yLabels.push(`S/ ${(yMax * i / 5).toFixed(0)}`);
+        }
+
+        return {
+            points,
+            linePath,
+            areaPath,
+            yLabels
+        };
     }
 
     get maquetasVendidasStats(): { pred: number, custom: number } {
@@ -299,7 +540,7 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     // Selected Transaction for receipt view/print
     selectedReceiptForPrint: any = null;
 
-    setSubTab(tab: 'dashboard' | 'venta' | 'saldos' | 'auditoria'): void {
+    setSubTab(tab: 'dashboard' | 'saldos' | 'auditoria'): void {
         this.activeSubTab = tab;
         if (tab === 'auditoria' || tab === 'dashboard') {
             this.loadTransactions();
@@ -323,46 +564,9 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['prefilledData'] && this.prefilledData) {
-            this.isPrefilled = true;
-            this.paymentForm = {
-                client: this.prefilledData.client || '',
-                email: this.prefilledData.email || '',
-                phone: this.prefilledData.phone || '',
-                productType: this.prefilledData.productType || '',
-                materials: this.prefilledData.materials || '',
-                amount: this.prefilledData.amount || null,
-                method: this.prefilledData.method || '',
-                kind: this.prefilledData.kind || '',
-                date: this.prefilledData.date || new Date().toISOString().substring(0, 16),
-                operation: this.prefilledData.operation || '',
-                inventory: this.prefilledData.inventory ?? true,
-                voucherUrl: this.prefilledData.voucherUrl || ''
-            };
-            (this.paymentForm as any).roomId = this.prefilledData.roomId;
-            (this.paymentForm as any).solicitudId = this.prefilledData.solicitudId;
-            (this.paymentForm as any).messageId = this.prefilledData.messageId;
-
-            // Sync legacy prefilled data with prototype fields
-            if (this.paymentForm.productType.includes('Personalizado')) {
-                this.currentMaquetaTipo = 'personalizada';
-            } else {
-                this.currentMaquetaTipo = 'catalogo';
-            }
-
-            // Sync prefilled materials list into cartMaterials
-            if (this.prefilledData.materialesDetalle && this.prefilledData.materialesDetalle.length > 0) {
-                this.cartMaterials = this.prefilledData.materialesDetalle.map((m: any) => ({
-                    id: m.materialId || `mat-${Math.random()}`,
-                    name: m.nombre,
-                    price: m.costoVenta || 0,
-                    qty: m.cantidadSugerida || m.cantidad || 1
-                }));
-            } else {
-                this.cartMaterials = [];
-            }
-        } else if (changes['prefilledData'] && !this.prefilledData) {
-            this.isPrefilled = false;
-            this.cartMaterials = [];
+            this.activeSubTab = 'auditoria';
+            this.loadTransactions();
+            this.loadDailyStats();
         }
     }
 
@@ -377,8 +581,9 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                                 const chatRooms = rooms || [];
                                 this.chatService.getAllTransactions().subscribe({
                                     next: (mats) => {
+                                        let loadedTxs: Transaction[] = [];
                                         if (mats) {
-                                            this.transactions = mats.map(tx => {
+                                            loadedTxs = mats.map(tx => {
                                                 let projectName = '';
                                                 let solicitudId = tx.roomId;
 
@@ -389,8 +594,8 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                                                     }
                                                 }
 
-                                                if (solicitudId && reqs) {
-                                                    const sol = reqs.find(r => r.id === solicitudId);
+                                                if (solicitudId && reqs && reqs.content) {
+                                                    const sol = reqs.content.find((r: any) => r.id === solicitudId);
                                                     if (sol) {
                                                         projectName = sol.productoNombre || '';
                                                     }
@@ -399,6 +604,8 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                                                 if (!projectName) {
                                                     projectName = tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo';
                                                 }
+
+                                                const isPresencialTx = (tx.codigoOperacion && tx.codigoOperacion.includes('[PRESENCIAL]')) || tx.metodoPago === 'FISICO';
 
                                                 return {
                                                     client: tx.clientName,
@@ -416,13 +623,89 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                                                         hour: '2-digit',
                                                         minute: '2-digit'
                                                     }),
-                                                    status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
+                                                    status: isPresencialTx ? 'fisico' : 'online',
                                                     fechaObj: new Date(tx.fechaTransaccion),
                                                     projectName: projectName,
-                                                    solicitudId: solicitudId
+                                                    solicitudId: solicitudId,
+                                                    realProfit: this.calculateRealProfit(Number(tx.monto), solicitudId),
+                                                    montoRecibido: tx.montoRecibido ? Number(tx.montoRecibido) : undefined,
+                                                    vuelto: tx.vuelto ? Number(tx.vuelto) : undefined,
+                                                    codigoSeguridad: tx.codigoSeguridad || undefined,
+                                                    voucherUrl: tx.voucherUrl || undefined
                                                 };
                                             });
                                         }
+
+                                        // Incluir compras presenciales / presupuestos completados que no tengan registro duplicado
+                                        if (this.allBudgets && this.allBudgets.length > 0) {
+                                            this.allBudgets.forEach(budget => {
+                                                const isPresencial = budget.esPresencial || !budget.solicitudId;
+                                                const key = budget.id || budget.solicitudId || budget.nombre;
+                                                const isPagoConfirmado = budget.estado === 'COMPLETADO' || (key && localStorage.getItem('pago_confirmado_' + key) === 'true');
+                                                const isAdelantoPagado = key && localStorage.getItem('adelanto_pagado_' + key) === 'true';
+
+                                                const bEmail = (budget.clienteEmail || '').toLowerCase().trim();
+                                                const bName = (budget.clienteNombre || '').toLowerCase().trim();
+
+                                                const alreadyExists = loadedTxs.some(tx => {
+                                                    if (budget.solicitudId && tx.solicitudId && tx.solicitudId === budget.solicitudId) return true;
+                                                    if (budget.id && tx.operation && tx.operation.includes(budget.id)) return true;
+                                                    if (bEmail && tx.email && tx.email.toLowerCase().trim() === bEmail) return true;
+                                                    if (bName && tx.client && tx.client.toLowerCase().trim() === bName) return true;
+                                                    return false;
+                                                });
+
+                                                if (!alreadyExists && (isPresencial || isPagoConfirmado || isAdelantoPagado)) {
+                                                    const clientName = budget.clienteNombre || 'Cliente Presencial';
+                                                    const clientEmail = budget.clienteEmail || 'presencial@correo.com';
+                                                    const materialsStr = (budget.items || []).map((i: any) => `${i.cantidad}x ${i.materialNombre}`).join(', ') || 'Materiales del presupuesto';
+                                                    const fecha = budget.fechaCreacion ? new Date(budget.fechaCreacion) : new Date();
+
+                                                    if (isPagoConfirmado || budget.estado === 'COMPLETADO') {
+                                                        loadedTxs.push({
+                                                            client: clientName,
+                                                            email: clientEmail,
+                                                            productType: budget.isCustom ? 'Personalizada' : 'Predeterminada',
+                                                            materials: materialsStr,
+                                                            method: 'Fisico',
+                                                            kind: 'Total',
+                                                            amount: Number(budget.total || 0),
+                                                            operation: `PRESENCIAL-${budget.codigoReferencia || (budget.id ? budget.id.substring(0, 8) : 'Caja')}`,
+                                                            date: fecha.toLocaleDateString('es-PE', {
+                                                                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                            }),
+                                                            status: 'fisico',
+                                                            fechaObj: fecha,
+                                                            projectName: budget.nombre || 'Proyecto Maqueta Presencial',
+                                                            solicitudId: budget.solicitudId || budget.id,
+                                                            realProfit: this.calculateRealProfit(Number(budget.total || 0), budget.solicitudId)
+                                                        });
+                                                    } else if (isAdelantoPagado) {
+                                                        const adelantoMonto = Number(budget.adelantoMonto || (budget.total * 0.5));
+                                                        loadedTxs.push({
+                                                            client: clientName,
+                                                            email: clientEmail,
+                                                            productType: budget.isCustom ? 'Personalizada' : 'Predeterminada',
+                                                            materials: materialsStr,
+                                                            method: 'Fisico',
+                                                            kind: 'Adelanto',
+                                                            amount: adelantoMonto,
+                                                            operation: `ADELANTO-PRESENCIAL-${budget.codigoReferencia || (budget.id ? budget.id.substring(0, 8) : 'Caja')}`,
+                                                            date: fecha.toLocaleDateString('es-PE', {
+                                                                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                            }),
+                                                            status: 'fisico',
+                                                            fechaObj: fecha,
+                                                            projectName: budget.nombre || 'Proyecto Maqueta Presencial',
+                                                            solicitudId: budget.solicitudId || budget.id,
+                                                            realProfit: this.calculateRealProfit(adelantoMonto, budget.solicitudId)
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }
+
+                                        this.transactions = loadedTxs;
                                     },
                                     error: (err) => console.error('Error al cargar transacciones reales:', err)
                                 });
@@ -438,45 +721,28 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                 this.budgetService.listarTodos().subscribe({
                     next: (budgets) => {
                         this.allBudgets = budgets || [];
-                        this.chatService.getMyRooms().subscribe({
-                            next: (rooms) => {
-                                const chatRooms = rooms || [];
-                                this.chatService.getAllTransactions().subscribe({
-                                    next: (mats) => {
-                                        if (mats) {
-                                            this.transactions = mats.map(tx => {
-                                                let solicitudId = tx.roomId;
-                                                if (tx.roomId) {
-                                                    const room = chatRooms.find(r => r.id === tx.roomId);
-                                                    if (room) {
-                                                        solicitudId = room.requestId;
-                                                    }
-                                                }
-                                                return {
-                                                    client: tx.clientName,
-                                                    email: tx.clientEmail,
-                                                    productType: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Personalizada' : 'Predeterminada',
-                                                    materials: tx.materiales || 'Materiales estándar',
-                                                    method: tx.metodoPago === 'ONLINE' ? 'Online' : 'Fisico',
-                                                    kind: tx.tipoAbono === 'ADELANTO' ? 'Adelanto' : tx.tipoAbono === 'SALDO' ? 'Saldo' : 'Total',
-                                                    amount: Number(tx.monto),
-                                                    operation: tx.codigoOperacion || 'N/A',
-                                                    date: new Date(tx.fechaTransaccion).toLocaleDateString('es-PE', {
-                                                        day: '2-digit',
-                                                        month: 'short',
-                                                        year: 'numeric',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit'
-                                                    }),
-                                                    status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
-                                                    fechaObj: new Date(tx.fechaTransaccion),
-                                                    projectName: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo',
-                                                    solicitudId: solicitudId
-                                                };
-                                            });
-                                        }
-                                    }
-                                });
+                        this.chatService.getAllTransactions().subscribe({
+                            next: (mats) => {
+                                if (mats) {
+                                    this.transactions = mats.map(tx => ({
+                                        client: tx.clientName,
+                                        email: tx.clientEmail,
+                                        productType: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Personalizada' : 'Predeterminada',
+                                        materials: tx.materiales || 'Materiales estándar',
+                                        method: tx.metodoPago === 'ONLINE' ? 'Online' : 'Fisico',
+                                        kind: tx.tipoAbono === 'ADELANTO' ? 'Adelanto' : tx.tipoAbono === 'SALDO' ? 'Saldo' : 'Total',
+                                        amount: Number(tx.monto),
+                                        operation: tx.codigoOperacion || 'N/A',
+                                        date: new Date(tx.fechaTransaccion).toLocaleDateString('es-PE', {
+                                            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                        }),
+                                        status: tx.metodoPago === 'ONLINE' ? 'online' : 'fisico',
+                                        fechaObj: new Date(tx.fechaTransaccion),
+                                        projectName: tx.tipoMaqueta === 'PERSONALIZADA' ? 'Proyecto Personalizado' : 'Proyecto Catálogo',
+                                        solicitudId: tx.roomId,
+                                        realProfit: this.calculateRealProfit(Number(tx.monto), tx.roomId)
+                                    }));
+                                }
                             }
                         });
                     }
@@ -486,51 +752,130 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     }
 
     loadPendingBalances(): void {
-        this.requestService.listarTodas().subscribe({
-            next: (reqs) => {
-                if (reqs) {
-                    this.budgetService.listarTodos().subscribe({
-                        next: (budgets) => {
-                            this.pendingBalances = reqs
-                                .filter(r => r.estado === 'PROCESANDO')
-                                .map(r => {
-                                    const budget = budgets ? budgets.find(b => b.solicitudId === r.id) : null;
-                                    let amount = r.isCustom ? 187.85 : 120.00;
-                                    if (budget) {
-                                        amount = budget.total - budget.adelantoMonto;
+        this.requestService.listarTodas(undefined, true, 0, 1000).subscribe({
+            next: (reqPage: any) => {
+                const reqs = reqPage.content || [];
+                this.budgetService.listarTodos().subscribe({
+                    next: (budgets) => {
+                        this.allBudgets = budgets || [];
+                        const loadedBalances: PendingBalance[] = [];
+                        const processedBudgetIds = new Set<string>();
+
+                        // 1. Procesar Presupuestos (tanto Online como Presenciales) desde el backend
+                        if (budgets && budgets.length > 0) {
+                            budgets.forEach(b => {
+                                const isPresencial = Boolean(b.esPresencial) || !b.solicitudId;
+                                const key = b.id || b.solicitudId || b.nombre;
+                                const isPagoConfirmado = b.estado === 'COMPLETADO' || (key && localStorage.getItem('pago_confirmado_' + key) === 'true');
+                                const isAdelantoPagado = (key && localStorage.getItem('adelanto_pagado_' + key) === 'true') || Boolean(b.adelantoRequerido) || (Number(b.adelantoMonto || 0) > 0);
+
+                                if (isAdelantoPagado && !isPagoConfirmado && b.estado !== 'COMPLETADO') {
+                                    if (b.id) processedBudgetIds.add(b.id);
+                                    if (b.solicitudId) processedBudgetIds.add(b.solicitudId);
+
+                                    const montoAdelanto = Number(b.adelantoMonto || (Number(b.total || 0) * 0.5));
+                                    const saldoPendiente = Math.max(0, Number(b.total || 0) - montoAdelanto);
+
+                                    if (saldoPendiente > 0) {
+                                        const rawDate = b.createdAt || (b as any).fechaCreacion;
+                                        const fecha = rawDate ? new Date(rawDate) : new Date();
+                                        const materialItems = (b.items || []).map((i: any) => ({
+                                            name: i.materialNombre || 'Material',
+                                            qty: Number(i.cantidad || 1)
+                                        }));
+
+                                        const materialsStr = materialItems.map((i: any) => `${i.qty}x ${i.name}`).join(', ') || 'Materiales del presupuesto';
+
+                                        loadedBalances.push({
+                                            id: b.id || `b-${Math.random()}`,
+                                            client: b.clienteNombre || (isPresencial ? 'Cliente Taller' : 'Cliente Web'),
+                                            email: b.clienteEmail || (isPresencial ? 'presencial@correo.com' : 'online@correo.com'),
+                                            project: b.nombre || 'Proyecto Maqueta',
+                                            materials: materialsStr,
+                                            materialItems: materialItems,
+                                            method: isPresencial ? 'Fisico' : 'Online',
+                                            amount: saldoPendiente,
+                                            dueDate: '50% PENDIENTE',
+                                            solicitudId: b.solicitudId || b.id || (b.codigoReferencia || 'REF-CAJA'),
+                                            budgetId: b.id,
+                                            realSolicitudId: b.solicitudId,
+                                            tipoVenta: isPresencial ? 'PRESENCIAL' : 'ONLINE',
+                                            fechaObj: fecha,
+                                            fechaFormatted: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+                                        });
                                     }
-                                    return {
-                                        client: r.clienteNombre,
-                                        email: r.clienteEmail,
-                                        project: r.productoNombre || 'Proyecto Maqueta',
-                                        materials: r.materialesDeseados || 'Materiales estándar',
-                                        method: r.isCustom ? 'Online' as PaymentMethod : 'Fisico' as PaymentMethod,
-                                        amount: amount,
-                                        dueDate: 'En proceso',
-                                        solicitudId: r.id
-                                    };
-                                });
-                        },
-                        error: (err) => {
-                            console.error('Error al listar presupuestos para saldos pendientes, usando fallback:', err);
-                            this.pendingBalances = reqs
-                                .filter(r => r.estado === 'PROCESANDO')
-                                .map(r => ({
-                                    client: r.clienteNombre,
-                                    email: r.clienteEmail,
-                                    project: r.productoNombre || 'Proyecto Maqueta',
-                                    materials: r.materialesDeseados || 'Materiales estándar',
-                                    method: r.isCustom ? 'Online' as PaymentMethod : 'Fisico' as PaymentMethod,
-                                    amount: r.isCustom ? 187.85 : 120.00,
-                                    dueDate: 'En proceso',
-                                    solicitudId: r.id
-                                }));
+                                }
+                            });
                         }
-                    });
-                }
+
+                        // 2. Procesar Solicitudes Online activas sin presupuesto finalizado
+                        if (reqs && reqs.length > 0) {
+                            reqs.filter((r: any) => {
+                                const st = String(r.estado);
+                                return (st === 'PROCESANDO' || st === 'PRESUPUESTADO' || st === 'ACEPTADO') && !processedBudgetIds.has(r.id);
+                            }).forEach((r: any) => {
+                                const amount = r.isCustom ? 187.85 : 120.00;
+                                const fecha = r.createdAt ? new Date(r.createdAt) : new Date();
+
+                                loadedBalances.push({
+                                    id: r.id,
+                                    client: r.clienteNombre || 'Cliente Online',
+                                    email: r.clienteEmail || 'online@correo.com',
+                                    project: r.productoNombre || 'Maqueta Personalizada',
+                                    materials: r.materialesDeseados || 'Materiales solicitados',
+                                    materialItems: [{ name: r.materialesDeseados || 'Materiales estándar', qty: 1 }],
+                                    method: 'Online',
+                                    amount: amount,
+                                    dueDate: '50% PENDIENTE',
+                                    solicitudId: r.id,
+                                    realSolicitudId: r.id,
+                                    tipoVenta: 'ONLINE',
+                                    fechaObj: fecha,
+                                    fechaFormatted: fecha.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
+                                });
+                            });
+                        }
+
+                        this.pendingBalances = loadedBalances;
+                    },
+                    error: (err) => console.error('Error al cargar presupuestos para saldos pendientes:', err)
+                });
             },
-            error: (err) => console.error('Error al cargar saldos pendientes reales:', err)
+            error: (err) => console.error('Error al cargar solicitudes para saldos pendientes:', err)
         });
+    }
+
+    // Helper method to calculate real profit from budget
+    private calculateRealProfit(transactionAmount: number, solicitudId?: string): number {
+        const DEFAULT_PROFIT_RATIO = 3 / 13; // Approx 23.07% of final price for a 30% markup
+
+        if (!solicitudId || !this.allBudgets) {
+            return transactionAmount * DEFAULT_PROFIT_RATIO;
+        }
+
+        const budget = this.allBudgets.find(b => b.solicitudId === solicitudId);
+        if (!budget || !budget.total) {
+            return transactionAmount * DEFAULT_PROFIT_RATIO;
+        }
+
+        let exactProfit = budget.ganancia || 0; // The 30% margin applied on top
+        exactProfit += budget.manoDeObra || 0;
+        
+        if (budget.servicioExplicacion && budget.servicioExplicacion.incluido) {
+            exactProfit += (budget.servicioExplicacion.precio || 0);
+        }
+
+        if (budget.items && budget.items.length > 0 && this.catalogMateriales && this.catalogMateriales.length > 0) {
+            budget.items.forEach((item: any) => {
+                const mat = this.catalogMateriales.find(m => m.id === item.materialId);
+                if (mat && mat.costoVenta !== undefined && mat.costoCompra !== undefined) {
+                    exactProfit += (mat.costoVenta - mat.costoCompra) * item.cantidad;
+                }
+            });
+        }
+
+        const profitPercentage = exactProfit / budget.total;
+        return transactionAmount * profitPercentage;
     }
 
     loadDailyStats(): void {
@@ -772,6 +1117,44 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
         this.currentBalanceForModal = null;
     }
 
+    onConfirmarCobroDesdeComponente(payload: PaymentConfirmPayload): void {
+        let codigoOp = payload.codigoOperacion;
+
+        if (this.currentBalanceForModal?.tipoVenta === 'PRESENCIAL') {
+            codigoOp += ' [PRESENCIAL]';
+        }
+
+        const procesarEnvio = (resolvedRoomId: string | null, voucherUrl: string | null) => {
+            this.registrarCobroSaldoConRoomId(resolvedRoomId, codigoOp, payload.metodoPago, payload.metodoTexto, voucherUrl, payload);
+        };
+
+        const obtenerRoomIdYProcesar = (voucherUrl: string | null) => {
+            if (this.cobroVentaId) {
+                this.chatService.getMyRooms().subscribe({
+                    next: (rooms) => {
+                        const room = rooms ? rooms.find(r => r.requestId === this.cobroVentaId) : null;
+                        procesarEnvio(room ? room.id : null, voucherUrl);
+                    },
+                    error: () => procesarEnvio(null, voucherUrl)
+                });
+            } else {
+                procesarEnvio(null, voucherUrl);
+            }
+        };
+
+        if (payload.voucherFile) {
+            this.fileService.uploadImage(payload.voucherFile).subscribe({
+                next: (res) => obtenerRoomIdYProcesar(res?.url || null),
+                error: (err) => {
+                    console.warn('Error al subir comprobante a Cloudinary (se continúa sin imagen):', err);
+                    obtenerRoomIdYProcesar(null);
+                }
+            });
+        } else {
+            obtenerRoomIdYProcesar(null);
+        }
+    }
+
     triggerFileUploader(): void {
         const fileInput = document.getElementById('cobro-file-input') as HTMLInputElement;
         if (fileInput) fileInput.click();
@@ -785,9 +1168,21 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
         }
     }
 
-    submitCobroFisico(): void {
+    onCobroNumeroOperacionInput(event: any): void {
+        const raw = event.target.value || '';
+        this.cobroNumeroOperacion = raw.replace(/\D/g, '').slice(0, 8);
+        event.target.value = this.cobroNumeroOperacion;
+    }
+
+    onCobroCodigoSeguridadInput(event: any): void {
+        const raw = event.target.value || '';
+        this.cobroCodigoSeguridad = raw.replace(/\D/g, '').slice(0, 3);
+        event.target.value = this.cobroCodigoSeguridad;
+    }
+
+    confirmarCobroFisico(confirmPayload?: PaymentConfirmPayload): void {
         if (this.cobroMonto <= 0) {
-            alert('El monto debe ser mayor a cero.');
+            alert('El monto a cobrar debe ser mayor a cero.');
             return;
         }
 
@@ -796,23 +1191,39 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
         let metodoPagoTipo: 'ONLINE' | 'FISICO' = 'ONLINE';
 
         if (this.activePaymentMethod === 'yape') {
-            if (!this.cobroNumeroOperacion?.trim()) {
+            const numOp = this.cobroNumeroOperacion ? this.cobroNumeroOperacion.trim() : '';
+            const codSeg = this.cobroCodigoSeguridad ? this.cobroCodigoSeguridad.trim() : '';
+
+            if (!numOp) {
                 alert('Por favor ingresa el número de operación.');
                 return;
             }
-            if (!this.cobroCodigoSeguridad?.trim()) {
+            if (numOp.length !== 8) {
+                alert('El número de operación de Yape / Plin debe tener exactamente 8 dígitos numéricos.');
+                return;
+            }
+            if (!codSeg) {
                 alert('Por favor ingresa el código de seguridad.');
                 return;
             }
-            codigoOp = `YAPE-${this.cobroNumeroOperacion.trim()}`;
+            if (codSeg.length !== 3) {
+                alert('El código de seguridad debe tener exactamente 3 dígitos numéricos.');
+                return;
+            }
+            codigoOp = `YAPE-${numOp}`;
             metodoTexto = 'Yape / Plin';
             metodoPagoTipo = 'ONLINE';
         } else if (this.activePaymentMethod === 'transferencia') {
-            if (!this.cobroNumeroOperacion?.trim()) {
+            const numOp = this.cobroNumeroOperacion ? this.cobroNumeroOperacion.trim() : '';
+            if (!numOp) {
                 alert('Por favor ingresa el número de operación de la transferencia.');
                 return;
             }
-            codigoOp = `TRANSF-${this.cobroNumeroOperacion.trim()}`;
+            if (numOp.length !== 8) {
+                alert('El número de operación de la transferencia debe tener exactamente 8 dígitos numéricos.');
+                return;
+            }
+            codigoOp = `TRANSF-${numOp}`;
             metodoTexto = 'Transferencia Bancaria';
             metodoPagoTipo = 'ONLINE';
         } else { // efectivo
@@ -829,24 +1240,49 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
             codigoOp += ` (${this.uploadedVoucherName})`;
         }
 
+        if (this.currentBalanceForModal?.tipoVenta === 'PRESENCIAL') {
+            codigoOp += ' [PRESENCIAL]';
+        }
+
         // Buscar si existe un roomId (sala de chat) asociada a esta solicitud para mantener el flujo de auditoría unido
-        if (this.cobroVentaId) {
-            this.chatService.getMyRooms().subscribe({
-                next: (rooms) => {
-                    const room = rooms ? rooms.find(r => r.requestId === this.cobroVentaId) : null;
-                    const resolvedRoomId = room ? room.id : null;
-                    this.registrarCobroSaldoConRoomId(resolvedRoomId, codigoOp, metodoPagoTipo, metodoTexto);
-                },
-                error: () => {
-                    this.registrarCobroSaldoConRoomId(null, codigoOp, metodoPagoTipo, metodoTexto);
+        const procesarEnvio = (resolvedRoomId: string | null, voucherUrl: string | null) => {
+            this.registrarCobroSaldoConRoomId(resolvedRoomId, codigoOp, metodoPagoTipo, metodoTexto, voucherUrl);
+        };
+
+        const obtenerRoomIdYProcesar = (voucherUrl: string | null) => {
+            if (this.cobroVentaId) {
+                this.chatService.getMyRooms().subscribe({
+                    next: (rooms) => {
+                        const room = rooms ? rooms.find(r => r.requestId === this.cobroVentaId) : null;
+                        const resolvedRoomId = room ? room.id : null;
+                        procesarEnvio(resolvedRoomId, voucherUrl);
+                    },
+                    error: () => procesarEnvio(null, voucherUrl)
+                });
+            } else {
+                procesarEnvio(null, voucherUrl);
+            }
+        };
+
+        // Si se subió un voucher de imagen, se sube primero a Cloudinary
+        if (this.uploadedVoucherFile) {
+            this.fileService.uploadImage(this.uploadedVoucherFile).subscribe({
+                next: (res) => obtenerRoomIdYProcesar(res?.url || null),
+                error: (err) => {
+                    console.warn('Error al subir comprobante a Cloudinary (se continúa sin imagen):', err);
+                    obtenerRoomIdYProcesar(null);
                 }
             });
         } else {
-            this.registrarCobroSaldoConRoomId(null, codigoOp, metodoPagoTipo, metodoTexto);
+            obtenerRoomIdYProcesar(null);
         }
     }
 
-    private registrarCobroSaldoConRoomId(resolvedRoomId: string | null, codigoOp: string, metodoPagoTipo: 'ONLINE' | 'FISICO', metodoTexto: string): void {
+    private registrarCobroSaldoConRoomId(resolvedRoomId: string | null, codigoOp: string, metodoPagoTipo: 'ONLINE' | 'FISICO', metodoTexto: string, voucherUrl: string | null = null, confirmPayload?: PaymentConfirmPayload): void {
+        const montoRecibido = confirmPayload ? confirmPayload.montoRecibido : (this.activePaymentMethod === 'efectivo' ? Number(this.cobroMontoRecibido) : Number(this.cobroMonto));
+        const vuelto = confirmPayload ? confirmPayload.vuelto : (this.activePaymentMethod === 'efectivo' ? Math.max(0, Number(this.cobroMontoRecibido) - Number(this.cobroMonto)) : 0);
+        const codigoSeguridad = confirmPayload ? confirmPayload.codigoSeguridad : ((this.activePaymentMethod === 'yape' && this.cobroCodigoSeguridad) ? this.cobroCodigoSeguridad.trim() : null);
+
         const payload = {
             clientName: this.cobroClienteDisplay,
             clientEmail: this.currentBalanceForModal?.email || `${this.cobroClienteDisplay.toLowerCase().replace(/\s+/g, '')}@gmail.com`,
@@ -858,21 +1294,45 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
             tipoMaqueta: 'PREDETERMINADA',
             materiales: this.currentBalanceForModal?.materials || 'Liquidación de saldo pendiente',
             fechaTransaccion: new Date().toISOString(),
-            codigoOperacion: codigoOp
+            codigoOperacion: codigoOp,
+            montoRecibido: montoRecibido,
+            vuelto: vuelto,
+            codigoSeguridad: codigoSeguridad,
+            voucherUrl: voucherUrl
         };
 
         this.chatService.registerPayment(payload).subscribe({
             next: (res) => {
                 alert('¡Saldo de cobro registrado con éxito!');
 
-                // Change status of Purchase Request to COMPLETADO
+                // Marcar el pago como confirmado en localStorage para todos los IDs de referencia posibles
+                if (this.currentBalanceForModal?.id) {
+                    localStorage.setItem('pago_confirmado_' + this.currentBalanceForModal.id, 'true');
+                }
+                if (this.currentBalanceForModal?.budgetId) {
+                    localStorage.setItem('pago_confirmado_' + this.currentBalanceForModal.budgetId, 'true');
+                }
+                if (this.currentBalanceForModal?.realSolicitudId) {
+                    localStorage.setItem('pago_confirmado_' + this.currentBalanceForModal.realSolicitudId, 'true');
+                }
                 if (this.cobroVentaId) {
-                    this.requestService.actualizarEstado(this.cobroVentaId, { estado: 'COMPLETADO' }).subscribe({
+                    localStorage.setItem('pago_confirmado_' + this.cobroVentaId, 'true');
+                }
+
+                // Intentar actualizar el estado en el backend únicamente si existe un UUID de solicitud web real
+                const targetRequestId = this.currentBalanceForModal?.realSolicitudId;
+                if (targetRequestId) {
+                    this.requestService.actualizarEstado(targetRequestId, { estado: 'COMPLETADO' }).subscribe({
                         next: () => {
                             this.loadPendingBalances();
                         },
-                        error: (err) => console.error('Error al actualizar estado de solicitud a COMPLETADO:', err)
+                        error: (err) => {
+                            console.warn('Nota: No se pudo cambiar el estado de la solicitud en backend (se completó localmente):', err);
+                            this.loadPendingBalances();
+                        }
                     });
+                } else {
+                    this.loadPendingBalances();
                 }
 
                 // Show printed ticket
@@ -1126,10 +1586,69 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
     }
 
     exportCsv(): void {
-        this.exportLabel = 'CSV exportado';
+        const dataToExport = this.filteredTransactions;
+        if (!dataToExport || dataToExport.length === 0) {
+            alert('No hay transacciones registradas para exportar en este momento.');
+            return;
+        }
+
+        // Definición de columnas para la auditoría de transacciones
+        const headers = [
+            'Cliente',
+            'Correo Electrónico',
+            'Proyecto / Producto',
+            'Materiales Utilizados',
+            'Método de Pago',
+            'Tipo de Abono',
+            'Monto (S/)',
+            'Ganancia Estimada (S/)',
+            'Código / Nro Operación',
+            'Fecha y Hora'
+        ];
+
+        // Mapeo de filas sanitizando caracteres especiales y comillas
+        const rows = dataToExport.map(tx => [
+            this.escapeCsvField(tx.client),
+            this.escapeCsvField(tx.email),
+            this.escapeCsvField(tx.projectName || tx.productType),
+            this.escapeCsvField(tx.materials),
+            this.escapeCsvField(tx.method),
+            this.escapeCsvField(tx.kind),
+            tx.amount ? tx.amount.toFixed(2) : '0.00',
+            tx.realProfit ? tx.realProfit.toFixed(2) : '0.00',
+            this.escapeCsvField(tx.operation || 'N/A'),
+            this.escapeCsvField(tx.date)
+        ]);
+
+        // Construir contenido CSV con BOM UTF-8 (\uFEFF) para compatibilidad total con Excel y tildes
+        const csvContent = '\uFEFF' + [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        // Generar Blob y descargar el archivo en el navegador
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        const fechaActual = new Date().toISOString().substring(0, 10);
+        link.setAttribute('download', `auditoria_transacciones_${fechaActual}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        // Feedback visual en el botón de la interfaz
+        this.exportLabel = '¡CSV Exportado!';
         window.setTimeout(() => {
             this.exportLabel = 'Exportar CSV';
-        }, 1200);
+        }, 2000);
+    }
+
+    private escapeCsvField(field: string | undefined | null): string {
+        if (!field) return '""';
+        const stringified = String(field).replace(/"/g, '""');
+        return `"${stringified}"`;
     }
 
     registerTransaction(): void {
@@ -1162,7 +1681,8 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
             maquetaPrice = this.isPrefilled ? (this.paymentForm.amount || 0) : this.selectedPersonalizadaPrice;
         }
 
-        const total = this.getTotalVenta();
+        const calculatedTotal = this.getTotalVenta();
+        const total = (this.isPrefilled && this.paymentForm.amount) ? Number(this.paymentForm.amount) : calculatedTotal;
         const kind: 'ADELANTO' | 'SALDO' | 'TOTAL' = 
             this.paymentForm.kind.startsWith('Pago') || this.paymentForm.kind.includes('100%') 
                 ? 'TOTAL' 
@@ -1170,7 +1690,7 @@ export class FlujoDePagosComponent implements OnInit, OnChanges {
                     ? 'SALDO' 
                     : 'ADELANTO';
 
-        const amount = kind === 'ADELANTO' ? total * 0.5 : total;
+        const amount = (this.isPrefilled && this.paymentForm.amount) ? Number(this.paymentForm.amount) : (kind === 'ADELANTO' ? total * 0.5 : total);
         const method: 'ONLINE' | 'FISICO' = this.paymentForm.method.startsWith('Online') ? 'ONLINE' : 'FISICO';
         
         // Merge preassigned and cart materials

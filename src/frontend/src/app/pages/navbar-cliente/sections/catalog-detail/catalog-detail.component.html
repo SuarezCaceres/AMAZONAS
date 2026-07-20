@@ -1,12 +1,12 @@
-<section class="detail-page" *ngIf="detailedModel" style="padding: 28px 40px 64px; max-width: 1400px; margin: 0 auto;">
+<section class="detail-page" *ngIf="detailedModel">
   <button class="back-button" type="button" (click)="back.emit()">← Volver al catalogo</button>
 
-  <article class="detail-layout" [class.loading-fade]="isLoading" style="display: flex; flex-direction: row; gap: 32px; align-items: flex-start;">
-    <div class="detail-media" style="flex: 0 0 45%; max-width: 45%;">
-      <img [src]="detailedModel.imageUrl" [alt]="detailedModel.title" style="width: 100%; max-height: 500px; border-radius: 8px; object-fit: cover;">
+  <article class="detail-layout" [class.loading-fade]="isLoading">
+    <div class="detail-media">
+      <img [src]="detailedModel.imageUrl" [alt]="detailedModel.title">
     </div>
 
-    <div class="detail-content" style="flex: 1; min-width: 0;">
+    <div class="detail-content">
       <span class="eyebrow">{{ detailedModel.category }} · {{ detailedModel.level }}</span>
       <h1>{{ detailedModel.title }}</h1>
       <p class="detail-description">{{ detailedModel.description }}</p>

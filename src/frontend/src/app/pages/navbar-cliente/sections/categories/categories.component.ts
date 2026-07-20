@@ -748,6 +748,18 @@ export class CategoriesComponent implements OnInit {
       }
     });
 
+    // Populate default materials for standard (non-customized) kits
+    this.cartKits.filter(k => !k.isCustom).forEach(k => {
+      if (k.product.materialesDetalle) {
+        k.product.materialesDetalle.forEach(matDetail => {
+          reqBody.materialesCustomizados.push({
+            materialId: matDetail.materialId,
+            cantidad: (matDetail.cantidadSugerida || 1) * k.quantity
+          });
+        });
+      }
+    });
+
     this.purchaseRequestService.crear(reqBody).subscribe({
       next: (response) => {
         this.isLoading = false;

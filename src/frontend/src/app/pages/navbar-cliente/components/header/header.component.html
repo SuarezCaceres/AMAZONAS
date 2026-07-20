@@ -2,97 +2,95 @@
 
   <!-- BRAND -->
   <button class="brand" type="button" (click)="catalogClicked.emit(); closeMenu()" aria-label="Ir al inicio">
-
     <span class="brand-mark">MA</span>
-
     <span class="brand-copy">
       <strong>Maquetas Amazonas</strong>
       <small>Lima, Perú</small>
     </span>
-
   </button>
 
-  <!-- HAMBURGUESA -->
-  <button class="hamburger" type="button" (click)="toggleMenu()">
+  <!-- NAV DRAWER (DESPLEGABLE UNIFICADO) -->
+  <div class="nav-drawer" [class.open]="menuOpen">
 
-    ☰
-  </button>
-
-  <!-- NAV -->
-  <nav class="main-nav" [class.open]="menuOpen" aria-label="Navegacion principal">
-
-    <!-- INICIO -->
-    <button type="button" [class.active]="activePage === 'inicio'" (click)="inicioClicked.emit(); closeMenu()">
-
-      Inicio
-    </button>
-
-    <!-- NOSOTROS -->
-    <button type="button" [class.active]="activePage === 'nosotros'" (click)="nosotrosClicked.emit(); closeMenu()">
-
-      Nosotros
-    </button>
-
-    <!-- CATEGORIAS -->
-    <button
-      type="button"
-      [class.active]="activePage === 'categories'"
-      (click)="categoriesClicked.emit(); closeMenu()">
-      Categorías
-    </button>
-
-    <!-- CATALOGO -->
-    <button type="button" [class.active]="activePage === 'catalog' || activePage === 'detail'"
-      (click)="catalogClicked.emit(); closeMenu()">
-
-      Catálogo
-    </button>
-
-    <!-- MIS SOLICITUDES -->
-    <button type="button" *ngIf="isLoggedIn" [class.active]="activePage === 'requests'"
-      (click)="requestsClicked.emit(); closeMenu()">
-
-      Mis Solicitudes
-    </button>
-
-  </nav>
-
-  <!-- AUTH INVITADO -->
-  <div class="auth-actions" [class.open]="menuOpen" *ngIf="!isLoggedIn; else loggedActions">
-
-    <button class="login-button" type="button" (click)="loginClicked.emit(); closeMenu()">
-
-      Iniciar Sesión
-    </button>
-
-    <button class="register-button" type="button" (click)="registerClicked.emit(); closeMenu()">
-
-      Registrarse
-    </button>
-
-  </div>
-
-  <!-- AUTH USUARIO LOGUEADO -->
-  <ng-template #loggedActions>
-
-    <div class="auth-actions logged-actions" [class.open]="menuOpen">
-
-      <span class="user-chip" aria-label="Usuario conectado">
-
-        &#128100; {{ userName }}
-      </span>
-
-      <button class="login-button" type="button" (click)="logoutClicked.emit(); closeMenu()">
-
-        Salir
+    <!-- DRAWER MOBILE HEADER -->
+    <div class="drawer-mobile-header">
+      <div class="brand mobile-brand">
+        <span class="brand-mark">MA</span>
+        <span class="brand-copy">
+          <strong>Maquetas Amazonas</strong>
+          <small>Lima, Perú</small>
+        </span>
+      </div>
+      <button class="drawer-close" type="button" (click)="closeMenu()" aria-label="Cerrar menú">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
-
     </div>
 
-  </ng-template>
+    <!-- NAV -->
+    <nav class="main-nav" aria-label="Navegacion principal">
+      <button type="button" [class.active]="activePage === 'inicio'" (click)="inicioClicked.emit(); closeMenu()">
+        Inicio
+      </button>
+      <button type="button" [class.active]="activePage === 'nosotros'" (click)="nosotrosClicked.emit(); closeMenu()">
+        Nosotros
+      </button>
+      <button type="button" [class.active]="activePage === 'categories'" (click)="categoriesClicked.emit(); closeMenu()">
+        Categorías
+      </button>
+      <button type="button" [class.active]="activePage === 'catalog' || activePage === 'detail'" (click)="catalogClicked.emit(); closeMenu()">
+        Catálogo
+      </button>
+      <button type="button" *ngIf="isLoggedIn" [class.active]="activePage === 'requests'" (click)="requestsClicked.emit(); closeMenu()">
+        Mis Solicitudes
+      </button>
+    </nav>
+
+    <!-- AUTH INVITADO -->
+    <div class="auth-actions" *ngIf="!isLoggedIn; else loggedActions">
+      <button class="login-button" type="button" (click)="loginClicked.emit(); closeMenu()">
+        Iniciar Sesión
+      </button>
+      <button class="register-button" type="button" (click)="registerClicked.emit(); closeMenu()">
+        Registrarse
+      </button>
+    </div>
+
+    <!-- AUTH USUARIO LOGUEADO -->
+    <ng-template #loggedActions>
+      <div class="auth-actions logged-actions">
+        <span class="user-chip" aria-label="Usuario conectado">
+          &#128100; {{ userName }}
+        </span>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- HEADER ACTIONS (Logout & Hamburger) -->
+  <div class="header-actions">
+    <!-- HAMBURGUESA -->
+    <button class="hamburger" type="button" (click)="toggleMenu()" [attr.aria-expanded]="menuOpen" aria-label="Navegación móvil">
+      <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
+    <!-- BOTÓN DE CERRAR SESIÓN -->
+    <button *ngIf="isLoggedIn" class="logout-icon-btn" type="button" (click)="logoutClicked.emit(); closeMenu()" aria-label="Cerrar sesión">
+      <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+    </button>
+  </div>
 
 </header>
 
 <!-- BACKDROP -->
-<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()">
-</div>
+<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>
+

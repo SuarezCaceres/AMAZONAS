@@ -53,50 +53,137 @@
         </div>
         <span class="stat-badge">{{ completados }}</span>
       </div>
+      <div class="stat-card stat-card--rejected">
+        <div class="stat-card-icon">
+          <span class="material-icons" style="font-size:22px;">cancel</span>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Rechazados</span>
+          <span class="stat-value">{{ rechazados }}</span>
+        </div>
+        <span class="stat-badge">{{ rechazados }}</span>
+      </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters-section">
+    <!-- ═══════ PANEL DE FILTROS UNIFICADO ═══════ -->
+    <div class="filter-panel">
+      <!-- Barra de búsqueda -->
       <div class="search-box">
         <span class="material-icons search-icon" style="font-size:18px;">search</span>
         <input type="text" placeholder="Buscar por producto, cliente o correo..."
           [(ngModel)]="searchTerm">
-      </div>
-      <div class="filter-tabs">
-        <button [class.active]="activeFilter === 'todos'" (click)="setFilter('todos')">Todos</button>
-        <button [class.active]="activeFilter === 'pendientes'" (click)="setFilter('pendientes')">Pendientes</button>
-        <button [class.active]="activeFilter === 'procesando'" (click)="setFilter('procesando')">Procesando</button>
-        <button [class.active]="activeFilter === 'completados'" (click)="setFilter('completados')">Completados</button>
+        @if (searchTerm) {
+          <button class="search-clear" (click)="searchTerm = ''" aria-label="Limpiar búsqueda">
+            <span class="material-icons" style="font-size:16px;">close</span>
+          </button>
+        }
       </div>
 
-      <!-- Filtro de rango de fechas -->
-      <div class="date-filter-row" style="display: flex; gap: 6px; overflow-x: auto; padding: 4px 0; margin-top: 4px; align-items: center;">
-        <span style="font-size: 10px; font-weight: 700; color: #64748b; margin-right: 6px; white-space: nowrap;">FILTRO FECHA:</span>
-        <button type="button" [class.active]="activeDateFilter === 'todos'" (click)="setDateFilter('todos')" class="date-filter-btn">Todos</button>
-        <button type="button" [class.active]="activeDateFilter === 'hoy'" (click)="setDateFilter('hoy')" class="date-filter-btn">Hoy</button>
-        <button type="button" [class.active]="activeDateFilter === 'ayer'" (click)="setDateFilter('ayer')" class="date-filter-btn">Ayer</button>
-        <button type="button" [class.active]="activeDateFilter === 'semana'" (click)="setDateFilter('semana')" class="date-filter-btn">Últimos 7 días</button>
-        <button type="button" [class.active]="activeDateFilter === 'mes'" (click)="setDateFilter('mes')" class="date-filter-btn">Este mes</button>
-      </div>
-    </div>
+      <!-- Filas de filtros -->
+      <div class="filter-rows">
+        <!-- Estado -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">tune</span>
+            Estado
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc" [class.fc--active]="activeFilter === 'todos'" (click)="setFilter('todos')">Todos</button>
+            <button class="fc" [class.fc--active]="activeFilter === 'pendientes'" (click)="setFilter('pendientes')">
+              <span class="fc-dot fc-dot--pending"></span>
+              Pendientes
+            </button>
+            <button class="fc" [class.fc--active]="activeFilter === 'procesando'" (click)="setFilter('procesando')">
+              <span class="fc-dot fc-dot--processing"></span>
+              Procesando
+            </button>
+            <button class="fc" [class.fc--active]="activeFilter === 'completados'" (click)="setFilter('completados')">
+              <span class="fc-dot fc-dot--completed"></span>
+              Completados
+            </button>
+            <button class="fc" [class.fc--active]="activeFilter === 'rechazados'" (click)="setFilter('rechazados')">
+              <span class="fc-dot fc-dot--rejected"></span>
+              Rechazados
+            </button>
+          </div>
+        </div>
 
-    <!-- Expand controls -->
-    <div class="expand-controls">
-      <button (click)="expandAll()">
-        <span class="material-icons" style="font-size:14px;">unfold_more</span>
-        Expandir Todo
-      </button>
-      <button (click)="collapseAll()">
-        <span class="material-icons" style="font-size:14px;">unfold_less</span>
-        Colapsar Todo
-      </button>
+        <!-- Tipo de Maqueta -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">category</span>
+            Tipo
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc" [class.fc--active]="filtroTipo === 'todos'" (click)="setFiltroTipo('todos')">Todos</button>
+            <button class="fc" [class.fc--active]="filtroTipo === 'catalogo'" (click)="setFiltroTipo('catalogo')">
+              <span class="material-icons fc-icon">shopping_bag</span>
+              Catálogo
+            </button>
+            <button class="fc" [class.fc--active]="filtroTipo === 'personalizada'" (click)="setFiltroTipo('personalizada')">
+              <span class="material-icons fc-icon">architecture</span>
+              Personalizada
+            </button>
+          </div>
+        </div>
+
+        <!-- Fecha -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">calendar_today</span>
+            Fecha
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc" [class.fc--active]="activeDateFilter === 'todos'" (click)="setDateFilter('todos')">Todos</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'hoy'" (click)="setDateFilter('hoy')">Hoy</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'ayer'" (click)="setDateFilter('ayer')">Ayer</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'semana'" (click)="setDateFilter('semana')">7 días</button>
+            <button class="fc" [class.fc--active]="activeDateFilter === 'mes'" (click)="setDateFilter('mes')">Este mes</button>
+          </div>
+        </div>
+
+        <!-- Ordenar -->
+        <div class="filter-row">
+          <span class="filter-row-label">
+            <span class="material-icons filter-label-icon">sort</span>
+            Ordenar
+          </span>
+          <div class="filter-chips-row">
+            <button class="fc fc--order" [class.fc--active]="ordenActivo === 'notificaciones'" (click)="setOrden('notificaciones')">
+              <span class="material-icons fc-icon">notifications</span>
+              No leídos primero
+            </button>
+            <button class="fc fc--order" [class.fc--active]="ordenActivo === 'reciente'" (click)="setOrden('reciente')">
+              <span class="material-icons fc-icon">schedule</span>
+              Más reciente
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controles de expansión + contador de resultados -->
+      <div class="filter-footer">
+        <span class="filter-result-count">
+          {{ filteredSolicitudes.length }} solicitud{{ filteredSolicitudes.length !== 1 ? 'es' : '' }}
+        </span>
+        <div class="filter-footer-actions">
+          <button class="fc-expand" (click)="expandAll()">
+            <span class="material-icons" style="font-size:15px;">unfold_more</span>
+            Expandir
+          </button>
+          <button class="fc-expand" (click)="collapseAll()">
+            <span class="material-icons" style="font-size:15px;">unfold_less</span>
+            Colapsar
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Lista de cards -->
     <div class="solicitudes-list" *ngIf="!isLoading">
       
       <!-- Renderizado de Solicitudes en Lista Principal (según pestaña de filtro) -->
-      <ng-container *ngIf="activeFilter !== 'completados'">
+      <ng-container *ngIf="activeFilter !== 'completados' && activeFilter !== 'rechazados'">
         <article class="solicitud-card" *ngFor="let solicitud of activeSolicitudes" [class.expanded]="solicitud.expanded">
           <div class="card-header" (click)="toggleExpand(solicitud)">
             <div class="card-header-left">
@@ -253,6 +340,89 @@
         </div>
       </ng-container>
 
+      <!-- Si la pestaña es Rechazados, renderizar todas las rechazadas en el listado principal -->
+      <ng-container *ngIf="activeFilter === 'rechazados'">
+        <article class="solicitud-card solicitud-card--rejected" *ngFor="let solicitud of rejectedSolicitudes" [class.expanded]="solicitud.expanded" style="opacity: 0.85; border-color: #fca5a5;">
+          <div class="card-header" (click)="toggleExpand(solicitud)">
+            <div class="card-header-left">
+              <div class="card-avatar" style="background: linear-gradient(135deg, #ef4444, #991b1b);">
+                {{ solicitud.productoNombre.substring(0,2).toUpperCase() || 'SL' }}
+              </div>
+              <div>
+                <h2 style="color: #991b1b;">{{ solicitud.productoNombre }}</h2>
+                <span class="card-client-name">
+                  <span class="material-icons" style="font-size:12px;vertical-align:middle;">person</span>
+                  {{ solicitud.clienteNombre }}
+                </span>
+              </div>
+            </div>
+            <div class="header-right">
+              <span class="status-badge rechazado" style="background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2;">
+                Rechazado
+              </span>
+              <span class="expand-icon material-icons" style="font-size:18px;">
+                {{ solicitud.expanded ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="card-content" *ngIf="solicitud.expanded">
+            <div class="client-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">person_outline</span>
+                <span class="info-label">Cliente:</span>
+                <span class="info-value">{{ solicitud.clienteNombre }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">calendar_today</span>
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">{{ solicitud.fecha | date:"d 'de' MMMM 'de' yyyy" }}</span>
+              </div>
+            </div>
+
+            <div class="contact-info">
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">mail_outline</span>
+                <span class="info-label">Email:</span>
+                <span class="info-value email">{{ solicitud.clienteEmail }}</span>
+              </div>
+              <div class="info-row">
+                <span class="material-icons info-icon" style="font-size:16px;">phone</span>
+                <span class="info-label">Teléfono:</span>
+                <span class="info-value">{{ solicitud.clienteTelefono }}</span>
+              </div>
+              @if (solicitud.detalle) {
+                <div class="info-row full-width">
+                  <span class="material-icons info-icon" style="font-size:16px;">chat_bubble_outline</span>
+                  <span class="info-label">Mensaje:</span>
+                  <span class="info-value">{{ solicitud.detalle }}</span>
+                </div>
+              }
+              <!-- Display Rejection Reason -->
+              <div class="info-row full-width" style="margin-top: 12px; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fee2e2; color: #991b1b; display: flex; align-items: center; gap: 6px;">
+                <span class="material-icons info-icon" style="font-size:16px; color: #dc2626; margin: 0;">error_outline</span>
+                <span class="info-label" style="font-weight: 700; color: #991b1b; margin: 0;">Motivo de cancelación:</span>
+                <span class="info-value" style="color: #b91c1c; margin: 0;">{{ solicitud.motivoCancelacion || 'No especificado.' }}</span>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-communicate" (click)="abrirChat(solicitud)">
+                <span class="material-icons" style="font-size:16px;">forum</span>
+                Ver Historial de Chat
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Empty state si no hay solicitudes rechazadas -->
+        <div class="empty-state" *ngIf="rejectedSolicitudes.length === 0">
+          <span class="material-icons empty-state-icon">cancel</span>
+          <p class="empty-state-title">Sin solicitudes rechazadas</p>
+          <p class="empty-state-desc">No se encontraron solicitudes con estado rechazado.</p>
+        </div>
+      </ng-container>
+
       <!-- Historial Colapsable de Completadas (solo visible en pestaña "Todos") -->
       <div class="completed-history-container completed-history-container--vendor" *ngIf="activeFilter === 'todos' && completedSolicitudes.length > 0" style="margin-top: 24px; border-top: 1px solid #cbd5e1; padding-top: 20px;">
         <button type="button" class="completed-accordion-trigger completed-accordion-trigger--vendor" (click)="showCompletedHistory = !showCompletedHistory" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; border: 1.5px solid #cbd5e1; padding: 12px 18px; border-radius: 10px; cursor: pointer; transition: all 0.2s; font-size: 12px; font-weight: 750; color: #475569; font-family: inherit;">
@@ -359,6 +529,14 @@
 
       <div class="flex items-center gap-3">
 
+        <!-- Botón Cancelar Solicitud (Solo visible si no está COMPLETADO) -->
+        @if (solicitudActiva.estado !== 'completado') {
+          <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors cursor-pointer" (click)="confirmarCancelar()">
+            <span class="material-icons" style="font-size: 16px;">cancel</span>
+            Cancelar
+          </button>
+        }
+
         <span class="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider" 
           [class.bg-yellow-50]="solicitudActiva.estado === 'pendiente'"
           [class.text-yellow-750]="solicitudActiva.estado === 'pendiente'"
@@ -374,11 +552,582 @@
       </div>
     </header>
 
-    <!-- Cuerpo: sidebar info + panel chat + right panel -->
-    <div class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 min-h-0">
+    <!-- Selector de Sub-pestañas para Móvil -->
+    <div class="flex md:hidden bg-slate-100/80 border-b border-slate-200 justify-around p-1.5 shrink-0 gap-1.5">
+      <button 
+        (click)="mobileChatTab = 'chat'" 
+        [class.bg-white]="mobileChatTab === 'chat'" 
+        [class.text-amazonas-700]="mobileChatTab === 'chat'"
+        [class.shadow-sm]="mobileChatTab === 'chat'"
+        [class.text-slate-500]="mobileChatTab !== 'chat'"
+        class="flex-1 font-bold text-xs py-2 px-3 rounded-lg border-none cursor-pointer text-center transition-all bg-transparent">
+        Chat
+      </button>
+      <button 
+        (click)="mobileChatTab = 'cliente'" 
+        [class.bg-white]="mobileChatTab === 'cliente'" 
+        [class.text-amazonas-700]="mobileChatTab === 'cliente'"
+        [class.shadow-sm]="mobileChatTab === 'cliente'"
+        [class.text-slate-500]="mobileChatTab !== 'cliente'"
+        class="flex-1 font-bold text-xs py-2 px-3 rounded-lg border-none cursor-pointer text-center transition-all bg-transparent">
+        Detalles y Acciones
+      </button>
+    </div>
 
-      <!-- PANEL IZQUIERDO: SOLICITUD & CLIENTE INFO (3 COLUMNS) -->
-      <aside class="lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
+    <!-- Cuerpo: sidebar info + panel chat + right panel -->
+    <div class="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-4 p-4 min-h-0">
+
+      <!-- PANEL CENTRAL: CONVERSACIÓN Y MESSAGES (8 COLUMNS) -->
+      <section [class.hidden-mobile]="mobileChatTab !== 'chat'" class="md:flex md:col-span-8 lg:col-span-8 bg-white rounded-2xl border border-slate-150 shadow-premium flex flex-col overflow-hidden h-full min-h-0">
+        
+        <!-- Header status -->
+        <div class="border-b border-slate-150 bg-slate-50/50 shrink-0">
+          <div class="px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="font-bold text-xs text-slate-700">Sala de Negociación Activa</span>
+            </div>
+            <div class="flex items-center gap-2">
+              @if (room && room.status === 'AGREED') {
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                  <span class="material-icons text-xs" style="font-size: 12px;">check_circle</span>
+                  Presupuesto Aceptado
+                </span>
+              }
+              <button type="button" (click)="enviarDatosDePagoAlCliente()" class="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-lg text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1" title="Enviar QR Yape y Cuentas Bancarias al chat">
+                <span class="material-icons text-xs" style="font-size: 13px;">qr_code</span>
+                Enviar Datos de Pago
+              </button>
+              <span class="text-[9px] font-semibold text-slate-400 bg-white border px-2 py-0.5 rounded flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full" [class.bg-emerald-500]="wsConnected" [class.bg-slate-400]="!wsConnected"></span>
+                {{ wsConnected ? 'Conectado STOMP' : 'Reconectando...' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Step Tracker del Prototipo (Misma lógica visual) -->
+          <div class="px-4 py-2 border-t border-slate-150/60 bg-white overflow-x-auto select-none">
+            <div class="flex items-center justify-between min-w-[560px] py-1">
+              
+              <!-- Step 1: Solicitud -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                  <span class="material-icons text-xs" style="font-size: 12px;">check</span>
+                </div>
+                <span class="text-[10px] font-bold text-slate-800 whitespace-nowrap">Solicitud</span>
+              </div>
+              <div class="flex-1 h-0.5 bg-emerald-500 mx-1.5"></div>
+
+              <!-- Step 2: Conversación -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                @if (hasOfferOrBudget()) {
+                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-800 whitespace-nowrap">Conversación</span>
+                } @else {
+                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
+                    2
+                  </div>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Conversación</span>
+                }
+              </div>
+              <div class="flex-1 h-0.5 mx-1.5"
+                [class.bg-emerald-500]="hasOfferOrBudget()"
+                [class.bg-slate-200]="!hasOfferOrBudget()">
+              </div>
+
+              <!-- Step 3: Presupuesto -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                @if (room?.status === 'AGREED' || room?.status === 'CLOSED') {
+                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Presupuesto</span>
+                } @else if (hasOfferOrBudget()) {
+                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
+                    3
+                  </div>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Presupuesto</span>
+                } @else {
+                  <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
+                    3
+                  </div>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Presupuesto</span>
+                }
+              </div>
+              <div class="flex-1 h-0.5 mx-1.5"
+                [class.bg-emerald-500]="solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado'"
+                [class.bg-slate-200]="solicitudActiva.estado !== 'procesando' && solicitudActiva.estado !== 'completado'">
+              </div>
+
+              <!-- Step 4: Pago -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                @if (solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado') {
+                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Pago</span>
+                } @else if (room?.status === 'AGREED') {
+                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
+                    4
+                  </div>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Pago</span>
+                } @else {
+                  <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
+                    4
+                  </div>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Pago</span>
+                }
+              </div>
+              <div class="flex-1 h-0.5 mx-1.5"
+                [class.bg-emerald-500]="solicitudActiva.estado === 'completado'"
+                [class.bg-slate-200]="solicitudActiva.estado !== 'completado'">
+              </div>
+
+              <!-- Step 5: Producción -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                @if (solicitudActiva.estado === 'completado') {
+                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-850 whitespace-nowrap">Producción</span>
+                } @else if (solicitudActiva.estado === 'procesando') {
+                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
+                    5
+                  </div>
+                  <span class="text-[10px] font-bold text-amazonas-700 whitespace-nowrap">Producción</span>
+                } @else {
+                  <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
+                    5
+                  </div>
+                  <span class="text-[10px] font-semibold text-slate-400 whitespace-nowrap">Producción</span>
+                }
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Caja de mensajes -->
+        <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-[#fafbfe] custom-scrollbar flex flex-col min-h-0" #scrollContainer>
+          @if (loadingChat) {
+            <div class="text-center py-8 text-slate-400 text-xs font-semibold">Cargando conversación...</div>
+          } @else if (messages.length === 0) {
+            <div class="text-center py-12 text-slate-400 flex flex-col items-center justify-center gap-2">
+              <span class="material-icons text-4xl text-slate-200">forum</span>
+              <p class="text-xs font-semibold">Sin mensajes en la sala</p>
+              <p class="text-[10px] text-slate-400">Envía un mensaje para iniciar el diálogo técnico.</p>
+            </div>
+          } @else {
+            @for (msg of messages; track msg.id) {
+              @if (!isMensajeDescartado(msg.id)) {
+                @if (msg.messageType === 'SYSTEM') {
+                  <div class="flex justify-center my-1">
+                    <span class="text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full border border-slate-200/60 font-semibold shadow-xs">
+                      {{ msg.content }}
+                    </span>
+                  </div>
+                } @else {
+                  <!-- Mensaje: Vendedor a la derecha (isVendorMessage), Cliente a la izquierda -->
+                  <div class="flex items-start gap-2.5 max-w-[85%] animate-fadeIn"
+                    [class.self-end]="isVendorMessage(msg)"
+                    [class.flex-row-reverse]="isVendorMessage(msg)"
+                    [class.self-start]="!isVendorMessage(msg)">
+                    
+                    <!-- Avatar -->
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold font-outfit shadow-sm shrink-0"
+                      [class.bg-amazonas-800]="isVendorMessage(msg)"
+                      [class.bg-gradient-to-tr]="!isVendorMessage(msg)"
+                      [class.from-amazonas-500]="!isVendorMessage(msg)"
+                      [class.to-teal-650]="!isVendorMessage(msg)">
+                      {{ isVendorMessage(msg) ? 'AM' : 'CL' }}
+                    </div>
+
+                    <div>
+                      <!-- Burbuja -->
+                      <div class="p-3.5 shadow-sm"
+                        [class.bg-emerald-50/70]="isVendorMessage(msg)"
+                        [class.border]="isVendorMessage(msg)"
+                        [class.border-emerald-100]="isVendorMessage(msg)"
+                        [class.rounded-l-2xl]="isVendorMessage(msg)"
+                        [class.rounded-br-2xl]="isVendorMessage(msg)"
+                        [class.bg-white]="!isVendorMessage(msg)"
+                        [class.border]="!isVendorMessage(msg)"
+                        [class.border-slate-100]="!isVendorMessage(msg)"
+                        [class.rounded-r-2xl]="!isVendorMessage(msg)"
+                        [class.rounded-bl-2xl]="!isVendorMessage(msg)">
+                        
+                        <div class="flex items-center gap-3 mb-1">
+                          <span class="text-[10px] font-bold"
+                            [class.text-amazonas-900]="isVendorMessage(msg)"
+                            [class.text-slate-800]="!isVendorMessage(msg)">
+                            {{ msg.senderName }}
+                          </span>
+                          <span class="text-[9px] text-slate-400">{{ formatTime(msg.sentAt) }}</span>
+                        </div>
+
+                        <!-- Renderizado según tipo de mensaje -->
+                        @if (msg.messageType === 'TEXT') {
+                          <p class="text-xs text-slate-700 m-0 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
+                        }
+
+                        @else if (msg.messageType === 'FILE') {
+                          @let fileData = parseMetadata(msg.metadata);
+                          <div class="py-0.5">
+                            @if (fileData.fileType && fileData.fileType.startsWith('image/')) {
+                              <a [href]="fileData.fileUrl" target="_blank" class="block rounded overflow-hidden max-w-xs hover:opacity-90 transition-opacity mt-1">
+                                <img [src]="fileData.fileUrl" alt="Imagen" class="max-w-full max-h-60 object-contain bg-slate-50 border rounded-lg">
+                              </a>
+                            } @else {
+                              <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
+                                <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 20px;">{{ getFileIcon(fileData.fileType) }}</span>
+                                <div class="flex-1 min-w-0 text-left">
+                                  <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
+                                  <span class="text-[9px] text-slate-400 block mt-0.5">Descargar archivo</span>
+                                </div>
+                                <span class="material-icons text-slate-400 text-sm">download</span>
+                              </a>
+                            }
+                            @if (msg.content && msg.content !== ('Archivo adjunto: ' + fileData.fileName)) {
+                              <p class="text-xs text-slate-700 mt-2 m-0 leading-relaxed">{{ msg.content }}</p>
+                            }
+                          </div>
+                        }
+
+                        @else if (msg.messageType === 'VOUCHER') {
+                        @let fileData = parseMetadata(msg.metadata);
+                        @let msgEstado = getMsgEstado(msg.id);
+                        @let voucherTipo = getVoucherType(msg);
+                        <div class="py-0.5 space-y-2">
+                          <span class="inline-block text-[8px] font-bold px-2 py-0.5 rounded uppercase tracking-wider"
+                            [class]="voucherTipo === 'saldo' ? 'bg-blue-200 text-blue-900 border border-blue-300' : 'bg-emerald-200 text-emerald-900 border border-emerald-300'">
+                            {{ voucherTipo === 'saldo' ? 'Comprobante de Saldo Recibido' : 'Comprobante de Adelanto Recibido' }}
+                          </span>
+                          
+                          <!-- Preview Box -->
+                          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white border text-teal-800 shadow-sm"
+                            [class]="msgEstado === 'adelanto_confirmado' ? 'border-emerald-300 bg-emerald-50/50' : msgEstado === 'saldo_confirmado' ? 'border-blue-300 bg-blue-50/50' : msgEstado === 'rechazado' ? 'border-rose-300 bg-rose-50/50 opacity-60' : 'border-emerald-200'">
+                            <span class="material-icons text-2xl" [class]="isImageFile(fileData.fileType) ? 'text-emerald-600' : getFileIconColorClass(fileData.fileType)">{{ isImageFile(fileData.fileType) ? 'receipt_long' : getFileIcon(fileData.fileType) }}</span>
+                            <div class="flex-1 min-w-0 text-left">
+                              <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
+                              <span class="text-[9px] text-slate-400 block mt-0.5">
+                                @if (isImageFile(fileData.fileType)) {
+                                  Captura de Yape • S/ {{ (voucherTipo === 'completo' ? (room?.agreedPrice || 375.70) : (room?.agreedPrice ? (room?.agreedPrice ?? 0) / 2 : 187.85)) | number:'1.2-2' }}
+                                } @else {
+                                  Documento Comprobante • S/ {{ (voucherTipo === 'completo' ? (room?.agreedPrice || 375.70) : (room?.agreedPrice ? (room?.agreedPrice ?? 0) / 2 : 187.85)) | number:'1.2-2' }}
+                                }
+                              </span>
+                            </div>
+                          </div>
+
+                          <!-- Badges de estado ya procesado -->
+                          @if (msgEstado === 'adelanto_confirmado') {
+                            <div class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800">
+                              <span class="material-icons text-[14px]">verified</span>
+                              <span class="text-[10px] font-extrabold uppercase tracking-wider">Adelanto Verificado</span>
+                            </div>
+                          } @else if (msgEstado === 'saldo_confirmado') {
+                            <div class="flex items-center gap-1.5 px-3 py-2 bg-blue-50 border border-blue-200 rounded-xl text-blue-800">
+                              <span class="material-icons text-[14px]">verified</span>
+                              <span class="text-[10px] font-extrabold uppercase tracking-wider">Pago Final Verificado</span>
+                            </div>
+                          } @else if (msgEstado === 'rechazado') {
+                            <div class="flex items-center gap-1.5 px-3 py-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-700">
+                              <span class="material-icons text-[14px]">cancel</span>
+                              <span class="text-[10px] font-extrabold uppercase tracking-wider">Comprobante Rechazado</span>
+                            </div>
+                          } @else {
+                            <!-- Botones de acción para mensajes SIN estado procesado -->
+                            <div class="flex gap-2 pt-1.5 border-t border-emerald-100/50">
+                              <button type="button" (click)="openVoucherZoom(fileData.fileUrl, fileData.fileName, msg)" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-bold py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
+                                <span class="material-icons text-[12px]">zoom_in</span>
+                                Ver Detalle
+                              </button>
+                              <button type="button" (click)="abrirModalRechazo(msg)" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 text-[10px] font-bold py-1.5 rounded-lg border border-rose-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
+                                <span class="material-icons text-[12px]">cancel</span>
+                                Rechazar
+                              </button>
+                              @if (voucherTipo === 'adelanto') {
+                                <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Confirmar Adelanto
+                                </button>
+                              } @else if (voucherTipo === 'saldo') {
+                                <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Completar Pago
+                                </button>
+                              } @else {
+                                <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">payment</span>
+                                  Confirmar Pago
+                                </button>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+
+                      @else if (msg.messageType === 'OFFER') {
+                        @let offerData = parseMetadata(msg.metadata);
+                        <div class="bg-white border border-slate-150 p-3 rounded-xl mt-1.5 space-y-2 text-left max-w-sm">
+                          <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase">Propuesta de Precio</span>
+                            <span class="ml-auto text-xs font-black text-emerald-600">S/ {{ offerData.proposedPrice | number:'1.2-2' }}</span>
+                          </div>
+                          @if (offerData.note) {
+                            <p class="text-[11px] text-slate-500 m-0 italic">"{{ offerData.note }}"</p>
+                          }
+                          <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold uppercase py-0.5 px-2 rounded" 
+                              [class.bg-yellow-100]="offerData.status === 'PENDING'"
+                              [class.text-yellow-800]="offerData.status === 'PENDING'"
+                              [class.bg-emerald-100]="offerData.status === 'ACCEPTED'"
+                              [class.text-emerald-800]="offerData.status === 'ACCEPTED'">
+                              {{ offerData.status === 'PENDING' ? 'Pendiente' : offerData.status === 'ACCEPTED' ? 'Aceptada' : offerData.status === 'REJECTED' ? 'Rechazada' : 'Sustituida' }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+
+                      @else if (msg.messageType === 'EXTRA') {
+                        @let extraData = parseMetadata(msg.metadata);
+                        <div class="bg-white border border-slate-150 p-3 rounded-xl mt-1.5 space-y-1.5 text-left max-w-sm">
+                          <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase">Servicio Extra</span>
+                            <span class="ml-auto text-xs font-black text-blue-600">+S/ {{ extraData.price | number:'1.2-2' }}</span>
+                          </div>
+                          <h4 class="text-[11px] font-bold text-slate-800 m-0">{{ extraData.title }}</h4>
+                          @if (extraData.description) {
+                            <p class="text-[10px] text-slate-500 m-0">{{ extraData.description }}</p>
+                          }
+                          <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold py-0.5 px-2 rounded uppercase"
+                              [class.bg-yellow-100]="extraData.status === 'PENDING'"
+                              [class.text-yellow-800]="extraData.status === 'PENDING'"
+                              [class.bg-emerald-100]="extraData.status === 'ACCEPTED'"
+                              [class.text-emerald-800]="extraData.status === 'ACCEPTED'">
+                              {{ extraData.status === 'PENDING' ? 'Pendiente' : extraData.status === 'ACCEPTED' ? 'Aceptado' : 'Rechazado' }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+
+                      @else if (msg.messageType === 'BUDGET') {
+                        <!-- Tarjeta de Presupuesto Especializada (VENDEDOR VIEW: Muestra desglose interno) -->
+                        @let budgetData = parseMetadata(msg.metadata);
+                        <div class="border-2 border-emerald-600 shadow-md rounded-2xl overflow-hidden text-left max-w-sm mt-1.5 bg-white text-slate-800">
+                          <div class="bg-gradient-to-r from-emerald-800 to-teal-900 px-3 py-2.5 text-white flex justify-between items-center">
+                            <div>
+                              <span class="text-[8px] font-bold tracking-widest uppercase bg-emerald-700/50 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-600/30">PRESUPUESTO</span>
+                              <h4 class="font-bold text-[10px] font-mono mt-0.5">CÓDIGO: #PR-{{ budgetData.budgetId || 'N/A' }}</h4>
+                            </div>
+                            <span class="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                              Propuesto
+                            </span>
+                          </div>
+                          <div class="p-3.5 space-y-2.5">
+                            <div>
+                              <span class="text-[8px] text-slate-400 uppercase font-bold block">Proyecto</span>
+                              <span class="font-bold text-slate-800 text-xs">{{ budgetData.proyectoNombre }}</span>
+                            </div>
+
+                            <!-- Tabla con subtotales y costos (VISTA INTERNA VENDEDOR) -->
+                            <div class="border border-slate-100 rounded-xl overflow-hidden text-[10px]">
+                              <div class="bg-slate-50 px-2 py-1.5 border-b border-slate-100 flex justify-between text-[9px] font-bold text-slate-400 uppercase">
+                                <span>Materiales (Detalle Interno)</span>
+                                <span>Subtotal</span>
+                              </div>
+                              <div class="divide-y divide-slate-100 text-slate-700">
+                                @for (mat of budgetData.materiales; track mat.nombre) {
+                                  <div class="px-2 py-1.5 flex justify-between">
+                                    <div>
+                                      <span class="font-semibold text-slate-800">{{ mat.nombre }}</span>
+                                      <span class="text-[8.5px] text-slate-400 block mt-0.5">{{ mat.cantidad }} u x S/ {{ mat.precioUnitario | number:'1.2-2' }}</span>
+                                    </div>
+                                    <span class="font-bold text-slate-900">S/ {{ mat.subtotal | number:'1.2-2' }}</span>
+                                  </div>
+                                }
+                              </div>
+                            </div>
+
+                            <!-- Bloque de costos internos mano de obra + utilidad -->
+                            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100 text-[10.5px]">
+                              <div>
+                                <span class="text-[8px] text-slate-400 block uppercase">Mano de Obra</span>
+                                <span class="font-bold text-slate-800">S/ {{ budgetData.manoDeObra | number:'1.2-2' }}</span>
+                              </div>
+                              <div>
+                                <span class="text-[8px] text-slate-400 block uppercase">Margen ({{ budgetData.margenGanancia }}%)</span>
+                                <span class="font-bold text-slate-800">S/ {{ (budgetData.totalAmount - budgetData.manoDeObra - (budgetData.totalAmount / (1 + budgetData.margenGanancia/100) * (budgetData.margenGanancia/100))) | number:'1.2-2' }}</span>
+                              </div>
+                            </div>
+
+                            <!-- Totales -->
+                            <div class="flex justify-between items-center py-1.5 border-t border-slate-100">
+                              <div>
+                                <span class="text-[8px] text-slate-400 block font-bold">TOTAL PRESUPUESTADO</span>
+                                <span class="text-base font-black text-slate-900">S/ {{ budgetData.totalAmount | number:'1.2-2' }}</span>
+                              </div>
+                              @if (budgetData.requiereAdelanto) {
+                                <div class="text-right">
+                                  <span class="text-[8px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100 inline-block uppercase">
+                                    Adelanto: {{ budgetData.porcentajeAdelanto }}%
+                                  </span>
+                                  <span class="text-xs font-extrabold text-slate-900 block mt-0.5">S/ {{ budgetData.adelantoAmount | number:'1.2-2' }}</span>
+                                </div>
+                              }
+                            </div>
+
+                            <div class="flex flex-col gap-1.5 pt-1 border-t border-slate-100">
+                              <button type="button" (click)="irAPresupuesto()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none">
+                                Actualizar Presupuesto (Ir a Calculadora)
+                              </button>
+                              
+                              @if (isPagoConfirmado(budgetData.budgetId)) {
+                                <div class="w-full bg-emerald-50 text-emerald-700 text-[10px] font-bold py-1.5 rounded-lg text-center border border-emerald-200 flex items-center justify-center gap-1">
+                                  <span class="material-icons text-[12px]">check_circle</span>
+                                  Pago Completado (100%)
+                                </div>
+                              } @else if (isAdelantoPagado(budgetData.budgetId)) {
+                                <button type="button" (click)="confirmarPagoDesdeChat(msg)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none flex items-center justify-center gap-1 shadow-sm">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Registrar Pago de Saldo
+                                </button>
+                              } @else {
+                                <button type="button" (click)="confirmarAdelantoDesdeChat(msg)" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none flex items-center justify-center gap-1 shadow-sm">
+                                  <span class="material-icons text-[12px]">payments</span>
+                                  Registrar Pago / Adelanto
+                                </button>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      }
+
+                      <!-- Estado del mensaje -->
+                      <div class="text-[9px] text-right mt-1.5 opacity-60 flex items-center justify-end gap-1 select-none">
+                        @if (isVendorMessage(msg)) {
+                          @if (msg.status === 'SENDING') {
+                            <span class="material-icons text-[9px] animate-spin">autorenew</span>
+                          } @else if (msg.status === 'SENT') {
+                            <span class="material-icons text-[9px] text-emerald-500" style="font-size: 11px;">check_circle</span>
+                          } @else if (msg.status === 'FAILED') {
+                            <span class="material-icons text-[11px] text-rose-500 cursor-pointer" (click)="retryMessage(msg)">error</span>
+                          }
+                        }
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          }
+        }
+      </div>
+
+        <!-- Entrada del mensaje footer -->
+        <div class="border-t border-slate-150 bg-white shrink-0">
+          @if (solicitudActiva.estado === 'completado') {
+            <div class="text-center p-3.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold m-3 flex items-center justify-center gap-2 shadow-sm">
+              <span class="material-icons text-emerald-600 text-sm">lock</span>
+              <span>Esta solicitud ha sido completada y el chat está en modo de solo lectura.</span>
+            </div>
+          } @else if (solicitudActiva.estado === 'rechazado') {
+            <div class="text-center p-3.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold m-3 flex items-center justify-center gap-2 shadow-sm">
+              <span class="material-icons text-rose-600 text-sm">lock</span>
+              <span>Esta solicitud ha sido rechazada y el chat está en modo de solo lectura.</span>
+            </div>
+          } @else if (room?.status === 'CLOSED' || room?.status === 'ARCHIVED') {
+            <div class="text-center p-2.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold m-3">
+              La negociación ha finalizado. El precio acordado es de {{ room?.agreedPrice | currency:'S/ ':'code':'1.2-2' }}.
+            </div>
+          } @else {
+            @if (solicitudActiva.estado === 'procesando') {
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs font-semibold mx-3 mt-3">
+                <span class="text-blue-800 flex items-center gap-1.5">
+                  <span class="material-icons text-blue-600 text-sm" style="font-size: 16px;">handyman</span>
+                  La maqueta está en proceso de elaboración.
+                </span>
+                <button (click)="marcarComoCompletado()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg shadow-sm border-none cursor-pointer text-[10px] uppercase tracking-wider flex items-center gap-1">
+                  <span class="material-icons text-xs" style="font-size: 12px;">check_circle</span>
+                  Completar Pedido
+                </button>
+              </div>
+            } @else if (room?.status === 'AGREED') {
+              <div class="text-center p-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold mx-3 mt-3">
+                Presupuesto aceptado por S/ {{ room?.agreedPrice | number:'1.2-2' }}. Puedes coordinar la entrega o recibir comprobantes de pago.
+              </div>
+            }
+
+            <!-- Archivo en subida indicator -->
+            @if (uploadingFile) {
+              <div class="flex items-center justify-center gap-2 py-2 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-xl mx-3 mt-3 animate-pulse">
+                <div class="w-3.5 h-3.5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span>Procesando archivo... por favor espera.</span>
+              </div>
+            }
+
+            <!-- Preloaded Files UI -->
+            @if (preloadedFiles.length > 0 && !uploadingFile) {
+              <div class="p-2 bg-slate-50 border border-slate-150 rounded-xl mx-3 mt-3 flex flex-col gap-1.5">
+                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Archivos Seleccionados (Confirmar para enviar):</span>
+                <div class="flex flex-wrap gap-2 py-1 max-h-24 overflow-y-auto">
+                  @for (item of preloadedFiles; track item.file.name; let idx = $index) {
+                    <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-sm">
+                      @if (item.isImage) {
+                        <img [src]="item.previewUrl" class="w-5 h-5 object-cover rounded border">
+                      } @else {
+                        <span class="material-icons text-xs" [class]="getFileIconColorClass(item.file.type)">{{ getFileIcon(item.file.type) }}</span>
+                      }
+                      <span class="text-[10px] text-slate-700 truncate max-w-[100px]" [title]="item.file.name">{{ item.file.name }}</span>
+                      <button type="button" (click)="removePreloadedFile(idx)" class="text-slate-400 hover:text-red-500 p-0.5 hover:bg-slate-100 rounded cursor-pointer border-none flex">
+                        <span class="material-icons text-xs" style="font-size: 13px;">close</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+                <div class="flex justify-end gap-2 mt-1">
+                  <button type="button" (click)="clearPreloadedFiles()" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-bold rounded-lg cursor-pointer border-none">
+                    Limpiar
+                  </button>
+                  <button type="button" (click)="enviarArchivosVendedor()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg shadow-sm cursor-pointer border-none">
+                    Enviar Archivo(s)
+                  </button>
+                </div>
+              </div>
+            }
+
+            <form class="p-3 flex items-center gap-2" (submit)="enviarMensaje(); $event.preventDefault()">
+              <!-- Input oculto para adjuntar archivos -->
+              <input type="file" #fileInputVendedor (change)="onFileSelected($event)" class="hidden" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" multiple>
+              
+              <!-- Botón Clip para adjuntar archivos -->
+              <button type="button" (click)="fileInputVendedor.click()" [disabled]="uploadingFile" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-xl transition-all shrink-0 cursor-pointer" title="Adjuntar archivo o documento">
+                <span class="material-icons text-sm" style="font-size: 18px;">attach_file</span>
+              </button>
+
+              <input type="text" class="flex-1 bg-slate-50 border border-slate-200 focus:border-amazonas-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amazonas-500/20 text-xs px-3.5 py-2.5 rounded-xl transition-all" placeholder="Escribe un mensaje aquí..." [(ngModel)]="newMessage" name="msg" autocomplete="off" [disabled]="uploadingFile">
+              
+              <button type="submit" class="p-2.5 bg-amazonas-600 hover:bg-amazonas-700 text-white rounded-xl flex items-center justify-center shadow-md hover:shadow-lg transition-all disabled:opacity-50 shrink-0 border-none cursor-pointer" [disabled]="!newMessage.trim() || !wsConnected || uploadingFile">
+                <span class="material-icons text-sm" style="font-size: 16px;">send</span>
+              </button>
+            </form>
+          }
+          <div class="px-4 pb-2 flex justify-between items-center text-[9px] text-slate-400 select-none">
+            <span>Presiona Enter para enviar</span>
+            <span class="flex items-center gap-1">
+              <span class="material-icons text-[12px] text-emerald-500">lock</span>
+              Conexión cifrada
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL DERECHO/SIDEBAR: DETALLES Y ACCIONES (4 COLUMNAS) -->
+      <aside [class.hidden-mobile]="mobileChatTab !== 'cliente'" class="md:block md:col-span-4 lg:col-span-4 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
         
         <!-- CARD INFO CLIENTE -->
         <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium">
@@ -529,493 +1278,7 @@
 
           </div>
         </div>
-      </aside>
 
-      <!-- PANEL CENTRAL: CONVERSACIÓN Y MESSAGES (6 COLUMNS) -->
-      <section class="lg:col-span-6 bg-white rounded-2xl border border-slate-150 shadow-premium flex flex-col overflow-hidden h-full min-h-0">
-        
-        <!-- Header status -->
-        <div class="border-b border-slate-150 bg-slate-50/50 shrink-0">
-          <div class="px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="font-bold text-xs text-slate-700">Sala de Negociación Activa</span>
-            </div>
-            <span class="text-[9px] font-semibold text-slate-400 bg-white border px-2 py-0.5 rounded flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full" [class.bg-emerald-500]="wsConnected" [class.bg-slate-400]="!wsConnected"></span>
-              {{ wsConnected ? 'Conectado STOMP' : 'Reconectando...' }}
-            </span>
-          </div>
-
-          <!-- Step Tracker del Prototipo (Misma lógica visual) -->
-          <div class="px-4 py-2 border-t border-slate-150/60 bg-white overflow-x-auto select-none">
-            <div class="flex items-center justify-between min-w-[480px] py-1">
-              
-              <!-- Step 1: Solicitud -->
-              <div class="flex items-center gap-1.5">
-                <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-                  <span class="material-icons text-xs" style="font-size: 12px;">check</span>
-                </div>
-                <span class="text-[10px] font-bold text-slate-800">Solicitud</span>
-              </div>
-              <div class="flex-1 h-0.5 bg-emerald-500 mx-1.5"></div>
-
-              <!-- Step 2: Conversación -->
-              <div class="flex items-center gap-1.5">
-                @if (hasOfferOrBudget()) {
-                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
-                  </div>
-                  <span class="text-[10px] font-bold text-slate-800">Conversación</span>
-                } @else {
-                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
-                    2
-                  </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Conversación</span>
-                }
-              </div>
-              <div class="flex-1 h-0.5 mx-1.5"
-                [class.bg-emerald-500]="hasOfferOrBudget()"
-                [class.bg-slate-200]="!hasOfferOrBudget()">
-              </div>
-
-              <!-- Step 3: Presupuesto -->
-              <div class="flex items-center gap-1.5">
-                @if (room?.status === 'AGREED' || room?.status === 'CLOSED') {
-                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
-                  </div>
-                  <span class="text-[10px] font-bold text-slate-850">Presupuesto</span>
-                } @else if (hasOfferOrBudget()) {
-                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
-                    3
-                  </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Presupuesto</span>
-                } @else {
-                  <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
-                    3
-                  </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Presupuesto</span>
-                }
-              </div>
-              <div class="flex-1 h-0.5 mx-1.5"
-                [class.bg-emerald-500]="solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado'"
-                [class.bg-slate-200]="solicitudActiva.estado !== 'procesando' && solicitudActiva.estado !== 'completado'">
-              </div>
-
-              <!-- Step 4: Pago -->
-              <div class="flex items-center gap-1.5">
-                @if (solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado') {
-                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
-                  </div>
-                  <span class="text-[10px] font-bold text-slate-850">Pago</span>
-                } @else if (room?.status === 'AGREED') {
-                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm border border-amazonas-100 animate-pulse">
-                    4
-                  </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Pago</span>
-                } @else {
-                  <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
-                    4
-                  </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Pago</span>
-                }
-              </div>
-              <div class="flex-1 h-0.5 mx-1.5"
-                [class.bg-emerald-500]="solicitudActiva.estado === 'procesando' || solicitudActiva.estado === 'completado'"
-                [class.bg-slate-200]="solicitudActiva.estado !== 'procesando' && solicitudActiva.estado !== 'completado'">
-              </div>
-
-              <!-- Step 5: Producción -->
-              <div class="flex items-center gap-1.5">
-                @if (solicitudActiva.estado === 'completado') {
-                  <div class="w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-                    <span class="material-icons text-xs" style="font-size: 12px;">check</span>
-                  </div>
-                  <span class="text-[10px] font-bold text-slate-850">Producción</span>
-                } @else if (solicitudActiva.estado === 'procesando') {
-                  <div class="w-5 h-5 rounded-full bg-amazonas-600 text-white text-[10px] font-bold flex items-center justify-center shadow-sm animate-pulse">
-                    5
-                  </div>
-                  <span class="text-[10px] font-bold text-amazonas-700">Producción</span>
-                } @else {
-                  <div class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-bold flex items-center justify-center border border-slate-200">
-                    5
-                  </div>
-                  <span class="text-[10px] font-semibold text-slate-400">Producción</span>
-                }
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- Caja de mensajes -->
-        <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-[#fafbfe] custom-scrollbar flex flex-col min-h-0" #scrollContainer>
-          @if (loadingChat) {
-            <div class="text-center py-8 text-slate-400 text-xs font-semibold">Cargando conversación...</div>
-          } @else if (messages.length === 0) {
-            <div class="text-center py-12 text-slate-400 flex flex-col items-center justify-center gap-2">
-              <span class="material-icons text-4xl text-slate-200">forum</span>
-              <p class="text-xs font-semibold">Sin mensajes en la sala</p>
-              <p class="text-[10px] text-slate-400">Envía un mensaje para iniciar el diálogo técnico.</p>
-            </div>
-          } @else {
-            @for (msg of messages; track msg.id) {
-              @if (msg.messageType === 'SYSTEM') {
-                <div class="flex justify-center my-1">
-                  <div class="bg-white px-3.5 py-1.5 rounded-full border border-slate-200/60 shadow-sm text-center max-w-[85%]">
-                    <p class="text-[10px] font-semibold text-slate-500 flex items-center justify-center gap-1.5 m-0 leading-tight">
-                      <span class="material-icons text-teal-600 text-xs" style="font-size: 13px;">notifications</span>
-                      {{ msg.content }}
-                    </p>
-                  </div>
-                </div>
-              } @else {
-                <!-- Mensaje: Vendedor a la derecha (isVendorMessage), Cliente a la izquierda -->
-                <div class="flex items-start gap-2.5 max-w-[85%] animate-fadeIn"
-                  [class.self-end]="isVendorMessage(msg)"
-                  [class.flex-row-reverse]="isVendorMessage(msg)"
-                  [class.self-start]="!isVendorMessage(msg)">
-                  
-                  <!-- Avatar -->
-                  <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold font-outfit shadow-sm shrink-0"
-                    [class.bg-amazonas-800]="isVendorMessage(msg)"
-                    [class.bg-gradient-to-tr]="!isVendorMessage(msg)"
-                    [class.from-amazonas-500]="!isVendorMessage(msg)"
-                    [class.to-teal-650]="!isVendorMessage(msg)">
-                    {{ isVendorMessage(msg) ? 'AM' : 'CL' }}
-                  </div>
-
-                  <div>
-                    <!-- Burbuja -->
-                    <div class="p-3.5 shadow-sm"
-                      [class.bg-emerald-50/70]="isVendorMessage(msg)"
-                      [class.border]="isVendorMessage(msg)"
-                      [class.border-emerald-100]="isVendorMessage(msg)"
-                      [class.rounded-l-2xl]="isVendorMessage(msg)"
-                      [class.rounded-br-2xl]="isVendorMessage(msg)"
-                      [class.bg-white]="!isVendorMessage(msg)"
-                      [class.border]="!isVendorMessage(msg)"
-                      [class.border-slate-100]="!isVendorMessage(msg)"
-                      [class.rounded-r-2xl]="!isVendorMessage(msg)"
-                      [class.rounded-bl-2xl]="!isVendorMessage(msg)">
-                      
-                      <div class="flex items-center gap-3 mb-1">
-                        <span class="text-[10px] font-bold"
-                          [class.text-amazonas-900]="isVendorMessage(msg)"
-                          [class.text-slate-800]="!isVendorMessage(msg)">
-                          {{ msg.senderName }}
-                        </span>
-                        <span class="text-[9px] text-slate-400">{{ formatTime(msg.sentAt) }}</span>
-                      </div>
-
-                      <!-- Renderizado según tipo de mensaje -->
-                      @if (msg.messageType === 'TEXT') {
-                        <p class="text-xs text-slate-700 m-0 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
-                      }
-
-                      @else if (msg.messageType === 'FILE') {
-                        @let fileData = parseMetadata(msg.metadata);
-                        <div class="py-0.5">
-                          @if (fileData.fileType && fileData.fileType.startsWith('image/')) {
-                            <a [href]="fileData.fileUrl" target="_blank" class="block rounded overflow-hidden max-w-xs hover:opacity-90 transition-opacity mt-1">
-                              <img [src]="fileData.fileUrl" alt="Imagen" class="max-w-full max-h-60 object-contain bg-slate-50 border rounded-lg">
-                            </a>
-                          } @else {
-                            <a [href]="fileData.fileUrl" target="_blank" download class="flex items-center gap-3 p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 no-underline shadow-sm transition-all" style="text-decoration: none;">
-                              <span class="material-icons" [class]="getFileIconColorClass(fileData.fileType)" style="font-size: 20px;">{{ getFileIcon(fileData.fileType) }}</span>
-                              <div class="flex-1 min-w-0 text-left">
-                                <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
-                                <span class="text-[9px] text-slate-400 block mt-0.5">Descargar archivo</span>
-                              </div>
-                              <span class="material-icons text-slate-400 text-sm">download</span>
-                            </a>
-                          }
-                          @if (msg.content && msg.content !== ('Archivo adjunto: ' + fileData.fileName)) {
-                            <p class="text-xs text-slate-700 mt-2 m-0 leading-relaxed">{{ msg.content }}</p>
-                          }
-                        </div>
-                      }
-
-                      @else if (msg.messageType === 'VOUCHER') {
-                        @let fileData = parseMetadata(msg.metadata);
-                        <div class="py-0.5 space-y-2">
-                          <span class="inline-block text-[8px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-300 px-2 py-0.5 rounded uppercase tracking-wider">
-                            Comprobante de Adelanto Recibido
-                          </span>
-                          
-                          <!-- Preview Box -->
-                          <div class="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-emerald-200 text-teal-800 shadow-sm">
-                            <span class="material-icons text-2xl" [class]="isImageFile(fileData.fileType) ? 'text-emerald-600' : getFileIconColorClass(fileData.fileType)">{{ isImageFile(fileData.fileType) ? 'receipt_long' : getFileIcon(fileData.fileType) }}</span>
-                            <div class="flex-1 min-w-0 text-left">
-                              <p class="text-[11px] font-bold text-slate-800 truncate m-0">{{ fileData.fileName }}</p>
-                              <span class="text-[9px] text-slate-400 block mt-0.5">
-                                @if (isImageFile(fileData.fileType)) {
-                                  Captura de Yape • S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
-                                } @else {
-                                  Documento Comprobante • S/ {{ (room ? room.agreedPrice ? room.agreedPrice / 2 : 187.85 : 187.85) | number:'1.2-2' }}
-                                }
-                              </span>
-                            </div>
-                          </div>
-
-                          <!-- Botones Rápidos en el Mensaje -->
-                          <div class="flex gap-2 pt-1.5 border-t border-emerald-100/50">
-                            <button type="button" (click)="openVoucherZoom(fileData.fileUrl, fileData.fileName, msg)" class="flex-1 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-bold py-1.5 rounded-lg border border-slate-200 transition-all cursor-pointer text-center flex items-center justify-center gap-1 shadow-sm">
-                              <span class="material-icons text-[12px]">zoom_in</span>
-                              Ver Detalle
-                            </button>
-                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(msg)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
-                              <span class="material-icons text-[12px]">payments</span>
-                              Confirmar Adelanto
-                            </button>
-                            <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(msg)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold py-1.5 rounded-lg transition-all cursor-pointer text-center border-none shadow-sm flex items-center justify-center gap-1">
-                              <span class="material-icons text-[12px]">payment</span>
-                              Confirmar Pago
-                            </button>
-                          </div>
-                        </div>
-                      }
-
-                      @else if (msg.messageType === 'OFFER') {
-                        @let offerData = parseMetadata(msg.metadata);
-                        <div class="bg-white border border-slate-150 p-3 rounded-xl mt-1.5 space-y-2 text-left max-w-sm">
-                          <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase">Propuesta de Precio</span>
-                            <span class="ml-auto text-xs font-black text-emerald-600">S/ {{ offerData.proposedPrice | number:'1.2-2' }}</span>
-                          </div>
-                          @if (offerData.note) {
-                            <p class="text-[11px] text-slate-500 m-0 italic">"{{ offerData.note }}"</p>
-                          }
-                          <div class="flex justify-between items-center text-[10px]">
-                            <span class="font-bold uppercase py-0.5 px-2 rounded" 
-                              [class.bg-yellow-100]="offerData.status === 'PENDING'"
-                              [class.text-yellow-800]="offerData.status === 'PENDING'"
-                              [class.bg-emerald-100]="offerData.status === 'ACCEPTED'"
-                              [class.text-emerald-800]="offerData.status === 'ACCEPTED'">
-                              {{ offerData.status === 'PENDING' ? 'Pendiente' : offerData.status === 'ACCEPTED' ? 'Aceptada' : offerData.status === 'REJECTED' ? 'Rechazada' : 'Sustituida' }}
-                            </span>
-                          </div>
-                        </div>
-                      }
-
-                      @else if (msg.messageType === 'EXTRA') {
-                        @let extraData = parseMetadata(msg.metadata);
-                        <div class="bg-white border border-slate-150 p-3 rounded-xl mt-1.5 space-y-1.5 text-left max-w-sm">
-                          <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase">Servicio Extra</span>
-                            <span class="ml-auto text-xs font-black text-blue-600">+S/ {{ extraData.price | number:'1.2-2' }}</span>
-                          </div>
-                          <h4 class="text-[11px] font-bold text-slate-800 m-0">{{ extraData.title }}</h4>
-                          @if (extraData.description) {
-                            <p class="text-[10px] text-slate-500 m-0">{{ extraData.description }}</p>
-                          }
-                          <div class="flex justify-between items-center text-[10px]">
-                            <span class="font-bold py-0.5 px-2 rounded uppercase"
-                              [class.bg-yellow-100]="extraData.status === 'PENDING'"
-                              [class.text-yellow-800]="extraData.status === 'PENDING'"
-                              [class.bg-emerald-100]="extraData.status === 'ACCEPTED'"
-                              [class.text-emerald-800]="extraData.status === 'ACCEPTED'">
-                              {{ extraData.status === 'PENDING' ? 'Pendiente' : extraData.status === 'ACCEPTED' ? 'Aceptado' : 'Rechazado' }}
-                            </span>
-                          </div>
-                        </div>
-                      }
-
-                      @else if (msg.messageType === 'BUDGET') {
-                        <!-- Tarjeta de Presupuesto Especializada (VENDEDOR VIEW: Muestra desglose interno) -->
-                        @let budgetData = parseMetadata(msg.metadata);
-                        <div class="border-2 border-emerald-600 shadow-md rounded-2xl overflow-hidden text-left max-w-sm mt-1.5 bg-white text-slate-800">
-                          <div class="bg-gradient-to-r from-emerald-800 to-teal-900 px-3 py-2.5 text-white flex justify-between items-center">
-                            <div>
-                              <span class="text-[8px] font-bold tracking-widest uppercase bg-emerald-700/50 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-600/30">PRESUPUESTO</span>
-                              <h4 class="font-bold text-[10px] font-mono mt-0.5">CÓDIGO: #PR-{{ budgetData.budgetId || 'N/A' }}</h4>
-                            </div>
-                            <span class="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
-                              Propuesto
-                            </span>
-                          </div>
-                          <div class="p-3.5 space-y-2.5">
-                            <div>
-                              <span class="text-[8px] text-slate-400 uppercase font-bold block">Proyecto</span>
-                              <span class="font-bold text-slate-800 text-xs">{{ budgetData.proyectoNombre }}</span>
-                            </div>
-
-                            <!-- Tabla con subtotales y costos (VISTA INTERNA VENDEDOR) -->
-                            <div class="border border-slate-100 rounded-xl overflow-hidden text-[10px]">
-                              <div class="bg-slate-50 px-2 py-1.5 border-b border-slate-100 flex justify-between text-[9px] font-bold text-slate-400 uppercase">
-                                <span>Materiales (Detalle Interno)</span>
-                                <span>Subtotal</span>
-                              </div>
-                              <div class="divide-y divide-slate-100 text-slate-700">
-                                @for (mat of budgetData.materiales; track mat.nombre) {
-                                  <div class="px-2 py-1.5 flex justify-between">
-                                    <div>
-                                      <span class="font-semibold text-slate-800">{{ mat.nombre }}</span>
-                                      <span class="text-[8.5px] text-slate-400 block mt-0.5">{{ mat.cantidad }} u x S/ {{ mat.precioUnitario | number:'1.2-2' }}</span>
-                                    </div>
-                                    <span class="font-bold text-slate-900">S/ {{ mat.subtotal | number:'1.2-2' }}</span>
-                                  </div>
-                                }
-                              </div>
-                            </div>
-
-                            <!-- Bloque de costos internos mano de obra + utilidad -->
-                            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100 text-[10.5px]">
-                              <div>
-                                <span class="text-[8px] text-slate-400 block uppercase">Mano de Obra</span>
-                                <span class="font-bold text-slate-800">S/ {{ budgetData.manoDeObra | number:'1.2-2' }}</span>
-                              </div>
-                              <div>
-                                <span class="text-[8px] text-slate-400 block uppercase">Margen ({{ budgetData.margenGanancia }}%)</span>
-                                <span class="font-bold text-slate-800">S/ {{ (budgetData.totalAmount - budgetData.manoDeObra - (budgetData.totalAmount / (1 + budgetData.margenGanancia/100) * (budgetData.margenGanancia/100))) | number:'1.2-2' }}</span>
-                              </div>
-                            </div>
-
-                            <!-- Totales -->
-                            <div class="flex justify-between items-center py-1.5 border-t border-slate-100">
-                              <div>
-                                <span class="text-[8px] text-slate-400 block font-bold">TOTAL PRESUPUESTADO</span>
-                                <span class="text-base font-black text-slate-900">S/ {{ budgetData.totalAmount | number:'1.2-2' }}</span>
-                              </div>
-                              @if (budgetData.requiereAdelanto) {
-                                <div class="text-right">
-                                  <span class="text-[8px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100 inline-block uppercase">
-                                    Adelanto: {{ budgetData.porcentajeAdelanto }}%
-                                  </span>
-                                  <span class="text-xs font-extrabold text-slate-900 block mt-0.5">S/ {{ budgetData.adelantoAmount | number:'1.2-2' }}</span>
-                                </div>
-                              }
-                            </div>
-
-                            <div class="flex gap-2 pt-1 border-t border-slate-100">
-                              <button type="button" (click)="irAPresupuesto()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-bold py-1.5 rounded-lg transition-colors cursor-pointer text-center border-none">
-                                Actualizar Presupuesto (Ir a Calculadora)
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      }
-
-                      <!-- Estado del mensaje -->
-                      <div class="text-[9px] text-right mt-1.5 opacity-60 flex items-center justify-end gap-1 select-none">
-                        @if (isVendorMessage(msg)) {
-                          @if (msg.status === 'SENDING') {
-                            <span class="material-icons text-[9px] animate-spin">autorenew</span>
-                          } @else if (msg.status === 'SENT') {
-                            <span class="material-icons text-[9px] text-emerald-500" style="font-size: 11px;">check_circle</span>
-                          } @else if (msg.status === 'FAILED') {
-                            <span class="material-icons text-[11px] text-rose-500 cursor-pointer" (click)="retryMessage(msg)">error</span>
-                          }
-                        }
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-              }
-            }
-          }
-        </div>
-
-        <!-- Entrada del mensaje footer -->
-        <div class="border-t border-slate-150 bg-white shrink-0">
-          @if (solicitudActiva.estado === 'completado') {
-            <div class="text-center p-3.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold m-3 flex items-center justify-center gap-2 shadow-sm">
-              <span class="material-icons text-emerald-600 text-sm">lock</span>
-              <span>Esta solicitud ha sido completada y el chat está en modo de solo lectura.</span>
-            </div>
-          } @else if (room?.status === 'CLOSED' || room?.status === 'ARCHIVED') {
-            <div class="text-center p-2.5 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-semibold m-3">
-              La negociación ha finalizado. El precio acordado es de {{ room?.agreedPrice | currency:'S/ ':'code':'1.2-2' }}.
-            </div>
-          } @else {
-            @if (solicitudActiva.estado === 'procesando') {
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs font-semibold mx-3 mt-3">
-                <span class="text-blue-800 flex items-center gap-1.5">
-                  <span class="material-icons text-blue-600 text-sm" style="font-size: 16px;">handyman</span>
-                  La maqueta está en proceso de elaboración.
-                </span>
-                <button (click)="marcarComoCompletado()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg shadow-sm border-none cursor-pointer text-[10px] uppercase tracking-wider flex items-center gap-1">
-                  <span class="material-icons text-xs" style="font-size: 12px;">check_circle</span>
-                  Completar Pedido
-                </button>
-              </div>
-            } @else if (room?.status === 'AGREED') {
-              <div class="text-center p-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold mx-3 mt-3">
-                Presupuesto aceptado por S/ {{ room?.agreedPrice | number:'1.2-2' }}. Puedes coordinar la entrega o recibir comprobantes de pago.
-              </div>
-            }
-
-            <!-- Archivo en subida indicator -->
-            @if (uploadingFile) {
-              <div class="flex items-center justify-center gap-2 py-2 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-xl mx-3 mt-3 animate-pulse">
-                <div class="w-3.5 h-3.5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <span>Procesando archivo... por favor espera.</span>
-              </div>
-            }
-
-            <!-- Preloaded Files UI -->
-            @if (preloadedFiles.length > 0 && !uploadingFile) {
-              <div class="p-2 bg-slate-50 border border-slate-150 rounded-xl mx-3 mt-3 flex flex-col gap-1.5">
-                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Archivos Seleccionados (Confirmar para enviar):</span>
-                <div class="flex flex-wrap gap-2 py-1 max-h-24 overflow-y-auto">
-                  @for (item of preloadedFiles; track item.file.name; let idx = $index) {
-                    <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-sm">
-                      @if (item.isImage) {
-                        <img [src]="item.previewUrl" class="w-5 h-5 object-cover rounded border">
-                      } @else {
-                        <span class="material-icons text-xs" [class]="getFileIconColorClass(item.file.type)">{{ getFileIcon(item.file.type) }}</span>
-                      }
-                      <span class="text-[10px] text-slate-700 truncate max-w-[100px]" [title]="item.file.name">{{ item.file.name }}</span>
-                      <button type="button" (click)="removePreloadedFile(idx)" class="text-slate-400 hover:text-red-500 p-0.5 hover:bg-slate-100 rounded cursor-pointer border-none flex">
-                        <span class="material-icons text-xs" style="font-size: 13px;">close</span>
-                      </button>
-                    </div>
-                  }
-                </div>
-                <div class="flex justify-end gap-2 mt-1">
-                  <button type="button" (click)="clearPreloadedFiles()" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-bold rounded-lg cursor-pointer border-none">
-                    Limpiar
-                  </button>
-                  <button type="button" (click)="enviarArchivosVendedor()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg shadow-sm cursor-pointer border-none">
-                    Enviar Archivo(s)
-                  </button>
-                </div>
-              </div>
-            }
-
-            <form class="p-3 flex items-center gap-2" (submit)="enviarMensaje(); $event.preventDefault()">
-              <!-- Input oculto para adjuntar archivos -->
-              <input type="file" #fileInputVendedor (change)="onFileSelected($event)" class="hidden" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt,.zip" multiple>
-              
-              <!-- Botón Clip para adjuntar archivos -->
-              <button type="button" (click)="fileInputVendedor.click()" [disabled]="uploadingFile" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-xl transition-all shrink-0 cursor-pointer" title="Adjuntar archivo o documento">
-                <span class="material-icons text-sm" style="font-size: 18px;">attach_file</span>
-              </button>
-
-              <input type="text" class="flex-1 bg-slate-50 border border-slate-200 focus:border-amazonas-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amazonas-500/20 text-xs px-3.5 py-2.5 rounded-xl transition-all" placeholder="Escribe un mensaje aquí..." [(ngModel)]="newMessage" name="msg" autocomplete="off" [disabled]="uploadingFile">
-              
-              <button type="submit" class="p-2.5 bg-amazonas-600 hover:bg-amazonas-700 text-white rounded-xl flex items-center justify-center shadow-md hover:shadow-lg transition-all disabled:opacity-50 shrink-0 border-none cursor-pointer" [disabled]="!newMessage.trim() || !wsConnected || uploadingFile">
-                <span class="material-icons text-sm" style="font-size: 16px;">send</span>
-              </button>
-            </form>
-          }
-          <div class="px-4 pb-2 flex justify-between items-center text-[9px] text-slate-400 select-none">
-            <span>Presiona Enter para enviar</span>
-            <span class="flex items-center gap-1">
-              <span class="material-icons text-[12px] text-emerald-500">lock</span>
-              Conexión cifrada
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <!-- PANEL DERECHO: ACCIONES VENDEDOR Y HISTORIAL TIMELINE (3 COLUMNAS) -->
-      <aside class="lg:col-span-3 flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar h-full min-h-0">
-        
         <!-- Quick Actions Panel -->
         <div class="bg-white rounded-2xl p-4 border border-slate-150 shadow-premium shrink-0">
           <h2 class="text-[10px] font-bold text-slate-400 tracking-wider uppercase mb-3 flex items-center gap-1.5">
@@ -1161,13 +1424,125 @@
         <button (click)="closeVoucherZoom()" class="flex-1 bg-white hover:bg-slate-100 text-slate-650 font-bold py-2.5 rounded-xl border border-slate-250 transition-all cursor-pointer text-xs">
           Cerrar Vista
         </button>
-        <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'procesando') || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarAdelantoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
-          <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
-          Confirmar Adelanto
+        @if (currentVoucherMessage && getMsgEstado(currentVoucherMessage.id) === 'adelanto_confirmado') {
+          <div class="flex-1 flex items-center justify-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 py-2.5">
+            <span class="material-icons text-sm" style="font-size: 16px;">verified</span>
+            <span class="text-xs font-extrabold uppercase tracking-wider">Adelanto Verificado</span>
+          </div>
+        } @else if (currentVoucherMessage && getMsgEstado(currentVoucherMessage.id) === 'saldo_confirmado') {
+          <div class="flex-1 flex items-center justify-center gap-1.5 bg-blue-50 border border-blue-200 rounded-xl text-blue-800 py-2.5">
+            <span class="material-icons text-sm" style="font-size: 16px;">verified</span>
+            <span class="text-xs font-extrabold uppercase tracking-wider">Pago Final Verificado</span>
+          </div>
+        } @else if (currentVoucherMessage && getMsgEstado(currentVoucherMessage.id) === 'rechazado') {
+          <div class="flex-1 flex items-center justify-center gap-1.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 py-2.5">
+            <span class="material-icons text-sm" style="font-size: 16px;">cancel</span>
+            <span class="text-xs font-extrabold uppercase tracking-wider">Rechazado</span>
+          </div>
+        } @else if (currentVoucherMessage) {
+          <button type="button" (click)="abrirModalRechazo()" class="flex-1 bg-white hover:bg-rose-50 text-rose-600 font-bold py-2.5 rounded-xl border border-rose-250 transition-all cursor-pointer text-xs flex items-center justify-center gap-1">
+            <span class="material-icons text-sm" style="font-size: 16px;">cancel</span>
+            Rechazar
+          </button>
+          @if (getVoucherType(currentVoucherMessage) === 'adelanto') {
+            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarAdelantoDesdeChat(currentVoucherMessage)" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+              <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
+              Confirmar Adelanto
+            </button>
+          } @else if (getVoucherType(currentVoucherMessage) === 'saldo') {
+            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(currentVoucherMessage)" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+              <span class="material-icons text-sm" style="font-size: 16px;">payments</span>
+              Completar Pago
+            </button>
+          } @else {
+            <button type="button" [disabled]="room?.status === 'CLOSED'" (click)="confirmarPagoDesdeChat(currentVoucherMessage)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
+              <span class="material-icons text-sm" style="font-size: 16px;">task_alt</span>
+              Confirmar Pago
+            </button>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de Pago Reutilizable (Simulador de Auditoría/Chat) -->
+<app-payment-modal
+    [isOpen]="mostrarModalPago"
+    [clientName]="clienteCobro"
+    [amountToPay]="montoCobro"
+    [title]="tipoCobro === 'adelanto' ? 'Registrar Adelanto Online' : tipoCobro === 'saldo' ? 'Registrar Pago de Saldo' : 'Registrar Pago Completo'"
+    [projectName]="proyectoCobro"
+    [materialsDescription]="materialesCobro"
+    [summaryLabel]="tipoCobro === 'adelanto' ? 'Adelanto del ' + (selectedBudgetMetadata?.porcentajeAdelanto || 50) + '%' : tipoCobro === 'saldo' ? 'Saldo Restante (50%)' : 'Liquidación Completa (100%)'"
+    [allowOnlineMethods]="true"
+    [allowFisicoMethods]="true"
+    [prefilledVoucherUrl]="prefilledVoucherUrl"
+    (close)="mostrarModalPago = false"
+    (confirm)="onConfirmarPagoDesdeChat($event)">
+</app-payment-modal>
+
+<!-- Modal de Cancelación/Rechazo de Solicitud -->
+@if (mostrarModalCancelacion) {
+  <div class="cancelation-modal-overlay">
+    <div class="cancelation-modal-card">
+      <div class="cancelation-modal-header">
+        <span class="material-icons" style="color: #dc2626; font-size: 24px;">error_outline</span>
+        <h3 class="cancelation-modal-title">Cancelar Solicitud</h3>
+      </div>
+      <div class="cancelation-modal-body">
+        <p class="cancelation-modal-text">
+          ¿Estás seguro de que deseas cancelar la solicitud <strong>{{ solicitudActiva?.numeroSolicitud }}</strong> para <strong>{{ solicitudActiva?.productoNombre }}</strong>?
+        </p>
+        <p class="cancelation-modal-text" style="font-size: 13px; color: #64748b; margin-top: -12px;">
+          Esta acción cerrará el chat de negociación y el cliente verá el motivo de la cancelación.
+        </p>
+        <textarea 
+          class="cancelation-textarea" 
+          placeholder="Escribe el motivo del rechazo o cancelación aquí (opcional)..." 
+          [(ngModel)]="motivoCancelacionText"
+          maxlength="250">
+        </textarea>
+      </div>
+      <div class="cancelation-modal-footer">
+        <button class="btn-cancelation-back" (click)="cerrarModalCancelacion()">Volver</button>
+        <button class="btn-cancelation-confirm" (click)="confirmarRechazo()">Confirmar Cancelación</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de Rechazo de Comprobante -->
+@if (mostrarModalRechazo) {
+  <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4 border border-rose-100 animate-scaleUp">
+      <div class="flex items-center gap-3 pb-3 border-b border-rose-100">
+        <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center font-bold">
+          <span class="material-icons text-xl">gpp_bad</span>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800 m-0">Observar / Rechazar Comprobante</h3>
+          <p class="text-xs text-slate-400 m-0">Notificarás al cliente para que vuelva a subir su pago</p>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-xs font-bold text-slate-700 block">Indica el motivo del rechazo:</label>
+        <textarea 
+          [(ngModel)]="motivoRechazo"
+          rows="3"
+          placeholder="Ej: Captura borrosa, número de operación no visible o monto no coincide..."
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 focus:outline-none focus:border-rose-500 focus:bg-white resize-none">
+        </textarea>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button (click)="cerrarModalRechazo()" class="flex-1 bg-white hover:bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl border border-slate-200 text-xs cursor-pointer">
+          Cancelar
         </button>
-        <button type="button" [disabled]="room?.status === 'CLOSED' || (solicitudActiva && solicitudActiva.estado === 'completado')" (click)="confirmarPagoDesdeChat(currentVoucherMessage!)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow transition-all border-none cursor-pointer text-xs flex items-center justify-center gap-1">
-          <span class="material-icons text-sm" style="font-size: 16px;">task_alt</span>
-          Confirmar Pago
+        <button (click)="confirmarRechazoComprobante()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl border-none shadow text-xs cursor-pointer flex items-center justify-center gap-1">
+          <span class="material-icons text-sm" style="font-size: 16px;">send</span>
+          Enviar Rechazo
         </button>
       </div>
     </div>

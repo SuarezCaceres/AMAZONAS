@@ -32,6 +32,7 @@ export interface SavedRequest {
   explanationModel?: string;
   explanationPeople?: number;
   status?: string;
+  motivoCancelacion?: string;
   unreadCount?: number;
   lastMessageAt?: string;
 }
@@ -59,6 +60,7 @@ export class RequestFormComponent implements OnInit {
   @Output() submitted = new EventEmitter<SavedRequest>();
 
   loading = false;
+  allMaterialsDb: any[] = [];
 
   materialOptions = [
     'Carton reciclado',
@@ -135,6 +137,7 @@ export class RequestFormComponent implements OnInit {
     this.materialService.getAllMaterials().subscribe({
       next: (mats) => {
         if (mats && mats.length > 0) {
+          this.allMaterialsDb = mats;
           const activeMats = mats.filter(m => m.activo !== false).map(m => m.nombre);
           if (activeMats.length > 0) {
             this.materialOptions = activeMats;
@@ -308,13 +311,18 @@ export class RequestFormComponent implements OnInit {
           : undefined
     };
 
+    const isValidUuid = (id?: string) => {
+      if (!id) return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    };
+
     // Construct the backend request matching V1__init_schema.sql and DTOs
     const reqBody: PurchaseRequestRequest = {
       clienteNombre: this.form.fullName.trim(),
       clienteEmail: this.form.email.trim(),
       clienteTelefono: this.form.phone.trim(),
       mensaje: !this.isCustomization ? this.form.message : undefined,
-      productoId: this.model?.id || undefined,
+      productoId: (!this.standaloneRequest && isValidUuid(this.model?.id)) ? this.model.id : undefined,
       isKit: false,
       isCustom: this.isCustomization,
       descripcionPersonalizacion: this.isCustomization ? this.form.description : undefined,
@@ -334,7 +342,23 @@ export class RequestFormComponent implements OnInit {
         : []
     };
 
-    if (this.isCustomization && this.model?.rawProduct?.materialesDetalle) {
+    if (this.standaloneRequest && this.selectedExtras.length > 0) {
+      this.selectedExtras.forEach((matName) => {
+        const found = this.allMaterialsDb.find(m => m.nombre.toLowerCase().trim() === matName.toLowerCase().trim());
+        if (found) {
+          reqBody.materialesCustomizados?.push({
+            materialId: found.id,
+            cantidad: 1
+          });
+        } else {
+          reqBody.materialesPersonales?.push({
+            materialName: matName,
+            cantidad: 1,
+            descripcion: 'Material adicional seleccionado por el cliente'
+          });
+        }
+      });
+    } else if (!this.standaloneRequest && this.isCustomization && this.model?.rawProduct?.materialesDetalle) {
       const details: any[] = this.model.rawProduct.materialesDetalle;
       this.selectedMaterials.forEach((matName) => {
         const found = details.find((d: any) => d.nombre === matName);

@@ -9,8 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.amazonas.backend.security.service.CustomUserDetailsService;
+import com.amazonas.backend.modules.users.repository.UserRepository;
+import com.amazonas.backend.modules.users.model.User;
+import com.amazonas.backend.modules.vendors.repository.VendorRepository;
+import com.amazonas.backend.modules.vendors.model.Vendor;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,8 +27,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JwtFilter.class);
+
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
+    private final VendorRepository vendorRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     protected void doFilterInternal(
@@ -42,6 +52,58 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         jwtToken = authHeader.substring(7);
+        
+        // Detectar si es un token de Clerk
+        String issuer = getClaimUnverified(jwtToken, "iss");
+        boolean isClerkToken = issuer != null && (issuer.contains("clerk") || issuer.contains("clerk.accounts.dev"));
+
+        if (isClerkToken) {
+            String clerkEmail = request.getHeader("X-User-Email");
+            String clerkName = request.getHeader("X-User-Name");
+            
+            if (clerkEmail != null && !clerkEmail.isBlank()) {
+                UserDetails userDetails = null;
+
+                // 1. Buscar en la tabla users (Clientes)
+                java.util.Optional<User> userOpt = userRepository.findByEmailIgnoreCase(clerkEmail);
+                if (userOpt.isPresent()) {
+                    userDetails = userOpt.get();
+                } else {
+                    // 2. Buscar en la tabla vendors (Vendedores/Admins)
+                    java.util.Optional<Vendor> vendorOpt = vendorRepository.findByEmailIgnoreCase(clerkEmail);
+                    if (vendorOpt.isPresent()) {
+                        userDetails = vendorOpt.get();
+                    } else {
+                        // 3. Si no existe en ninguno, auto-registrar como CLIENT en users
+                        User newUser = new User();
+                        newUser.setEmail(clerkEmail);
+                        newUser.setNombre((clerkName != null && !clerkName.isBlank()) ? clerkName : clerkEmail.split("@")[0]);
+                        newUser.setPassword(passwordEncoder.encode("clerk_oauth_dummy_pass"));
+                        newUser.setRole(com.amazonas.backend.modules.auth.enums.Role.CLIENT);
+                        newUser.setTelefono("");
+                        userDetails = userRepository.save(newUser);
+                    }
+                }
+
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                log.warn("Clerk token detected but X-User-Email is null or blank");
+            }
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             userEmail = jwtService.extractUsername(jwtToken);
             
@@ -76,5 +138,24 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String getClaimUnverified(String token, String claimName) {
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length != 3) {
+                return null;
+            }
+            String payloadStr = parts[1];
+            while (payloadStr.length() % 4 != 0) {
+                payloadStr += "=";
+            }
+            String payload = new String(java.util.Base64.getUrlDecoder().decode(payloadStr), java.nio.charset.StandardCharsets.UTF_8);
+            com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(payload);
+            return node.has(claimName) ? node.get(claimName).asText() : null;
+        } catch (Exception e) {
+            log.error("Error parsing JWT payload to get claim: " + claimName, e);
+            return null;
+        }
     }
 }
